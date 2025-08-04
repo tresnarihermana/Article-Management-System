@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ArticleController;
 use App\Models\User;
 use Inertia\Inertia;
 use Illuminate\Support\Str;
@@ -15,6 +16,7 @@ use Spatie\Permission\Contracts\Permission;
 use App\Http\Controllers\PermissionController;
 use App\Http\Middleware\EnsureProfileComplete;
 use App\Http\Controllers\Settings\ProfileController;
+use App\Models\Article;
 use Illuminate\Session\Middleware\AuthenticateSession;
 
 Route::get('/', function () {
@@ -116,8 +118,23 @@ Route::resource("permissions", PermissionController::class)
 Route::resource("logs", LogController::class)
 ->only(['index','show'])
 ->middleware("permission:logs.view");
+// Article
+Route::resource("articles", ArticleController::class)
+->only(['edit','update'])
+->middleware("permission:articles.edit");
+
+Route::resource("articles", ArticleController::class)
+->only(['create','store'])
+->middleware("permission:articles.create");
+
+Route::resource("articles", ArticleController::class)
+->only(['destroy'])
+->middleware("permission:articles.delete");
+
+Route::resource("articles", ArticleController::class)
+->only(['index','show'])
+->middleware("permission:articles.create|articles.edit|articles.delete|articles.view");
 
 });
-
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';
