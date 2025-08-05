@@ -257,7 +257,7 @@ watch(() => form.tag, () => {
                                                     </template>
                                                     <span v-if="article.tags.length > 5"
                                                         class="bg-gray-100 text-gray-600 text-xs font-medium px-2.5 py-0.5 rounded"
-                                                        :title="article.tags.map(p => p.name).join(', ')">
+                                                        :title="article.tags.map(t => t.name).join(', ')">
                                                         +{{ article.tags.length - 5 }} more
                                                     </span>
                                                 </div>
@@ -299,6 +299,10 @@ watch(() => form.tag, () => {
                                                 </span>
                                             </td>
                                             <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm whitespace-nowrap">
+                                                <Link v-if="can('articles.show')"
+                                                    :href="route('articles.show', article.slug)" type="button"
+                                                    class="mr-3 text-sm bg-green-500 hover:bg-green-700 text-white py-1 px-2 rounded focus:outline-none focus:shadow-outline">
+                                                Show</Link>
                                                 <Link v-if="can('articles.edit')"
                                                     :href="route('articles.edit', article.id)" type="button"
                                                     class="mr-3 text-sm bg-blue-500 hover:bg-blue-700 text-white py-1 px-2 rounded focus:outline-none focus:shadow-outline">
