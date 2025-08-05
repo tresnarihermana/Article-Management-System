@@ -57,50 +57,56 @@ class ArticleController extends Controller
      */
     public function create()
     {
-        return Inertia::render("Users/Create", [
+        $categories = Category::all();
+        $tags = Tag::all();
+        // dd($categories);
+        return Inertia::render("Articles/Create", [
+        'categories' => $categories,
+        'tags' => $tags
         ]);
     }
 
     public function store(Request $request)
     {
+        // dd($request->all());
         $validated = $request->validate([
             'title' => 'required|string|max:255',
-            'body' => 'required|string',
-            'excerpt' => 'nullable|string',
-            'category_ids' => 'nullable|array',
+            'body' => 'required|array',
+            // 'excerpt' => 'nullable|string',
+            'category_id' => 'nullable|int',
             'category_ids.*' => 'exists:categories,id',
             'tag_ids' => 'nullable|array',
-            'tag_ids.*' => 'exists:tags,id',
-            'status' => 'nullable|in:draft,published,pending',
+            'tags_ids.*' => 'exists:tags_id',
+            // 'status' => 'nullable|in:draft,published,pending',
         ]);
 
         $article = Article::create([
             'user_id' => auth()->id(),
             'title' => $validated['title'],
             'slug' => Str::slug($validated['title']),
-            'body' => $validated['body'],
-            'excerpt' => $validated['excerpt'] ?? Str::limit(strip_tags($validated['body']), 150),
-            'status' => $validated['status'] ?? 'draft',
+            'body' => json_encode($validated['body']),
+            // 'excerpt' => $validated['excerpt'] ?? Str::limit(strip_tags($validated['body']), 150),
+            // 'status' => $validated['status'] ?? 'draft',
         ]);
-        if (!empty($validated['category_ids'])) {
-            $article->categories()->attach($validated['category_ids']);
+        if (!empty($validated['category_id'])) {
+            $article->categories()->attach($validated['category_id']);
         }
 
         if (!empty($validated['tag_ids'])) {
             $article->tags()->attach($validated['tag_ids']);
         }
-
-        return response()->json(['message' => 'Artikel berhasil dibuat.', 'data' => $article]);
+        return to_route("articles.index")->with("message", "Success Create Article");
     }
 
-    // 🔎 Tampilkan detail artikel
     public function show($slug)
     {
-        $article = Article::with('user', 'tags', 'categories', 'comments.replies')
+        $article = Article::with('user', 'tags', 'categories')
             ->where('slug', $slug)
             ->firstOrFail();
 
-        return response()->json($article);
+        return Inertia::render("Articles/Show" , [
+            "article" => $article,
+        ]);
     }
 
 
@@ -145,15 +151,13 @@ class ArticleController extends Controller
             $article->tags()->sync($validated['tag_ids']);
         }
 
-        return response()->json(['message' => 'Artikel berhasil diperbarui.']);
+        return to_route("articles.index")->with("message" , "Success Edit Articles");
     }
 
-    public function destroy(Article $article)
+    public function destroy(string $id)
     {
-        $this->authorize('delete', $article); // opsional: periksa izin
-
-        $article->delete();
-
-        return response()->json(['message' => 'Artikel dihapus.']);
+        Article::destroy($id);
+        
+        return to_route("articles.index")->with("message", "Success Delete Article");
     }
 }
