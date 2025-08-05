@@ -34,6 +34,6 @@ class VerifyEmailController extends Controller
             event(new Verified($user));
         }
 
-        return redirect()->intended(route('settings/profile', absolute: false) . '?verified=1')->with('message', 'Selamat Datang');
+        return redirect()->intended(route('profile.edit', absolute: false) . '?verified=1')->with('message', 'Selamat Datang');
     }
 }
