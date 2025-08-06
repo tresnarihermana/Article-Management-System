@@ -17,7 +17,8 @@ return new class extends Migration
             $table->string('title');
             $table->string('slug')->unique();
             $table->text('excerpt')->nullable();
-            $table->longText('body');
+            $table->json('body');
+            $table->string('cover')->nullable();
             $table->string('featured_image')->nullable();
             $table->enum('status', ['draft', 'published', 'pending'])->default('draft');
             $table->boolean('is_pinned')->default(false);
