@@ -8,6 +8,7 @@ use App\Models\Article;
 use App\Models\Category;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class ArticleController extends Controller
 {
@@ -31,28 +32,28 @@ class ArticleController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate($perPage)
             ->withQueryString()
-             ->through(function ($article) {
-        return [
-            'id' => $article->id,
-            'title' => $article->title,
-            'user' => $article->user,
-            'tags' => $article->tags,
-            'categories' => $article->categories,
-            'created_at' => $article->created_at->format('Y-m-d H:i:s'),
-            'updated_at' => $article->updated_at->format('Y-m-d H:i:s'),
-            'status' => $article->status,
-            'slug' => $article->slug,
-        ];
-             });
+            ->through(function ($article) {
+                return [
+                    'id' => $article->id,
+                    'title' => $article->title,
+                    'user' => $article->user,
+                    'tags' => $article->tags,
+                    'categories' => $article->categories,
+                    'created_at' => $article->created_at->format('Y-m-d H:i:s'),
+                    'updated_at' => $article->updated_at->format('Y-m-d H:i:s'),
+                    'status' => $article->status,
+                    'slug' => $article->slug,
+                ];
+            });
         return Inertia::render('Articles/Index', [
             'articles' => $articles,
             'search' => $search,
             'filters' => $request->only('input', 'tag'),
-            
+
         ]);
     }
 
-       /**
+    /**
      * Show the form for creating a new resource.
      */
     public function create()
@@ -61,8 +62,8 @@ class ArticleController extends Controller
         $tags = Tag::all();
         // dd($categories);
         return Inertia::render("Articles/Create", [
-        'categories' => $categories,
-        'tags' => $tags
+            'categories' => $categories,
+            'tags' => $tags
         ]);
     }
 
@@ -75,6 +76,7 @@ class ArticleController extends Controller
             // 'excerpt' => 'nullable|string',
             'category_id' => 'nullable|int',
             'category_ids.*' => 'exists:categories,id',
+            'cover' => 'nullable|image|max:10240',
             'tag_ids' => 'nullable|array',
             'tags_ids.*' => 'exists:tags_id',
             // 'status' => 'nullable|in:draft,published,pending',
@@ -95,6 +97,11 @@ class ArticleController extends Controller
         if (!empty($validated['tag_ids'])) {
             $article->tags()->attach($validated['tag_ids']);
         }
+        if ($request->hasFile('cover')) {
+            $link = Storage::disk('public')->putFile('cover', $request->file('cover'));
+            $article->cover = $link;
+            $article->save();
+        }
         return to_route("articles.index")->with("message", "Success Create Article");
     }
 
@@ -104,7 +111,7 @@ class ArticleController extends Controller
             ->where('slug', $slug)
             ->firstOrFail();
 
-        return Inertia::render("Articles/Show" , [
+        return Inertia::render("Articles/Show", [
             "article" => $article,
         ]);
     }
@@ -112,52 +119,71 @@ class ArticleController extends Controller
 
     public function edit(string $id)
     {
-        $article = Article::findOrFail($id);
+        $article = Article::with('user', 'categories', 'tags')->findOrFail($id);
         return Inertia::render("Articles/Edit", [
             "article" => $article,
             "categories" => Category::all(),
             "tags" => Tag::all(),
+
         ]);
     }
 
-    public function update(Request $request, Article $article)
+    public function update(Request $request, string $id)
     {
-        $this->authorize('update', $article);
-
+        // dd($request->all());
         $validated = $request->validate([
             'title' => 'required|string|max:255',
-            'body' => 'required|string',
+            'body' => 'required',
             'excerpt' => 'nullable|string',
-            'category_ids' => 'nullable|array',
-            'category_ids.*' => 'exists:categories,id',
+            'category_id' => 'nullable|int',
+            'cover' => 'nullable|max:10240',
+            // 'category_ids.*' => 'exists:categories,id',
             'tag_ids' => 'nullable|array',
             'tag_ids.*' => 'exists:tags,id',
-            'status' => 'nullable|in:draft,published,pending',
+            // 'status' => 'nullable|in:draft,published,pending',
         ]);
 
-        $article->update([
-            'title' => $validated['title'],
-            'slug' => Str::slug($validated['title']),
-            'body' => $validated['body'],
-            'excerpt' => $validated['excerpt'] ?? Str::limit(strip_tags($validated['body']), 150),
-            'status' => $validated['status'] ?? $article->status,
-        ]);
+        $article = Article::findOrFail($id);
+        $article->update($request->only(['title', 'body', 'excerpt', 'cover', 'category_id']));
 
-        if (!empty($validated['category_ids'])) {
-            $article->categories()->sync($validated['category_ids']);
+        // 'excerpt' => $validated['excerpt'] ?? Str::limit(strip_tags($validated['body']), 150),
+        // 'status' => $validated['status'] ?? $article->status,
+
+
+
+
+        if (!empty($validated['category_id'])) {
+            $article->categories()->sync($validated['category_id']);
         }
 
         if (!empty($validated['tag_ids'])) {
             $article->tags()->sync($validated['tag_ids']);
         }
-
-        return to_route("articles.index")->with("message" , "Success Edit Articles");
+        if (!empty($validated['cover'])) {
+            $article->cover = $validated['cover'];
+        }
+        $article->save();
+        return to_route("articles.index")->with("message", "Success Edit Articles");
     }
 
     public function destroy(string $id)
     {
         Article::destroy($id);
-        
+
         return to_route("articles.index")->with("message", "Success Delete Article");
+    }
+
+
+    public function uploadCover(Request $request)
+    {
+        $request->validate([
+            'cover' => 'required|image|mimes:jpeg,png,jpg,gif|max:10240',
+        ]);
+
+        $path = Storage::disk('public')->putFile('cover', $request->file('cover'));
+
+        return response()->json([
+            'path' => $path
+        ]);
     }
 }
