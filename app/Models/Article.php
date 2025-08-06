@@ -16,6 +16,7 @@ class Article extends Model
         'slug',
         'excerpt',
         'body',
+        'cover',
         'featured_image',
         'status',
         'is_pinned',
