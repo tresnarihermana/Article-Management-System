@@ -127,6 +127,9 @@ Route::resource("articles", ArticleController::class)
 ->only(['create','store'])
 ->middleware("permission:articles.create");
 
+Route::post('articles/Edit', [ArticleController::class, 'uploadCover'])
+    ->name('articles.uploadCover');
+
 Route::resource("articles", ArticleController::class)
 ->only(['destroy'])
 ->middleware("permission:articles.delete");
