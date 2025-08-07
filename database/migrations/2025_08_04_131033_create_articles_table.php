@@ -16,8 +16,8 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('title');
             $table->string('slug')->unique();
-            $table->text('excerpt')->nullable();
-            $table->json('body');
+            $table->string('excerpt')->nullable();
+            $table->string('body');
             $table->string('cover')->nullable();
             $table->string('featured_image')->nullable();
             $table->enum('status', ['draft', 'published', 'pending'])->default('draft');
