@@ -8,6 +8,7 @@ use App\Models\Article;
 use App\Models\Category;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
 
 class ArticleController extends Controller
@@ -17,16 +18,17 @@ class ArticleController extends Controller
     {
         $perPage = $request->input('per_page', 10);
         $search = $request->input('search');
-        $tag = $request->input('role');
+        $status = $request->input('status');
         $articles = Article::with('user', 'tags', 'categories')
+            ->where('user_id', auth()->id())
             ->when($search, function ($query, $search) {
                 $query->where(function ($q) use ($search) {
-                    $q->where('name', 'like', "%$search%")
-                        ->orWhere('username', 'like', "%$search%");
+                    $q->where('titile', 'like', "%$search%")
+                        ->orWhere('slug', 'like', "%$search%");
                 });
-            })->when($tag, function ($query, $tag) {
-                $query->whereHas('tags', function ($q) use ($tag) {
-                    $q->where('name', '=', $tag);
+            })->when($status, function ($query, $status) {
+                $query->whereHas('status', function ($q) use ($status) {
+                    $q->where('status', '=', $status);
                 });
             })
             ->orderBy('created_at', 'desc')
@@ -72,23 +74,23 @@ class ArticleController extends Controller
         // dd($request->all());
         $validated = $request->validate([
             'title' => 'required|string|max:255',
-            'body' => 'required|array',
-            // 'excerpt' => 'nullable|string',
+            'body' => 'required|string',
+            'excerpt' => 'nullable|string',
             'category_id' => 'nullable|int',
             'category_ids.*' => 'exists:categories,id',
             'cover' => 'nullable|image|max:10240',
             'tag_ids' => 'nullable|array',
             'tags_ids.*' => 'exists:tags_id',
-            // 'status' => 'nullable|in:draft,published,pending',
+            'status' => 'nullable|in:draft,pending',
         ]);
 
         $article = Article::create([
             'user_id' => auth()->id(),
             'title' => $validated['title'],
             'slug' => Str::slug($validated['title']),
-            'body' => json_encode($validated['body']),
-            // 'excerpt' => $validated['excerpt'] ?? Str::limit(strip_tags($validated['body']), 150),
-            // 'status' => $validated['status'] ?? 'draft',
+            'body' => $validated['body'],
+            'excerpt' => $validated['excerpt'] ?? Str::limit(strip_tags($validated['body']), 150),
+            'status' => $validated['status'] ?? 'draft',
         ]);
         if (!empty($validated['category_id'])) {
             $article->categories()->attach($validated['category_id']);
@@ -140,11 +142,11 @@ class ArticleController extends Controller
             // 'category_ids.*' => 'exists:categories,id',
             'tag_ids' => 'nullable|array',
             'tag_ids.*' => 'exists:tags,id',
-            // 'status' => 'nullable|in:draft,published,pending',
+            'status' => 'nullable|in:draft,pending',
         ]);
 
         $article = Article::findOrFail($id);
-        $article->update($request->only(['title', 'body', 'excerpt', 'cover', 'category_id']));
+        $article->update($request->only(['title', 'body', 'excerpt', 'cover', 'status']));
 
         // 'excerpt' => $validated['excerpt'] ?? Str::limit(strip_tags($validated['body']), 150),
         // 'status' => $validated['status'] ?? $article->status,
@@ -185,5 +187,17 @@ class ArticleController extends Controller
         return response()->json([
             'path' => $path
         ]);
+    }
+
+    public function approve(Article $article): RedirectResponse
+    {
+        $article->update(['status' => 'published']);
+        return back()->with('success', 'Article approved!');
+    }
+
+    public function reject(Article $article): RedirectResponse
+    {
+        $article->update(['status' => 'rejected']);
+        return back()->with('success', 'Article rejected!');
     }
 }
