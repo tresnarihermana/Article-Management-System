@@ -2,12 +2,10 @@
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, useForm, router } from '@inertiajs/vue3';
-import Button from 'primevue/button';
 import Swal from 'sweetalert2';
 import { usePage } from '@inertiajs/vue3';
 import { can } from '@/lib/can';
 import { ref, watch } from 'vue';
-import { RollerCoaster } from 'lucide-vue-next';
 const page = usePage();
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -278,27 +276,25 @@ watch(() => form.tag, () => {
                                                 </p>
                                             </td>
                                             <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                                                <span v-if="can('articles.toggleStatus')"
-                                                    @click="toggleStatus(article.id)"
-                                                    class="cursor-pointer relative inline-block px-3 py-1 font-semibold text-green-900 leading-tight"
-                                                    :class="article.status === 'published' ? 'text-green-900' : 'text-red-900'">
+                                                <span
+                                                    class="cursor-pointer relative inline-block px-3 py-1 font-semibold leading-tight"
+                                                    :class="{
+                                                        'text-green-900': article.status === 'published',
+                                                        'text-blue-900': article.status === 'draft',
+                                                        'text-gray-900': article.status === 'pending'
+                                                    }">
                                                     <span aria-hidden class="absolute inset-0 opacity-50 rounded-full"
-                                                        :class="article.status ? 'bg-green-200' : 'bg-red-200'"></span>
-                                                    <span class="relative">{{ article.status === 'published' ?
-                                                        'Published' : 'Draft'
-                                                        }}</span>
+                                                        :class="{
+                                                            'bg-green-200': article.status === 'published',
+                                                            'bg-blue-200': article.status === 'draft',
+                                                            'bg-gray-300': article.status === 'pending'
+                                                        }"></span>
+                                                    <span class="relative">{{ article.status }}</span>
                                                 </span>
-                                                <span v-else
-                                                    class="cursor-pointer relative inline-block px-3 py-1 font-semibold text-green-900 leading-tight"
-                                                    :class="article.status === 'published' ? 'text-green-900' : 'text-red-900'">
-                                                    <span aria-hidden class="absolute inset-0 opacity-50 rounded-full"
-                                                        :class="article.status === 'published' ? 'bg-green-200' : 'bg-red-200'"></span>
-                                                    <span class="relative">{{ article.status === 'published' ?
-                                                        'Published' : 'Draft'
-                                                        }}</span>
-                                                </span>
+
                                             </td>
-                                            <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm whitespace-nowrap">
+                                            <td
+                                                class="px-5 py-5 border-b border-gray-200 bg-white text-sm whitespace-nowrap">
                                                 <Link v-if="can('articles.show')"
                                                     :href="route('articles.show', article.slug)" type="button"
                                                     class="mr-3 text-sm bg-green-500 hover:bg-green-700 text-white py-1 px-2 rounded focus:outline-none focus:shadow-outline">
