@@ -9,6 +9,7 @@ use App\Models\Article;
 use App\Models\Comment;
 use App\Models\Category;
 use Illuminate\Database\Seeder;
+use Database\Seeders\ArticleSeeder;
 use Database\Seeders\RolePermissionSeeder;
 
 class DatabaseSeeder extends Seeder
@@ -20,6 +21,7 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             RolePermissionSeeder::class,
+            ArticleSeeder::class
         ]);
         // User::factory(10)->create();
         $Sadmin = User::factory()->create([
@@ -54,12 +56,6 @@ class DatabaseSeeder extends Seeder
         ]);
         $user->assignRole('user');
 
-     $tags = \App\Models\Tag::factory(10)->create();
-    $categories = \App\Models\Category::factory(5)->create();
-       $articles = Article::factory(10)->create()->each(function ($article) use ($tags, $categories) {
-    $article->tags()->attach($tags->random(rand(1, 3))->pluck('id'));
-    $article->categories()->attach($categories->random(rand(1, 2))->pluck('id'));
-});
 
 
 
