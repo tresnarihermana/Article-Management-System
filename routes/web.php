@@ -7,6 +7,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LogController;
+use App\Http\Controllers\MainPageController;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
@@ -19,9 +20,8 @@ use App\Http\Controllers\Settings\ProfileController;
 use App\Models\Article;
 use Illuminate\Session\Middleware\AuthenticateSession;
 
-Route::get('/', function () {
-    return redirect('login');
-    
+Route::get('/', [MainPageController::class, 'index'], function () {
+    return Inertia::render('Welcome');
 })->name('home');
 
 Route::get('dashboard', function () {
@@ -53,91 +53,93 @@ Route::post('profile/avatar', [ProfileController::class, 'updateAvatar'])->name(
 // Roles and Permissions mulai disini
 // users
 Route::middleware(['auth', 'web', 'verified'])->group(function () {
-    
-
-Route::resource("users", UserController::class)
-->only(['create','store'])
-->middleware("permission:users.create");
-
-Route::resource("users", UserController::class)
-->only(['edit','update'])
-->middleware("permission:users.edit");
-
-Route::resource("users", UserController::class)
-->only(['destroy'])
-->middleware("permission:users.delete");
-
-Route::put('/users/{user}/toggleStatus', [UserController::class, 'toggleStatus'])
-    ->name('users.toggleStatus')
-    ->middleware('permission:users.toggleStatus');
 
 
-Route::resource("users", UserController::class)
-->only(['index', 'show'])
-->middleware("permission:users.create|users.edit|users.delete|users.view");
+    Route::resource("users", UserController::class)
+        ->only(['create', 'store'])
+        ->middleware("permission:users.create");
 
-Route::resource("users", UserController::class)
-->only(['show'])
-->middleware("permission:users.show");
+    Route::resource("users", UserController::class)
+        ->only(['edit', 'update'])
+        ->middleware("permission:users.edit");
 
-// roles
-Route::resource("roles", RoleController::class)
-->only(['create','store'])
-->middleware("permission:roles.create");
+    Route::resource("users", UserController::class)
+        ->only(['destroy'])
+        ->middleware("permission:users.delete");
 
-Route::resource("roles", RoleController::class)
-->only(['edit','update'])
-->middleware("permission:roles.edit");
+    Route::put('/users/{user}/toggleStatus', [UserController::class, 'toggleStatus'])
+        ->name('users.toggleStatus')
+        ->middleware('permission:users.toggleStatus');
 
-Route::resource("roles", RoleController::class)
-->only(['destroy'])
-->middleware("permission:roles.delete");
 
-Route::resource("roles", RoleController::class)
-->only(['index','show'])
-->middleware("permission:roles.create|roles.edit|roles.delete|roles.view");
+    Route::resource("users", UserController::class)
+        ->only(['index', 'show'])
+        ->middleware("permission:users.create|users.edit|users.delete|users.view");
 
-// permissions
-Route::resource("permissions", PermissionController::class)
-->only(['create','store'])
-->middleware("permission:permissions.create");
+    Route::resource("users", UserController::class)
+        ->only(['show'])
+        ->middleware("permission:users.show");
 
-Route::resource("permissions", PermissionController::class)
-->only(['edit','update'])
-->middleware("permission:permissions.edit");
+    // roles
+    Route::resource("roles", RoleController::class)
+        ->only(['create', 'store'])
+        ->middleware("permission:roles.create");
 
-Route::resource("permissions", PermissionController::class)
-->only(['destroy'])
-->middleware("permission:permissions.delete");
+    Route::resource("roles", RoleController::class)
+        ->only(['edit', 'update'])
+        ->middleware("permission:roles.edit");
 
-Route::resource("permissions", PermissionController::class)
-->only(['index','show'])
-->middleware("permission:permissions.create|permissions.edit|permissions.delete|permissions.view");
+    Route::resource("roles", RoleController::class)
+        ->only(['destroy'])
+        ->middleware("permission:roles.delete");
 
-// Logs
-Route::resource("logs", LogController::class)
-->only(['index','show'])
-->middleware("permission:logs.view");
-// Article
-Route::resource("articles", ArticleController::class)
-->only(['edit','update'])
-->middleware("permission:articles.edit");
+    Route::resource("roles", RoleController::class)
+        ->only(['index', 'show'])
+        ->middleware("permission:roles.create|roles.edit|roles.delete|roles.view");
 
-Route::resource("articles", ArticleController::class)
-->only(['create','store'])
-->middleware("permission:articles.create");
+    // permissions
+    Route::resource("permissions", PermissionController::class)
+        ->only(['create', 'store'])
+        ->middleware("permission:permissions.create");
 
-Route::post('articles/Edit', [ArticleController::class, 'uploadCover'])
-    ->name('articles.uploadCover');
+    Route::resource("permissions", PermissionController::class)
+        ->only(['edit', 'update'])
+        ->middleware("permission:permissions.edit");
 
-Route::resource("articles", ArticleController::class)
-->only(['destroy'])
-->middleware("permission:articles.delete");
+    Route::resource("permissions", PermissionController::class)
+        ->only(['destroy'])
+        ->middleware("permission:permissions.delete");
 
-Route::resource("articles", ArticleController::class)
-->only(['index','show'])
-->middleware("permission:articles.create|articles.edit|articles.delete|articles.view");
+    Route::resource("permissions", PermissionController::class)
+        ->only(['index', 'show'])
+        ->middleware("permission:permissions.create|permissions.edit|permissions.delete|permissions.view");
 
+    // Logs
+    Route::resource("logs", LogController::class)
+        ->only(['index', 'show'])
+        ->middleware("permission:logs.view");
+
+    // Article
+    Route::resource("articles", ArticleController::class)
+        ->only(['edit', 'update'])
+        ->middleware("permission:articles.edit");
+
+    Route::resource("articles", ArticleController::class)
+        ->only(['create', 'store'])
+        ->middleware("permission:articles.create");
+
+    Route::resource("articles", ArticleController::class)
+        ->only(['destroy'])
+        ->middleware("permission:articles.delete");
+
+    Route::resource("articles", ArticleController::class)
+        ->only(['index', 'show'])
+        ->middleware("permission:articles.create|articles.edit|articles.delete|articles.view");
+
+    Route::post('articles/Edit', [ArticleController::class, 'uploadCover'])
+        ->name('articles.uploadCover');
+    Route::put('articles/{article}/approve', [ArticleController::class, 'approve'])
+        ->name('approve');
 });
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';
