@@ -4,6 +4,7 @@ const props = defineProps({
     article: Object,
     categeories: Object,
     tags: Array,
+    user: Object,
 })
 const { getInitials } = useInitials();
 </script>
