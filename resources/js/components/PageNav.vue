@@ -82,12 +82,9 @@
                 <a :href="route('dashboard')" class="block px-4 py-2 text-sm/6 text-gray-700 hover:bg-gray-50">
                   Dashboard
                 </a>
-                <form :action="route('logout')" method="POST">
-                  <input type="hidden" name="_token" :value="$page.props.csrf_token" />
-                  <button type="submit" class="w-full text-left px-4 py-2 text-sm/6 text-gray-700 hover:bg-gray-50">
+                  <button :href="route('logout')" @click="handleLogout" type="submit" class="w-full text-left px-4 py-2 text-sm/6 text-gray-700 hover:bg-gray-50">
                     Logout
                   </button>
-                </form>
               </div>
             </PopoverPanel>
           </transition>
@@ -157,8 +154,9 @@
                         :href="route('dashboard')"
                         class="block rounded-lg py-2 pr-3 pl-6 text-sm/7 font-semibold text-gray-900 hover:bg-gray-50">
                         Dashboard</DisclosureButton>
-                      <DisclosureButton as="a"
+                      <DisclosureButton as="button"
                         :href="route('logout')"
+                        @click="handleLogout"
                         class="block rounded-lg py-2 pr-3 pl-6 text-sm/7 font-semibold text-red-900 hover:bg-gray-50">
                         Logout</DisclosureButton>
                     </DisclosurePanel>
@@ -175,6 +173,7 @@
 
 <script setup>
 import { ref } from 'vue'
+import { router } from '@inertiajs/vue3'
 import {
   Dialog,
   DialogPanel,
@@ -209,4 +208,7 @@ const callsToAction = [
   { name: 'Contact sales', href: '#', icon: PhoneIcon },
 ]
 const mobileMenuOpen = ref(false)
+const handleLogout = () => {
+    router.post(route('logout'));
+};
 </script>
