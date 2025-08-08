@@ -75,8 +75,8 @@ class ArticleController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'body' => 'required|string',
-            'excerpt' => 'nullable|string',
-            'category_id' => 'nullable|int',
+            'excerpt' => 'required|string',
+            'category_id' => 'required|int',
             'category_ids.*' => 'exists:categories,id',
             'cover' => 'nullable|image|max:10240',
             'tag_ids' => 'nullable|array',
@@ -136,8 +136,8 @@ class ArticleController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'body' => 'required',
-            'excerpt' => 'nullable|string',
-            'category_id' => 'nullable|int',
+            'excerpt' => 'required|string',
+            'category_id' => 'required|int',
             'cover' => 'nullable|max:10240',
             // 'category_ids.*' => 'exists:categories,id',
             'tag_ids' => 'nullable|array',
@@ -191,7 +191,7 @@ class ArticleController extends Controller
 
     public function approve(Article $article): RedirectResponse
     {
-        $article->update(['status' => 'published']);
+        $article->update(['status' => 'published', 'published_at' => now()]);
         return back()->with('success', 'Article approved!');
     }
 
