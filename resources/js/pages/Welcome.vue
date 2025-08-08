@@ -2,17 +2,12 @@
 import { Head, Link, usePage } from '@inertiajs/vue3';
 import PageNav from '@/components/PageNav.vue';
 import LatestArticles from '@/components/LatestArticles.vue';
+import PageLayout from '@/layouts/PageLayout.vue';
 const { articles, tags, categories, users, title } =usePage().props;
 </script>
 
 <template>
-
-    <Head title="Welcome">
-        <link rel="preconnect" href="https://rsms.me/" />
-        <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
-    </Head>
-    <header>
-        <PageNav />
-    </header>
+<PageLayout>
     <LatestArticles :articles="articles"/>
+</PageLayout>
 </template>
