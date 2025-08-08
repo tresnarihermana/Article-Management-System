@@ -166,7 +166,7 @@ const {getInitials} = useInitials();
             <!-- Blog Post 1 - Technology -->
             
             <article class="blog-card" v-for="article in articles" :key="article.id">
-                <a href="#">
+                <a :href="route('article.show', article.slug)">
                 <img :src="article.cover ? `/storage/${article.cover}` : `https://images.unsplash.com/photo-1518770660439-4636190af475?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80`" 
                      :alt="article.slug" 
                      class="blog-card-image">
