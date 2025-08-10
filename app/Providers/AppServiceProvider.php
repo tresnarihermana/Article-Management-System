@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Inertia\Inertia;
 use Anhskohbo\NoCaptcha\NoCaptcha;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
@@ -29,5 +30,6 @@ class AppServiceProvider extends ServiceProvider
      Gate::before(function ($user, $ability) {
         return $user->hasRole('Super Admin') ? true : null;
     });
+     Inertia::share('csrf_token', csrf_token());
     }
 }
