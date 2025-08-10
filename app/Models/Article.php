@@ -21,6 +21,8 @@ class Article extends Model
         'status',
         'is_pinned',
         'published_at',
+        'rejected_message',
+        
     ];
 
     protected $casts = [
