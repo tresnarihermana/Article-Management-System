@@ -95,56 +95,6 @@ if (flash || !user.username || !user.name) {
         text: "Please Complete your Profile info before proceed",
     });
 }
-
-// watch(form, () => {
-//     isDirty.value = true;
-// }, { deep: true });
-// const isDirty = ref(false);
-// onMounted(() => {
-//     console.log('[DEBUG] onMounted called');
-//     window.addEventListener('beforeunload', function(){
-//         // return   Swal.fire({
-//         //         title: 'Perubahan belum disimpan',
-//         //         text: 'Yakin ingin meninggalkan halaman ini?',
-//         //         icon: 'warning',
-//         //         showCancelButton: true,
-//         //         confirmButtonText: 'Ya, tinggalkan',
-//         //         cancelButtonText: 'Batal',
-//             })
-//     });
-
-//     router.on('before', (event) => {
-
-//         if (isDirty.value) {
-//             event.preventDefault();
-
-//             Swal.fire({
-//                 title: 'Harap isi form yang ada',
-//                 text: 'Sebelum melajutkan harap isi form yang ada',
-//                 icon: 'warning',
-//                 showCancelButton: true,
-//                 confirmButtonText: 'Ya, tinggalkan',
-//                 cancelButtonText: 'Batal',
-//             }).then((result) => {
-//                 if (result.isConfirmed) {
-//                     isDirty.value = false;
-//                     router.visit('/settings/profile',{
-//                         preserveScroll: true,
-//                         preserveState: true,
-//                     });
-//                 }
-//             });
-//         }
-//     });
-// });
-
-
-
-
-
-// onBeforeUnmount(() => {
-//     window.removeEventListener('beforeunload', handleBeforeUnload);
-// });
 const fileInput = ref(null);
 const openFileInput = () => {
     fileInput.value.click();

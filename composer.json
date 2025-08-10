@@ -1,8 +1,15 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/vue-starter-kit",
+    "name": "tresnarihermana/article-management-system",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
+    "description": "Article Management System with authentication and role-permissions",
+    "homepage": "https://github.com/tresnarihermana/article-management-system",
+    "authors": [
+        {
+            "name": "Tresnariyadi Hermana",
+            "email": "tresnarihermana@gmail.com"
+        }
+    ],
     "keywords": [
         "laravel",
         "framework"

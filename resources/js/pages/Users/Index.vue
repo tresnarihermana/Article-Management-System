@@ -241,7 +241,7 @@ function toggleStatus(id) {
                                                 {{ user.username }}
                                             </p>
                                         </td>
-                                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm whitespace-nowrap">
                                             <span v-for="role in user.roles"
                                                 class="relative inline-block px-3 py-1 font-semibold text-green-900 leading-tight">
                                                 <span aria-hidden
@@ -254,7 +254,7 @@ function toggleStatus(id) {
                                                 {{ user.email }}
                                             </p>
                                         </td>
-                                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm whitespace-nowrap">
                                             <span v-if="can('users.toggleStatus')" @click="toggleStatus(user.id)"
                                                 class="cursor-pointer relative inline-block px-3 py-1 font-semibold text-green-900 leading-tight"
                                                 :class="user.is_active ? 'text-green-900' : 'text-red-900'">
@@ -272,7 +272,7 @@ function toggleStatus(id) {
                                                 }}</span>
                                             </span>
                                         </td>
-                                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm whitespace-nowrap">
                                             <Link v-if="can('users.show')" :href="route('users.show', user.id)"
                                                 type="button"
                                                 class="mr-3 text-sm bg-green-500 hover:bg-green-700 text-white py-1 px-2 rounded focus:outline-none focus:shadow-outline">

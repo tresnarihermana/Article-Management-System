@@ -224,8 +224,8 @@ watch(() => form.role, () => {
                                                     class="mr-1 bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5">
                                                     {{ role.name }}
                                                 </span>
-                                            </td>
-                                            <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                                            </td> 
+                                            <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm whitespace-nowrap">
                                                 <Link v-if="can('permissions.edit')" :href="route('permissions.edit', permission.id)"
                                                     type="button"
                                                     class="mr-3 text-sm bg-blue-500 hover:bg-blue-700 text-white py-1 px-2 rounded focus:outline-none focus:shadow-outline">

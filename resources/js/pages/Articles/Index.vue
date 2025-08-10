@@ -2,21 +2,19 @@
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, useForm, router } from '@inertiajs/vue3';
-import Button from 'primevue/button';
 import Swal from 'sweetalert2';
 import { usePage } from '@inertiajs/vue3';
 import { can } from '@/lib/can';
 import { ref, watch } from 'vue';
-import { RollerCoaster } from 'lucide-vue-next';
 const page = usePage();
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Roles',
-        href: '/roles',
+        title: 'Articles',
+        href: '/articles',
     },
 ];
 const props = defineProps<{
-    roles: {
+    articles: {
         data: any[],
         current_page: number,
         last_page: number,
@@ -25,7 +23,8 @@ const props = defineProps<{
         next_page_url: string | null,
         prev_page_url: string | null
     },
-    permissions: any[],
+    tags: any[],
+    categories: any[],
     filters: {
         data: any[],
     }
@@ -36,7 +35,7 @@ if (flash) {
     Swal.fire({
         title: "Process Success",
         icon: "success",
-        html: "role Succesfully added",
+        html: "article Succesfully added",
         timer: 1000,
         timerProgressBar: true,
         didOpen: () => {
@@ -51,7 +50,7 @@ if (flash) {
     })
 }
 
-function deleteRole(id) {
+function deleteArticle(id) {
     Swal.fire({
         title: 'Are you sure?',
         text: "You won't be able to revert this!",
@@ -62,11 +61,11 @@ function deleteRole(id) {
         confirmButtonText: 'Yes, delete it!'
     }).then((result) => {
         if (result.isConfirmed) {
-            router.delete(route('roles.destroy', id), {
+            router.delete(route('articles.destroy', id), {
                 onSuccess: () => {
                     Swal.fire({
                         title: 'Deleted!',
-                        text: 'This role has been deleted.',
+                        text: 'This article has been deleted.',
                         icon: 'success',
                         timer: 1000,
                         timerProgressBar: true,
@@ -75,7 +74,7 @@ function deleteRole(id) {
                 onError: () => {
                     Swal.fire({
                         title: 'Failed!',
-                        text: 'Something went wrong. The role was not deleted.',
+                        text: 'Something went wrong. The article was not deleted.',
                         icon: 'error',
                     });
                 }
@@ -86,37 +85,37 @@ function deleteRole(id) {
 // pagination atau apalah
 const perPage = ref(new URLSearchParams(window.location.search).get('per_page') || 10)
 watch(perPage, (value) => {
-    router.get(route('roles.index'), { per_page: value, page: 1 }, { preserveState: true, replace: true })
+    router.get(route('articles.index'), { per_page: value, page: 1 }, { preserveState: true, replace: true })
 })
 const form = useForm({
     search: props.filters.search || '',
-    permission: props.filters.permission || null,
+    tag: props.filters.tag || null,
 
 })
 watch(() => form.search, () => {
-    form.get(route('roles.index'), {
+    form.get(route('articles.index'), {
         preserveScroll: true,
         preserveState: true,
     });
 });
-watch(() => form.permission, () => {
-    form.get(route('roles.index'), { preserveState: true, replace: true })
+watch(() => form.tag, () => {
+    form.get(route('articles.index'), { preserveState: true, replace: true })
 })
 </script>
 
 <template>
 
-    <Head title="Roles" />
+    <Head title="Articles" />
     <AppLayout :breadcrumbs="breadcrumbs">
         <!-- component -->
         <div class="text-gray-900 bg-gray-200">
             <!-- <div class="p-4 flex">
                 <h1 class="text-3xl">
-                    Roles
+                    Articles
                 </h1>
             </div>
             <div class="px-4">
-                <Button v-if="can('roles.create')" label="Add Role" as="a" :href="route('roles.create')"
+                <Button v-if="can('articles.create')" label="Add article" as="a" :href="route('articles.create')"
                     icon="pi pi-plus" icon-pos="left" />
             </div> -->
 
@@ -124,7 +123,7 @@ watch(() => form.permission, () => {
                 <div class="container mx-auto px-4 sm:px-8">
                     <div class="py-8">
                         <div>
-                            <h2 class="text-2xl font-semibold leading-tight">Roles</h2>
+                            <h2 class="text-2xl font-semibold leading-tight">Articles</h2>
                         </div>
                         <div class="my-2 flex sm:flex-row flex-col">
                             <div class="flex flex-row mb-1 sm:mb-0">
@@ -145,11 +144,11 @@ watch(() => form.permission, () => {
                                     </div>
                                 </div>
                                 <div class="relative">
-                                    <select v-model="form.permission"
+                                    <select v-model="form.tag"
                                         class="appearance-none h-full rounded-r border-t sm:rounded-r-none sm:border-r-0 border-r border-b block appearance-none w-full bg-white border-gray-400 text-gray-700 py-2 px-4 pr-8 leading-tight focus:outline-none focus:border-l focus:border-r focus:bg-white focus:border-gray-500">
                                         <option :value="null">All</option>
-                                        <option v-for="permission in permissions" :key="permission.id"
-                                            :value="permission.name">{{ permission.name }}</option>
+                                        <option v-for="tag in tags" :key="tag.id" :value="tag.name">{{ tag.name }}
+                                        </option>
                                     </select>
                                     <div
                                         class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
@@ -173,17 +172,18 @@ watch(() => form.permission, () => {
                                     class="appearance-none rounded-r rounded-l sm:rounded-l-none border border-gray-400 border-b block pl-8 pr-6 py-2 w-full bg-white text-sm placeholder-gray-400 text-gray-700 focus:bg-white focus:placeholder-gray-600 focus:text-gray-700 focus:outline-none" />
                             </div>
                             <div class="flex justify-end px-3">
-                                <button v-if="can('roles.create')" @click="router.get(route('roles.create'))"
+                                <button v-if="can('articles.create')" @click="router.get(route('articles.create'))"
                                     type="button"
                                     class="rounded border block appearance-none bg-green-400 border-green-400 text-white py-2 px-4 pr-8 leading-tight focus:outline-none focus:bg-green focus:border-green-500">
-                                    + Add Role
+                                    + Add Article
                                 </button>
                             </div>
                         </div>
 
                         <div class="-mx-4 sm:-mx-8 px-4 sm:px-8 py-4 overflow-x-auto">
-                            <div class="inline-block min-w-full shadow rounded-lg overflow-hidden">
-                                <table class="min-w-full leading-normal">
+                            <div class="inline-block w-full overflow-x-auto shadow rounded-lg">
+                                <table class="min-w-[1200px] leading-normal">
+
                                     <thead>
                                         <tr>
                                             <th
@@ -192,11 +192,31 @@ watch(() => form.permission, () => {
                                             </th>
                                             <th
                                                 class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                                Name
+                                                title
                                             </th>
                                             <th
                                                 class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                                Permission
+                                                category
+                                            </th>
+                                            <th
+                                                class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                                tag
+                                            </th>
+                                            <th
+                                                class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                                Author
+                                            </th>
+                                            <th
+                                                class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                                Created At
+                                            </th>
+                                            <th
+                                                class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                                Updated At
+                                            </th>
+                                            <th
+                                                class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                                Status
                                             </th>
                                             <th
                                                 class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
@@ -205,42 +225,85 @@ watch(() => form.permission, () => {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr v-for="role in roles.data">
+                                        <tr v-for="article in articles.data">
                                             <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
                                                 <div class="flex items-center">
                                                     <div class="flex-shrink-0 w-10 h-10">
-                                                        {{ role.id }}
+                                                        {{ article.id }}
                                                     </div>
                                                 </div>
                                             </td>
                                             <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
                                                 <p class="text-gray-900 whitespace-no-wrap">
-                                                    {{ role.name }}
+                                                    {{ article.title }}
+                                                </p>
+                                            </td>
+                                            <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                                                <p class="text-gray-900 whitespace-no-wrap"
+                                                    v-for="category in article.categories" :key="category.id">
+                                                    {{ category.name }}
                                                 </p>
                                             </td>
                                             <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm max-w-s">
-                                                <div class="flex flex-wrap gap-1">
-                                                    <template
-                                                        v-for="(permission, index) in role.permissions.slice(0, 5)" :key="permission.id">
-                                                        <span 
+                                                <div class="flex whitespace-nowrap gap-1">
+                                                    <template v-for="(tag, index) in article.tags.slice(0, 5)"
+                                                        :key="tag.id">
+                                                        <span
                                                             class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded">
-                                                            {{ permission.name }}
+                                                            {{ tag.name }}
                                                         </span>
                                                     </template>
-                                                    <span v-if="role.permissions.length > 5"
+                                                    <span v-if="article.tags.length > 5"
                                                         class="bg-gray-100 text-gray-600 text-xs font-medium px-2.5 py-0.5 rounded"
-                                                        :title="role.permissions.map(p => p.name).join(', ')">
-                                                        +{{ role.permissions.length - 5 }} more
+                                                        :title="article.tags.map(t => t.name).join(', ')">
+                                                        +{{ article.tags.length - 5 }} more
                                                     </span>
                                                 </div>
                                             </td>
+                                            <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                                                <p class="text-gray-900 whitespace-no-wrap">
+                                                    {{ article.user.name }}
+                                                </p>
+                                            </td>
+                                            <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                                                <p class="text-gray-900 whitespace-no-wrap">
+                                                    {{ article.created_at }}
+                                                </p>
+                                            </td>
+                                            <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                                                <p class="text-gray-900 whitespace-no-wrap">
+                                                    {{ article.updated_at }}
+                                                </p>
+                                            </td>
+                                            <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                                                <span
+                                                    class="cursor-pointer relative inline-block px-3 py-1 font-semibold leading-tight"
+                                                    :class="{
+                                                        'text-green-900': article.status === 'published',
+                                                        'text-blue-900': article.status === 'draft',
+                                                        'text-gray-900': article.status === 'pending'
+                                                    }">
+                                                    <span aria-hidden class="absolute inset-0 opacity-50 rounded-full"
+                                                        :class="{
+                                                            'bg-green-200': article.status === 'published',
+                                                            'bg-blue-200': article.status === 'draft',
+                                                            'bg-gray-300': article.status === 'pending'
+                                                        }"></span>
+                                                    <span class="relative">{{ article.status }}</span>
+                                                </span>
 
-                                            <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm whitespace-nowrap">
-                                                <Link v-if="can('roles.edit')" :href="route('roles.edit', role.id)"
-                                                    type="button"
+                                            </td>
+                                            <td
+                                                class="px-5 py-5 border-b border-gray-200 bg-white text-sm whitespace-nowrap">
+                                                <Link v-if="can('articles.show')"
+                                                    :href="route('articles.show', article.slug)" type="button"
+                                                    class="mr-3 text-sm bg-green-500 hover:bg-green-700 text-white py-1 px-2 rounded focus:outline-none focus:shadow-outline">
+                                                Show</Link>
+                                                <Link v-if="can('articles.edit')"
+                                                    :href="route('articles.edit', article.id)" type="button"
                                                     class="mr-3 text-sm bg-blue-500 hover:bg-blue-700 text-white py-1 px-2 rounded focus:outline-none focus:shadow-outline">
                                                 Edit</Link>
-                                                <button v-if="can('roles.delete')" @click="deleteRole(role.id)"
+                                                <button v-if="can('articles.delete')" @click="deleteArticle(article.id)"
                                                     type="button"
                                                     class="text-sm bg-red-500 hover:bg-red-700 text-white py-1 px-2 rounded focus:outline-none focus:shadow-outline">Delete</button>
                                             </td>
@@ -251,24 +314,24 @@ watch(() => form.permission, () => {
                                     class="px-5 py-5 bg-white border-t flex flex-col xs:flex-row items-center xs:justify-between          ">
                                     <span class="text-xs xs:text-sm text-gray-900">
                                         Showing
-                                        {{ (roles.current_page - 1) * roles.per_page + 1 }}
+                                        {{ (articles.current_page - 1) * articles.per_page + 1 }}
                                         to
                                         {{
-                                            roles.current_page * roles.per_page > roles.total
-                                                ? roles.total
-                                                : roles.current_page * roles.per_page
+                                            articles.current_page * articles.per_page > articles.total
+                                                ? articles.total
+                                                : articles.current_page * articles.per_page
                                         }}
-                                        of {{ roles.total }} entries
+                                        of {{ articles.total }} entries
                                     </span>
                                     <div class="inline-flex mt-2 xs:mt-0 flex">
-                                        <button @click="router.get(roles.prev_page_url)"
-                                            :disabled="!roles.prev_page_url"
+                                        <button @click="router.get(articles.prev_page_url)"
+                                            :disabled="!articles.prev_page_url"
                                             class="text-sm bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-l">
                                             Prev
                                         </button>
 
-                                        <button @click="router.get(roles.next_page_url)"
-                                            :disabled="!roles.next_page_url"
+                                        <button @click="router.get(articles.next_page_url)"
+                                            :disabled="!articles.next_page_url"
                                             class="text-sm bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-r">
                                             Next
                                         </button>
