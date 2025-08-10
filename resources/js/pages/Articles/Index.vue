@@ -6,6 +6,7 @@ import Swal from 'sweetalert2';
 import { usePage } from '@inertiajs/vue3';
 import { can } from '@/lib/can';
 import { ref, watch } from 'vue';
+import Popover from 'primevue/popover';
 const page = usePage();
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -101,6 +102,23 @@ watch(() => form.search, () => {
 watch(() => form.tag, () => {
     form.get(route('articles.index'), { preserveState: true, replace: true })
 })
+
+// pop over
+
+
+const members = ref([
+    { name: 'Amy Elsner', image: 'amyelsner.png', email: 'amy@email.com', role: 'Owner' },
+    { name: 'Bernardo Dominic', image: 'bernardodominic.png', email: 'bernardo@email.com', role: 'Editor' },
+    { name: 'Ioni Bowcher', image: 'ionibowcher.png', email: 'ioni@email.com', role: 'Viewer' }
+]);
+
+const popoverRefs = ref({});
+
+function showPopover(event, articleId) {
+  if (popoverRefs.value[articleId]) {
+    popoverRefs.value[articleId].show(event);
+  }
+}
 </script>
 
 <template>
@@ -276,22 +294,51 @@ watch(() => form.tag, () => {
                                                 </p>
                                             </td>
                                             <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                                                <span
+                                                <span @mouseover="showPopover($event, article.id)"
                                                     class="cursor-pointer relative inline-block px-3 py-1 font-semibold leading-tight"
                                                     :class="{
                                                         'text-green-900': article.status === 'published',
                                                         'text-blue-900': article.status === 'draft',
-                                                        'text-gray-900': article.status === 'pending'
+                                                        'text-gray-900': article.status === 'pending',
+                                                        'text-orange-500': article.status === 'rejected',
                                                     }">
                                                     <span aria-hidden class="absolute inset-0 opacity-50 rounded-full"
                                                         :class="{
                                                             'bg-green-200': article.status === 'published',
                                                             'bg-blue-200': article.status === 'draft',
-                                                            'bg-gray-300': article.status === 'pending'
+                                                            'bg-gray-300': article.status === 'pending',
+                                                            'bg-orange-200': article.status === 'rejected'
                                                         }"></span>
-                                                    <span class="relative">{{ article.status }}</span>
-                                                </span>
 
+
+                                                     <Popover :ref="el => popoverRefs[article.id] = el">
+                                                        <div class="flex flex-col gap-4 w-[25rem]">
+                                                            <div>
+                                                                <span class="font-medium block mb-2">Team Members</span>
+                                                                <ul class="list-none p-0 m-0 flex flex-col gap-4">
+                                                                    <li v-for="member in members" :key="member.name"
+                                                                        class="flex items-center gap-2">
+                                                                        <img :src="`https://primefaces.org/cdn/primevue/images/avatar/${member.image}`"
+                                                                            style="width: 32px" />
+                                                                        <div>
+                                                                            <span class="font-medium">{{ member.name
+                                                                                }}</span>
+                                                                            <div
+                                                                                class="text-sm text-surface-500 dark:text-surface-400">
+                                                                                {{ member.email }}</div>
+                                                                        </div>
+                                                                        <div
+                                                                            class="flex items-center gap-2 text-surface-500 dark:text-surface-400 ml-auto text-sm">
+                                                                            <span>{{ member.role }}</span>
+                                                                            <i class="pi pi-angle-down"></i>
+                                                                        </div>
+                                                                    </li>
+                                                                </ul>
+                                                            </div>
+                                                        </div>
+                                                    </Popover> <span class="relative">{{ article.status }}</span>
+
+                                                </span>
                                             </td>
                                             <td
                                                 class="px-5 py-5 border-b border-gray-200 bg-white text-sm whitespace-nowrap">
