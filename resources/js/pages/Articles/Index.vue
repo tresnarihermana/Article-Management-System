@@ -7,6 +7,8 @@ import { usePage } from '@inertiajs/vue3';
 import { can } from '@/lib/can';
 import { ref, watch } from 'vue';
 import Popover from 'primevue/popover';
+import Tag from 'primevue/tag';
+import Button from 'primevue/button';
 const page = usePage();
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -115,9 +117,34 @@ const members = ref([
 const popoverRefs = ref({});
 
 function showPopover(event, articleId) {
-  if (popoverRefs.value[articleId]) {
-    popoverRefs.value[articleId].show(event);
-  }
+    if (popoverRefs.value[articleId]) {
+        popoverRefs.value[articleId].show(event);
+    }
+}
+function hidePopover(event, articleId) {
+    if (popoverRefs.value[articleId]) {
+        popoverRefs.value[articleId].hide(event);
+    }
+}
+
+
+const getSeverity = (articles) => {
+    switch (articles.status) {
+        case 'published':
+            return 'success';
+
+        case 'pending':
+            return 'secondary';
+
+        case 'draft':
+            return 'info';
+
+        case 'rejected':
+            return 'danger';
+
+        default:
+            return 'secondary';
+    }
 }
 </script>
 
@@ -294,7 +321,7 @@ function showPopover(event, articleId) {
                                                 </p>
                                             </td>
                                             <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                                                <span @mouseover="showPopover($event, article.id)"
+                                                <span @click="showPopover($event, article.id)"
                                                     class="cursor-pointer relative inline-block px-3 py-1 font-semibold leading-tight"
                                                     :class="{
                                                         'text-green-900': article.status === 'published',
@@ -311,29 +338,56 @@ function showPopover(event, articleId) {
                                                         }"></span>
 
 
-                                                     <Popover :ref="el => popoverRefs[article.id] = el">
-                                                        <div class="flex flex-col gap-4 w-[25rem]">
-                                                            <div>
-                                                                <span class="font-medium block mb-2">Team Members</span>
-                                                                <ul class="list-none p-0 m-0 flex flex-col gap-4">
-                                                                    <li v-for="member in members" :key="member.name"
-                                                                        class="flex items-center gap-2">
-                                                                        <img :src="`https://primefaces.org/cdn/primevue/images/avatar/${member.image}`"
-                                                                            style="width: 32px" />
-                                                                        <div>
-                                                                            <span class="font-medium">{{ member.name
-                                                                                }}</span>
-                                                                            <div
-                                                                                class="text-sm text-surface-500 dark:text-surface-400">
-                                                                                {{ member.email }}</div>
+                                                    <Popover :ref="el => popoverRefs[article.id] = el" @mouseleave="hidePopover($event, article.id)">
+                                                        <div  class="rounded flex flex-col">
+                                                            <div class="flex justify-center rounded">
+                                                                <div class="relative mx-auto">
+                                                                    <img class="rounded w-44 sm:w-64"
+                                                                        :src="article.cover ? `/storage/${article.cover}` : `https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/No-Image-Placeholder.svg/1665px-No-Image-Placeholder.svg.png`"
+                                                                        :alt="article.name" />
+                                                                    <Tag :value="article.status"
+                                                                        :severity="getSeverity(article)"
+                                                                        class="absolute dark:!bg-surface-900"
+                                                                        style="left: 4px; top: 4px"
+                                                                        rounded
+                                                                        ></Tag>
+                                                                </div>
+                                                            </div>
+                                                            <div class="pt-4">
+                                                                <div
+                                                                    class="flex flex-row justify-between items-start gap-2 mb-4">
+                                                                    <div>
+                                                                        <span v-for="category in article.categories"
+                                                                            class="font-medium text-surface-500 dark:text-surface-400 text-sm">{{
+                                                                             category.name}}</span>
+                                                                        <div class="text-lg font-medium mt-1">{{
+                                                                            article.title }}</div>
+                                                                        <div class="text-lg font-small mt-1" v-if="article.rejected_message">
+                                                                        <span class="font-semibold font-small text-red-500"> Rejected Reasons:</span>
+                                                                        <p class="text-orange-500">{{article.rejected_message }}</p>
+                                                                    </div>
+                                                                    </div>
+                                                                    <div class="bg-surface-100 p-1"
+                                                                        style="border-radius: 30px">
+                                                                        <div class="bg-surface-0 flex items-center gap-2 justify-center py-1 px-2"
+                                                                            style="border-radius: 30px; box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.04), 0px 1px 2px 0px rgba(0, 0, 0, 0.06)">
+                                                                            <span
+                                                                                class="text-surface-900 font-medium text-sm">{{
+                                                                                article.user.name }}</span>
+                                                                        
                                                                         </div>
-                                                                        <div
-                                                                            class="flex items-center gap-2 text-surface-500 dark:text-surface-400 ml-auto text-sm">
-                                                                            <span>{{ member.role }}</span>
-                                                                            <i class="pi pi-angle-down"></i>
-                                                                        </div>
-                                                                    </li>
-                                                                </ul>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="flex gap-2">
+                                                                    <Button icon="pi pi-eye" as="a"
+                                                                        label="Preview"
+                                                                        severity="secondary"
+                                                                        class="flex-auto whitespace-nowrap"
+                                                                        :href="route('articles.show', article.slug)"></Button>
+                                                                    <Button icon="pi pi-pencil" variant="outlined" as="a"
+                                                                    severity="info"
+                                                                        :href="route('articles.edit', article.id)"></Button>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </Popover> <span class="relative">{{ article.status }}</span>
