@@ -140,7 +140,7 @@ const getSeverity = (articles) => {
             return 'info';
 
         case 'rejected':
-            return 'danger';
+            return 'warn';
 
         default:
             return 'secondary';
@@ -226,8 +226,8 @@ const getSeverity = (articles) => {
                         </div>
 
                         <div class="-mx-4 sm:-mx-8 px-4 sm:px-8 py-4 overflow-x-auto">
-                            <div class="inline-block w-full overflow-x-auto shadow rounded-lg">
-                                <table class="min-w-[1200px] leading-normal">
+                            <div class="inline-block min-w-full overflow-x-auto shadow rounded-lg overflow-hidden">
+                                <table class="min-w-full leading-normal">
 
                                     <thead>
                                         <tr>
@@ -412,7 +412,7 @@ const getSeverity = (articles) => {
                                     </tbody>
                                 </table>
                                 <div
-                                    class="px-5 py-5 bg-white border-t flex flex-col xs:flex-row items-center xs:justify-between          ">
+                                    class="px-5 py-5 border-b bg-white border-t flex flex-col xs:flex-row items-center xs:justify-between          ">
                                     <span class="text-xs xs:text-sm text-gray-900">
                                         Showing
                                         {{ (articles.current_page - 1) * articles.per_page + 1 }}
