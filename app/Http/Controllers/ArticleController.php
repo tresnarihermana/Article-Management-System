@@ -46,6 +46,7 @@ class ArticleController extends Controller
                     'status' => $article->status,
                     'slug' => $article->slug,
                     'rejected_message' => $article->rejected_message,
+                    'cover' => $article->cover,
                 ];
             });
         return Inertia::render('Articles/Index', [
