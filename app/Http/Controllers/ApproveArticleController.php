@@ -10,7 +10,12 @@ class ApproveArticleController extends Controller
     public function approve(Article $article): RedirectResponse
     {
     //  dd($article->getAttribute('status'));
-        $article->update(['status' => 'published', 'published_at' => now()]);
+        $article->update([
+            'status' => 'published', 
+            'rejected_message' => null,
+            'published_at' => now()
+        
+        ]);
         return back()->with('success', 'Article approved!');
     }
 
@@ -21,7 +26,7 @@ class ApproveArticleController extends Controller
             'rejected_message' => 'required|string|max:255',
         ]);
         $article = Article::findOrFail($id);
-        $article->update(['published_at' => null, 'status' => 'rejected'],$request->only(['rejected_message']));
+        $article->update(['published_at' => null, 'status' => 'rejected', 'rejected_message' => $request->rejected_message]);
         return back()->with('success', 'Article rejected!');
     }
 }
