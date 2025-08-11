@@ -45,4 +45,15 @@ class MainPageController extends Controller
             "article" => $articledata,
         ]);
     }
+    public function articles()
+    {
+       $article = Article::with('tags', 'user', 'categories')
+            ->where('status', 'published')
+            ->latest()
+            ->get();
+        return Inertia::render('Main/Articles', [
+            "articles" => $article,
+
+        ]);
+    }
 }

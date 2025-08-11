@@ -1,5 +1,14 @@
 # Change Logs
 
+## [Article Management System] - 10-08-2025
+
+## Controllers & Models Initialization
+
++ initialize ArticleController, CategoryController, dan TagController
++ initialize model Article, Category, dan Tag
++  initialize Factory untuk Article, Category, dan Tag
++ initialize migration untuk tabel articles, categories, tags, dan pivot table
+
 ## [Roles and Permission] - 03-08-2025
 
 ## *Depedency dan semacamnya*

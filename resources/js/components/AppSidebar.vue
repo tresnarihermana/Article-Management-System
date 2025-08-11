@@ -14,36 +14,40 @@ const unfilteredMainNavItems: NavItem[] = [
         title: 'Dashboard',
         href: '/dashboard',
         icon: LayoutGrid,
-       
+
     },
     {
         title: 'Users',
-        href: '/users',
+        href: '/manage/users',
         icon: Users,
-        permission : 'users.view',
-        
+        permission: 'users.view',
+
     },
     {
         title: 'Roles',
-        href: '/roles',
+        href: '/manage/roles',
         icon: UserRoundCog,
-        permission : 'roles.view',
+        children: [
+            { title: "Users", href: "users.index" },
+            { title: "Roles", href: "roles.index" },
+            { title: "Permissions", href: "permissions.index" },
+        ]
     },
     {
         title: 'Permissions',
-        href: '/permissions',
+        href: '/manage/permissions',
         icon: ShieldCheck,
-        permission : 'permissions.view',
+        permission: 'permissions.view',
     },
     {
         title: 'Articles',
-        href: '/articles',
+        href: '/manage/articles',
         icon: NotebookPen,
         // permission : 'article.view',
     },
     {
         title: 'Approve Article',
-        href: '/approve-artile',
+        href: '/manage/approve-artile',
         icon: Newspaper,
         // permission : 'approve-article.view',
     },
@@ -74,7 +78,7 @@ const footerNavItems: NavItem[] = [
                 <SidebarMenuItem>
                     <SidebarMenuButton size="lg" as-child>
                         <Link :href="route('dashboard')">
-                            <AppLogo />
+                        <AppLogo />
                         </Link>
                     </SidebarMenuButton>
                 </SidebarMenuItem>

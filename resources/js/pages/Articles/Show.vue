@@ -30,7 +30,7 @@ const approveArticle = (id: number) => {
     Swal.fire({
 
         title: 'Are you sure?',
-        text: "You won't be able to revert this!",
+        text: "Anda yakin ingin menyutujui Article ini?",
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#3085d6',

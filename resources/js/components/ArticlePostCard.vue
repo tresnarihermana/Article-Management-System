@@ -1,10 +1,8 @@
  <script setup lang="ts">
-import { useInitials } from '@/composables/useInitials';
-import ArticlePostCard from './ArticlePostCard.vue';
+ import { getInitials, useInitials } from '@/composables/useInitials';
 const props = defineProps({
-    articles: Object,
+    articles:Object,
 })
-const {getInitials} = useInitials();
 </script>
  
  <style>
@@ -157,17 +155,27 @@ const {getInitials} = useInitials();
         }
     </style>
 <template>
-    <section class="blog-section">
-        <div class="blog-header">
-            <h2 class="blog-title">Latest Articles</h2>
-            <p class="blog-subtitle">Discover our latest insights, stories, and updates to help you stay informed and inspired.</p>
-        </div>
-        
-        <ArticlePostCard :articles="articles">
-
-        </ArticlePostCard>
-        <div class="view-all-container">
-            <a href="#" class="view-all-btn">View All Articles</a>
-        </div>
-    </section>
+        <div class="blog-posts">
+            <article class="blog-card" v-for="article in articles" :key="article.id">
+                <a :href="route('article.show', article.slug)">
+                <img :src="article.cover ? `/storage/${article.cover}` : `https://images.unsplash.com/photo-1518770660439-4636190af475?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80`" 
+                     :alt="article.slug" 
+                     class="blog-card-image">
+                <div class="blog-card-content">
+                    <span class="blog-card-category mx-0.5" v-for="categories in article.categories">{{ categories.name }}</span>
+                    <h3 class="blog-card-title">{{ article.title }}</h3>
+                    <div v-html="article.excerpt.slice(0, 150) + (article.excerpt.length > 150 ? '...' : '')"></div>
+                    <div class="blog-card-meta">
+                        <span class="blog-card-date">June 15, 2023</span>
+                        <span class="blog-card-author">
+                            <img :src="article.user.avatar ? `/storage/${article.user.avatar}` : 'https://ui-avatars.com/api/?name=' + getInitials(article.user.username) + '&background=random'" 
+                                 alt="user avatar" 
+                                 class="author-avatar">
+                            {{ article.user.name }}
+                        </span>
+                    </div>
+                </div>
+         </a>
+            </article>
+           </div>
 </template>
