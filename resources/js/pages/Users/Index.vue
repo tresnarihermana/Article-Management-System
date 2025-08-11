@@ -130,7 +130,7 @@ function toggleStatus(id) {
     <AppLayout :breadcrumbs="breadcrumbs">
         <!-- component -->
 
-        <body class="antialiased font-sans bg-gray-200">
+        <body class="antialiased font-sans bg-gray-200 dark:bg-zinc-950">
             <div class="container mx-auto px-4 sm:px-8">
                 <div class="py-8">
                     <div>
@@ -140,7 +140,7 @@ function toggleStatus(id) {
                         <div class="flex flex-row mb-1 sm:mb-0">
                             <div class="relative">
                                 <select v-model="perPage"
-                                    class="appearance-none h-full rounded-l border block appearance-none w-full bg-white border-gray-400 text-gray-700 py-2 px-4 pr-8 leading-tight focus:outline-none focus:bg-white focus:border-gray-500">
+                                    class="appearance-none h-full rounded-l border block appearance-none w-full bg-white border-gray-400 text-gray-700 py-2 px-4 pr-8 leading-tight focus:outline-none focus:bg-white focus:border-gray-500 dark:bg-gray-800 dark:border-gray-800">
                                     <option :value="5">5</option>
                                     <option :value="10">10</option>
                                     <option :value="20">20</option>
@@ -156,7 +156,7 @@ function toggleStatus(id) {
                             </div>
                             <div class="relative">
                                 <select v-model="form.role"
-                                    class="appearance-none h-full rounded-r border-t sm:rounded-r-none sm:border-r-0 border-r border-b block appearance-none w-full bg-white border-gray-400 text-gray-700 py-2 px-4 pr-8 leading-tight focus:outline-none focus:border-l focus:border-r focus:bg-white focus:border-gray-500">
+                                    class="appearance-none h-full rounded-r border-t sm:rounded-r-none sm:border-r-0 border-r border-b block appearance-none w-full bg-white border-gray-400 text-gray-700 py-2 px-4 pr-8 leading-tight focus:outline-none focus:border-l focus:border-r focus:bg-white focus:border-gray-500  dark:bg-gray-800 dark:border-gray-800">
                                     <option :value="null">All</option>
                                     <option v-for="role in roles" :value="role.name">{{ role.name }}</option>
                                 </select>
@@ -179,7 +179,7 @@ function toggleStatus(id) {
                                 </svg>
                             </span>
                             <input placeholder="Search" v-model="form.search"
-                                class="appearance-none rounded-r rounded-l sm:rounded-l-none border border-gray-400 border-b block pl-8 pr-6 py-2 w-full bg-white text-sm placeholder-gray-400 text-gray-700 focus:bg-white focus:placeholder-gray-600 focus:text-gray-700 focus:outline-none" />
+                                class="appearance-none rounded-r rounded-l sm:rounded-l-none border border-gray-400 border-b block pl-8 pr-6 py-2 w-full bg-white text-sm placeholder-gray-400 text-gray-700 focus:bg-white focus:placeholder-gray-600 focus:text-gray-700 focus:outline-none  dark:bg-gray-800 dark:border-gray-800" />
                         </div>
                         <div class="relative mx-2">
                             <button v-if="can('users.create')" @click="router.get(route('users.create'))" type="button"
@@ -195,34 +195,34 @@ function toggleStatus(id) {
                                 <thead>
                                     <tr>
                                         <th
-                                            class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                            class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider  dark:bg-gray-900 dark:border-gray-900 dark:text-gray-50">
                                             Username
                                         </th>
                                         <th
-                                            class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                            class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider dark:bg-gray-900 dark:border-gray-900 dark:text-gray-50">
                                             Fullname
                                         </th>
                                         <th
-                                            class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                            class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider dark:bg-gray-900 dark:border-gray-900 dark:text-gray-50">
                                             Role
                                         </th>
                                         <th
-                                            class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                            class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider dark:bg-gray-900 dark:border-gray-900 dark:text-gray-50">
                                             Email Address
                                         </th>
                                         <th
-                                            class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                            class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider dark:bg-gray-900 dark:border-gray-900 dark:text-gray-50">
                                             Status
                                         </th>
                                         <th
-                                            class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                            class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider dark:bg-gray-900 dark:border-gray-900 dark:text-gray-50">
                                             Action
                                         </th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr v-for="user in users.data">
-                                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm dark:bg-gray-800 dark:border-gray-900 ">
                                             <div class="flex items-center">
                                                 <div class="flex-shrink-0 w-10 h-10">
                                                     <img class="w-full h-full rounded-full"
@@ -230,18 +230,18 @@ function toggleStatus(id) {
                                                         :alt="user.name + `avatar`" alt="" />
                                                 </div>
                                                 <div class="ml-3">
-                                                    <p class="text-gray-900 whitespace-no-wrap">
+                                                    <p class="text-gray-900 whitespace-no-wrap dark:text-gray-50">
                                                         {{ user.name }}
                                                     </p>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                                            <p class="text-gray-900 whitespace-no-wrap">
+                                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm  dark:bg-gray-800 dark:border-gray-900 ">
+                                            <p class="text-gray-900 whitespace-no-wrap dark:text-gray-50">
                                                 {{ user.username }}
                                             </p>
                                         </td>
-                                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm whitespace-nowrap">
+                                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm whitespace-nowrap dark:text-gray-50  dark:bg-gray-800 dark:border-gray-900 ">
                                             <span v-for="role in user.roles"
                                                 class="relative inline-block px-3 py-1 font-semibold text-green-900 leading-tight">
                                                 <span aria-hidden
@@ -249,12 +249,12 @@ function toggleStatus(id) {
                                                 <span class="relative">{{ role.name }}</span>
                                             </span>
                                         </td>
-                                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                                            <p class="text-gray-900 whitespace-no-wrap">
+                                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm  dark:bg-gray-800 dark:border-gray-900 ">
+                                            <p class="text-gray-900 whitespace-no-wrap dark:text-gray-50">
                                                 {{ user.email }}
                                             </p>
                                         </td>
-                                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm whitespace-nowrap">
+                                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm whitespace-nowrap  dark:bg-gray-800 dark:border-gray-900 ">
                                             <span v-if="can('users.toggleStatus')" @click="toggleStatus(user.id)"
                                                 class="cursor-pointer relative inline-block px-3 py-1 font-semibold text-green-900 leading-tight"
                                                 :class="user.is_active ? 'text-green-900' : 'text-red-900'">
@@ -272,7 +272,7 @@ function toggleStatus(id) {
                                                 }}</span>
                                             </span>
                                         </td>
-                                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm whitespace-nowrap">
+                                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm whitespace-nowrap  dark:bg-gray-800 dark:border-gray-900 ">
                                             <Link v-if="can('users.show')" :href="route('users.show', user.id)"
                                                 type="button"
                                                 class="mr-3 text-sm bg-green-500 hover:bg-green-700 text-white py-1 px-2 rounded focus:outline-none focus:shadow-outline">
@@ -289,8 +289,8 @@ function toggleStatus(id) {
                                 </tbody>
                             </table>
                             <div
-                                class="px-5 py-5 bg-white border-t flex flex-col xs:flex-row items-center xs:justify-between          ">
-                                <span class="text-xs xs:text-sm text-gray-900">
+                                class="px-5 py-5 bg-white border-t flex flex-col xs:flex-row items-center xs:justify-between dark:bg-gray-800 dark:border-gray-900 ">
+                                <span class="text-xs xs:text-sm text-gray-900 dark:text-gray-50">
                                     Showing
                                     {{ (users.current_page - 1) * users.per_page + 1 }}
                                     to
