@@ -27,11 +27,6 @@ const unfilteredMainNavItems: NavItem[] = [
         title: 'Roles',
         href: '/manage/roles',
         icon: UserRoundCog,
-        children: [
-            { title: "Users", href: "users.index" },
-            { title: "Roles", href: "roles.index" },
-            { title: "Permissions", href: "permissions.index" },
-        ]
     },
     {
         title: 'Permissions',
