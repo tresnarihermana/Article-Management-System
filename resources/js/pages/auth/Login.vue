@@ -64,7 +64,7 @@ if (session) {
                 <div class="grid gap-2">
                     <Label for="login">Username atau Email</Label>
                     <InputText id="login" type="text" required autofocus :tabindex="1"
-                        v-model="form.login" placeholder="Username / Email" />
+                        v-model="form.login" placeholder="Username / Email"/>
                     <InputError :message="form.errors.login" />
                 </div>
 
@@ -88,14 +88,14 @@ if (session) {
                     </Label>
                 </div>
 
-                <Button type="submit" class="mt-4 w-full" :tabindex="4" :disabled="form.processing">
+                <Button type="submit" class="mt-4 w-full dark:bg-gray-300 dark:hover:bg-gray-400" :tabindex="4" :disabled="form.processing">
                     <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin " />
                     Log in
                 </Button>
                 <div class="relative">
                     <div class="text-center mb-2 text-base text-sm text-gray-900 dark:text-white">OR</div>
                     <a href="/auth/google"
-                        class="flex items-center justify-center gap-2 rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100">
+                        class="flex items-center justify-center gap-2 rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100 dark:text-gray-200 dark:hover:text-gray-700">
                         <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" class="h-5 w-5" />
                         Continue with Google
                     </a>
