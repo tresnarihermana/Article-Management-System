@@ -1,173 +1,19 @@
- <script setup lang="ts">
+<script setup lang="ts">
 import { useInitials } from '@/composables/useInitials';
 import ArticlePostCard from './ArticlePostCard.vue';
+import { computed } from 'vue';
 const props = defineProps({
     articles: Object,
 })
-const {getInitials} = useInitials();
+const { getInitials } = useInitials();
+const pinnedArticles = computed(() => {
+    return props.articles.filter(a => a.is_pinned)
+})
+const mainArticle = computed(() => pinnedArticles.value[0])
+const sideArticles = computed(() => pinnedArticles.value.slice(1))
 </script>
- 
- <style>
-        /* Main Blog Container */
-        .blog-section {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 4rem 2rem;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        .blog-header {
-            text-align: center;
-            margin-bottom: 3rem;
-        }
-        
-        .blog-title {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: #2d3748;
-            margin-bottom: 1rem;
-        }
-        
-        .blog-subtitle {
-            font-size: 1.2rem;
-            color: #4a5568;
-            max-width: 700px;
-            margin: 0 auto;
-            line-height: 1.6;
-        }
-        
-        /* Blog Posts Grid */
-        .blog-posts {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 2rem;
-        }
-        
-        /* Individual Blog Post Card */
-        .blog-card {
-            background: white;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        
-        .blog-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
-        }
-        
-        .blog-card-image {
-            width: 100%;
-            height: 200px;
-            object-fit: cover;
-        }
-        
-        .blog-card-content {
-            padding: 1.5rem;
-        }
-        
-        .blog-card-category {
-            display: inline-block;
-            background: #4299e1;
-            color: white;
-            padding: 0.25rem 0.75rem;
-            border-radius: 50px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            margin-bottom: 0.75rem;
-        }
-        
-        .blog-card-title {
-            font-size: 1.4rem;
-            font-weight: 700;
-            color: #2d3748;
-            margin-bottom: 0.75rem;
-            line-height: 1.3;
-        }
-        
-        .blog-card-excerpt {
-            color: #4a5568;
-            margin-bottom: 1.25rem;
-            line-height: 1.6;
-        }
-        
-        .blog-card-meta {
-            display: flex;
-            align-items: center;
-            font-size: 0.9rem;
-            color: #718096;
-        }
-        
-        .blog-card-date {
-            margin-right: 1rem;
-        }
-        
-        .blog-card-author {
-            display: flex;
-            align-items: center;
-        }
-        
-        .author-avatar {
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            margin-right: 0.5rem;
-            object-fit: cover;
-        }
-        
-        /* View All Button */
-        .view-all-container {
-            text-align: center;
-            margin-top: 3rem;
-        }
-        
-        .view-all-btn {
-            display: inline-block;
-            background: #4299e1;
-            color: white;
-            padding: 0.75rem 1.5rem;
-            border-radius: 50px;
-            font-weight: 600;
-            text-decoration: none;
-            transition: background 0.3s ease;
-        }
-        
-        .view-all-btn:hover {
-            background: #3182ce;
-        }
-        
-        /* Responsive Adjustments */
-        @media (max-width: 768px) {
-            .blog-section {
-                padding: 3rem 1.5rem;
-            }
-            
-            .blog-title {
-                font-size: 2rem;
-            }
-            
-            .blog-subtitle {
-                font-size: 1.1rem;
-            }
-            
-            .blog-posts {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
-<template>
-    <section class="blog-section">
-        <div class="blog-header">
-            <h2 class="blog-title">Latest Articles</h2>
-            <p class="blog-subtitle">Discover our latest insights, stories, and updates to help you stay informed and inspired.</p>
-        </div>
-        
-        <ArticlePostCard :articles="articles">
 
-        </ArticlePostCard>
-        <div class="view-all-container">
-            <a href="#" class="view-all-btn">View All Articles</a>
-        </div>
-    </section>
+<template>
+<ArticlePostCard :articles="articles"/>
+
 </template>
