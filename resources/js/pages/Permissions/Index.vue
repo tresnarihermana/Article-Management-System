@@ -12,7 +12,7 @@ const page = usePage();
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Permissions',
-        href: '/permissions',
+        href: route('permissions.index'),
     },
 ];
 const props = defineProps<{

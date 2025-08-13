@@ -9,6 +9,10 @@ import Checkbox from 'primevue/checkbox';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
+        title: 'Permissions',
+        href: route('permissions.index'),
+    },
+    {
         title: 'Permission Create',
         href: '/permissions',
     },
@@ -55,25 +59,25 @@ const submit = () => {
 
                 <div class="my-3">
                     <!-- Form title -->
-                    <h1 class="text-center text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Create New Permission
+                    <h1 class="text-center text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Create New
+                        Permission
                     </h1>
                     <form @submit.prevent="submit">
 
                         <!-- Input field for 'Name' -->
                         <div class="grid gap-2">
                             <Label for="name">Permission name</Label>
-                            <InputText id="name" type="text" required autofocus :tabindex="1" autocomplete="permission_name"
-                                v-model="form.name" placeholder="Enter Permission Name" />
+                            <InputText id="name" type="text" required autofocus :tabindex="1"
+                                autocomplete="permission_name" v-model="form.name"
+                                placeholder="Enter Permission Name" />
                             <InputError :message="form.errors.name" />
                         </div>
                         <div class="grid gap-2">
                             <Label for="role">Add to Role</Label>
                             <div class="flex flex-col gap-2">
                                 <div class="flex flex-wrap gap-4">
-                                    <div v-for="role in roles" :key="role.id"
-                                        class="flex items-center gap-2">
-                                        <Checkbox v-model="form.roles" :value="role.id"
-                                            :inputId="'role-' + role.id" />
+                                    <div v-for="role in roles" :key="role.id" class="flex items-center gap-2">
+                                        <Checkbox v-model="form.roles" :value="role.id" :inputId="'role-' + role.id" />
                                         <label :for="'role-' + role.id">{{ role.name }}</label>
                                     </div>
                                 </div>
