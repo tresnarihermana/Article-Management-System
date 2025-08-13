@@ -13,7 +13,7 @@ const page = usePage();
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Articles',
-        href: '/articles',
+        href: route('articles.index'),
     },
     {
         title: 'Show Article',
