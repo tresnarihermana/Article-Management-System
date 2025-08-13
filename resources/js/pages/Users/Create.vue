@@ -11,6 +11,10 @@ import Password from 'primevue/password';
 import Checkbox from 'primevue/checkbox';
 const breadcrumbs: BreadcrumbItem[] = [
     {
+        title: 'Users',
+        href: route('users.index'),
+    },
+    {
         title: 'User Create',
         href: '/users',
     },

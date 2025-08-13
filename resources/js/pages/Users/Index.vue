@@ -14,7 +14,7 @@ const page = usePage();
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Users',
-        href: '/users',
+        href: route('users.index'),
     },
 ];
 const props = defineProps<{
