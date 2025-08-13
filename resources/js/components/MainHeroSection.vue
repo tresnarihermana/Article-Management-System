@@ -1,8 +1,19 @@
 <script setup lang="ts">
 
 </script>
+<style>
+.dark .heroSection{
+    background-image: url(/public/bg.jpg);
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover, auto;
+    
+}
+
+
+</style>
 <template>
- <div class="flex flex-wrap py-15">
+ <div class="flex flex-wrap py-15 heroSection">
     <div class="w-full sm:w-8/12 mb-10 ">
       <div class="container mx-auto h-full sm:p-10 ">
         <header class="container px-4 lg:flex mt-10 items-center h-full lg:mt-0">
