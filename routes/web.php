@@ -14,12 +14,14 @@ use App\Http\Requests\Auth\LoginRequest;
 use Laravel\Socialite\Facades\Socialite;
 use App\Http\Controllers\ArticleController;
 use Spatie\Permission\Contracts\Permission;
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\MainPageController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Middleware\EnsureProfileComplete;
 use App\Http\Controllers\ManageArticleController;
 use App\Http\Controllers\ApproveArticleController;
 use App\Http\Controllers\Settings\ProfileController;
+use App\Http\Controllers\TagController;
 use Illuminate\Session\Middleware\AuthenticateSession;
 
 // Main Page
@@ -34,6 +36,10 @@ Route::group([],function () { // ini main page
     
     Route::get('/articles', [MainPageController::class, 'articles'])
         ->name('articles.list');
+
+    Route::get('/categories', [MainPageController::class, 'categories'])->name('categories.list');
+      Route::get('/category/{slug}', [MainPageController::class, 'category'])
+        ->name('category.show');
 
 });    
 
@@ -51,7 +57,7 @@ Route::get('/clear-message', function () {
 });
 Route::get('/auth/google/callback', function () {
     $googleUser = Socialite::driver('google')->stateless()->user();
-    $user = User::firstOrCreate(
+    $user = User::firstOrCrfeate(
         [
             'email' => $googleUser->getEmail(),
         ]
@@ -154,25 +160,59 @@ Route::middleware(['auth', 'web', 'verified'])->group(function () {
         ->only(['show'])
         ->middleware("permission:articles.show");
 
-    // // Manage Article
-    // Route::resource("manage/articles", ManageArticleController::class)
-    //     ->only(['edit', 'update'])
-    //     ->middleware("permission:articles.edit");
-    // Route::resource("manage/articles", ManageArticleController::class)
-    //     ->only(['create', 'store'])
-    //     ->middleware("permission:articles.create");
+    // Manage Article
+    Route::resource("manage/approve", ManageArticleController::class)
+        ->only(['edit', 'update'])
+        ->middleware("permission:approve.edit");
+    Route::resource("manage/approve", ManageArticleController::class)
+        ->only(['create', 'store'])
+        ->middleware("permission:approve.create");
 
-    // Route::resource("manage/articles", ManageArticleController::class)
-    //     ->only(['destroy'])
-    //     ->middleware("permission:articles.delete");
+    Route::resource("manage/approve", ManageArticleController::class)
+        ->only(['destroy'])
+        ->middleware("permission:approve.delete");
 
-    // Route::resource("manage/articles", ManageArticleController::class)
-    //     ->only(['index'])
-    //     ->middleware("permission:articles.create|articles.edit|articles.delete|articles.view");
+    Route::resource("manage/approve", ManageArticleController::class)
+        ->only(['index'])
+        ->middleware("permission:approve.create|approve.edit|approve.delete|approve.view");
 
-    // Route::resource("manage/articles", ManageArticleController::class)
-    //     ->only(['show'])
-    //     ->middleware("permission:articles.show");
+    Route::resource("manage/approve", ManageArticleController::class)
+        ->only(['show'])
+        ->middleware("permission:approve.show");
+
+    // Article Categories
+    Route::resource("manage/categories", CategoryController::class)
+        ->only(['create', 'store'])
+        ->middleware("permission:categories.create");
+    Route::resource("manage/categories", CategoryController::class)
+        ->only(['edit', 'update'])
+        ->middleware("permission:categories.edit");
+    Route::resource("manage/categories", CategoryController::class)
+        ->only(['destroy'])
+        ->middleware("permission:categories.delete");
+    Route::resource("manage/categories", CategoryController::class)
+        ->only(['index'])
+        ->middleware("permission:categories.create|categories.edit|categories.delete|categories.view");
+    Route::resource("manage/categories", CategoryController::class)
+        ->only(['show'])
+        ->middleware("permission:categories.show");
+
+    // Article Tags
+    Route::resource("manage/tags", TagController::class)
+        ->only(['create', 'store'])
+        ->middleware("permission:tags.create");
+    Route::resource("manage/tags", TagController::class)
+        ->only(['edit', 'update'])
+        ->middleware("permission:tags.edit");
+    Route::resource("manage/tags", TagController::class)
+        ->only(['destroy'])
+        ->middleware("permission:tags.delete");
+    Route::resource("manage/tags", TagController::class)
+        ->only(['index'])
+        ->middleware("permission:tags.create|tags.edit|tags.delete|tags.view");
+    Route::resource("manage/tags", TagController::class)
+        ->only(['show'])
+        ->middleware("permission:tags.show");
 
     Route::post('articles/Edit', [ArticleController::class, 'uploadCover'])
         ->name('articles.uploadCover');
@@ -180,10 +220,6 @@ Route::middleware(['auth', 'web', 'verified'])->group(function () {
         ->name('approve')->middleware('permission:articles.approve');
     Route::put('articles/{article}/reject', [ApproveArticleController::class, 'reject'])
         ->name('reject')->middleware('permission:articles.approve');
-});
-
-Route::get('testpopover', function (){
-    return Inertia::render('TestPopover');
 });
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';
