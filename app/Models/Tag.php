@@ -13,4 +13,9 @@ class Tag extends Model
     {
         return $this->belongsToMany(Article::class, 'article_tag')->withTimestamps();
     }
+    protected $fillable = [
+        'tag_id',
+        'name',
+        'slug'
+    ];
 }
