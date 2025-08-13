@@ -12,7 +12,7 @@ const page = usePage();
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Roles',
-        href: '/roles',
+        href: route('roles.index'),
     },
 ];
 const props = defineProps<{

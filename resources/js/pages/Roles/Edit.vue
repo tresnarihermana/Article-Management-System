@@ -10,18 +10,22 @@ import CheckboxGroup from 'primevue/checkboxgroup';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
+        title: 'Roles',
+        href: route('roles.index'),
+    },
+    {
         title: 'Role Edit',
         href: '/roles',
     },
 ];
 const props = defineProps({
-    "role" : Object,
+    "role": Object,
     "permissions": Array,
     "rolePermissions": Array
 });
 const form = useForm({
     name: props.role.name,
-    permissions: props.rolePermissions||[],
+    permissions: props.rolePermissions || [],
 })
 
 const submit = () => {
@@ -57,7 +61,8 @@ const submit = () => {
 
                 <div class="my-3">
                     <!-- Form title -->
-                    <h1 class="text-center text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Edit Existed Role
+                    <h1 class="text-center text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Edit Existed
+                        Role
                     </h1>
                     <form @submit.prevent="submit">
 
@@ -79,8 +84,9 @@ const submit = () => {
                                         <label :for="'perm-' + permission.name">{{ permission.name }}</label>
                                     </div>
                                 </div>
-                                <Message v-if="form.errors.permissions" severity="error" size="small" variant="simple">{{
-                                    form.errors?.permissions }}</Message>
+                                <Message v-if="form.errors.permissions" severity="error" size="small" variant="simple">
+                                    {{
+                                        form.errors?.permissions }}</Message>
                             </div>
                         </div>
                         <!-- Save button -->
