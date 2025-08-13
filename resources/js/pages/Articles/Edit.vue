@@ -10,21 +10,21 @@ import Multiselect from 'vue-multiselect';
 import 'vue-multiselect/dist/vue-multiselect.min.css'
 import axios from 'axios';
 import InputError from '@/components/InputError.vue';
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Article',
-        href: '/articles',
-    },
-    {
-        title: 'Edit Article',
-        href: '/edit',
-    },
-];
 const props = defineProps({
     article: Object,
     categories: Object,
     tags: Array,
 })
+const breadcrumbs: BreadcrumbItem[] = [
+    {
+        title: 'Article',
+        href: route('articles.index'),
+    },
+    {
+        title: 'Edit Article',
+        href: route('articles.edit', props.article.id),
+    },
+];
 const form = useForm({
     title: props.article?.title,
     category_id: props.article?.categories,
@@ -90,20 +90,51 @@ const onDragOver = () => {
 }
 
 const processFile = (file: File) => {
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif']
-    if (!allowedTypes.includes(file.type)) {
-        alert('Only JPG, PNG, and GIF files are allowed.')
-        return
+  const allowedTypes = ['image/jpeg', 'image/png', 'image/gif']
+  if (!allowedTypes.includes(file.type)) {
+    alert('Only JPG, PNG, and GIF files are allowed.')
+    return
+  }
+
+  if (file.size > 10 * 1024 * 1024) {
+    alert('File size must be less than 10MB.')
+    return
+  }
+
+  const img = new Image()
+  img.src = URL.createObjectURL(file)
+
+  img.onload = () => {
+    const targetRatio = 16 / 9
+    const canvas = document.createElement('canvas')
+    let sx, sy, sw, sh
+
+    if (img.width / img.height > targetRatio) {
+      sh = img.height
+      sw = sh * targetRatio
+      sx = (img.width - sw) / 2
+      sy = 0
+    } else {
+      sw = img.width
+      sh = sw / targetRatio
+      sx = 0
+      sy = (img.height - sh) / 2
     }
 
-    if (file.size > 10 * 1024 * 1024) {
-        alert('File size must be less than 10MB.')
-        return
+    canvas.width = 1280
+    canvas.height = 720
+    const ctx = canvas.getContext('2d')
+    if (ctx) {
+      ctx.drawImage(img, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height)
+      canvas.toBlob((blob) => {
+        if (blob) {
+          const croppedFile = new File([blob], file.name, { type: 'image/jpeg' })
+          form.cover = croppedFile
+          previewUrl.value = URL.createObjectURL(croppedFile)
+        }
+      }, 'image/jpeg', 0.9)
     }
-    form.cover = file;
-    // Buat preview
-    previewUrl.value = URL.createObjectURL(file)
-
+  }
 }
 
 const UploadArticleCover = async () => {
