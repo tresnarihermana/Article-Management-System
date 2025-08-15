@@ -5,7 +5,7 @@ import NavUser from '@/components/NavUser.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid, Users, UserRoundCog, ShieldCheck, NotebookPen, Newspaper } from 'lucide-vue-next';
+import { BookOpen, Folder, LayoutGrid, Users, UserRoundCog, ShieldCheck, NotebookPen, Newspaper, FolderIcon, Tags } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 import { can } from '@/lib/can';
 import { computed } from 'vue';
@@ -38,13 +38,25 @@ const unfilteredMainNavItems: NavItem[] = [
         title: 'Articles',
         href: '/manage/articles',
         icon: NotebookPen,
-        // permission : 'article.view',
+        permission : 'article.view',
+    },
+    {
+        title: 'Categories',
+        href: '/manage/categories',
+        icon: FolderIcon,
+        permission : 'category.view',
+    },
+    {
+        title: 'Tags',
+        href: '/manage/tags',
+        icon: Tags,
+        permission : 'tags.view',
     },
     {
         title: 'Approve Article',
-        href: '/manage/approve-artile',
+        href: '/manage/approve',
         icon: Newspaper,
-        // permission : 'approve-article.view',
+        permission : 'approve-article.view',
     },
 ];
 
