@@ -23,31 +23,15 @@ use App\Http\Controllers\ApproveArticleController;
 use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\TagController;
 use Illuminate\Session\Middleware\AuthenticateSession;
-
-// Main Page
-Route::group([],function () { // ini main page
-    
     Route::get('/', [MainPageController::class, 'index'], function () {
-        return Inertia::render('Welcome');
+        
     })->name('home');
-    
-    Route::get('/article/{slug}', [MainPageController::class, 'show'])
-        ->name('article.show');
-    
-    Route::get('/articles', [MainPageController::class, 'articles'])
-        ->name('articles.list');
-
-    Route::get('/categories', [MainPageController::class, 'categories'])->name('categories.list');
-      Route::get('/category/{slug}', [MainPageController::class, 'category'])
-        ->name('category.show');
-
-});    
 
 
 Route::get('dashboard', function () {
     return Inertia::render('Dashboard')->with('message', 'Selamat datang');
-})->middleware(['auth', 'verified'])->name('dashboard'); /*, 'verified' <- bila ingin wajib verifikasi email */
-Auth::routes(['verify' => true]); // untuk verifikasi email
+})->middleware(['auth', 'verified'])->name('dashboard');
+Auth::routes(['verify' => true]);
 Route::get('/auth/google', function () {
     return Socialite::driver('google')->redirect();
 })->name('google.redirect');
@@ -57,7 +41,7 @@ Route::get('/clear-message', function () {
 });
 Route::get('/auth/google/callback', function () {
     $googleUser = Socialite::driver('google')->stateless()->user();
-    $user = User::firstOrCrfeate(
+    $user = User::firstOrCreate(
         [
             'email' => $googleUser->getEmail(),
         ]
@@ -69,6 +53,29 @@ Route::get('/auth/google/callback', function () {
     return redirect('/dashboard')->with("message", "Selamat datang");
 });
 Route::post('profile/avatar', [ProfileController::class, 'updateAvatar'])->name('profile.avatar.update');
+
+// Main Page
+Route::middleware(['auth', 'web', 'verified'])->group(function () {
+
+
+    Route::get('/article/read/{slug}', [MainPageController::class, 'show'])
+        ->name('article.show');
+
+    Route::get('/articles', [MainPageController::class, 'articles'])
+        ->name('articles.list');
+
+    Route::get('/author/{username}', [MainPageController::class, 'author'])
+        ->name('author.show');
+
+    Route::get('/search', [MainPageController::class, 'search'])
+        ->name('search.list');
+
+    Route::get('/articles/category/{slug}', [MainPageController::class, 'category'])
+        ->name('category.show');
+
+    Route::get('/categories', [MainPageController::class, 'categories'])
+    ->name('categories.list');
+});
 
 // Roles and Permissions mulai disini
 // users
