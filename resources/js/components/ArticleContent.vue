@@ -1,112 +1,102 @@
 <script setup lang="ts">
 import { useInitials } from '@/composables/useInitials';
+import { Head } from '@inertiajs/vue3';
 const props = defineProps({
     article: Object,
-    categeories: Object,
-    tags: Array,
-    user: Object,
+    categories: Array,
+    recent: Array<any>,
 })
 const { getInitials } = useInitials();
 </script>
 
 <template>
-    <main class="pt-8 pb-16 lg:pt-16 lg:pb-24 bg-white dark:bg-gray-900 antialiased">
-            <div class="flex justify-between px-4 mx-auto max-w-screen-xl ">
-                <article
-                    class="mx-auto w-full max-w-2xl format format-sm sm:format-base lg:format-lg format-blue dark:format-invert">
-                    <header class="mb-4 lg:mb-6 not-format">
-                        <address class="flex items-center mb-6 not-italic">
-                            <div class="inline-flex items-center mr-3 text-sm text-gray-900 dark:text-white">
-                                <img class="mr-4 w-16 h-16 rounded-full"
-                                    :src="props.article.user.avatar ? `/storage/${props.article.user.avatar}` : 'https://ui-avatars.com/api/?name=' + getInitials(props.article.user.username) + '&background=random'"
-                                    :alt="props.article.user.name">
-                                <div>
-                                    <a href="#" rel="author" class="text-xl font-bold text-gray-900 dark:text-white">{{
-                                        props.article.user.name }}</a>
-                                    <p class="text-base text-gray-500 dark:text-gray-400">@{{
-                                        props.article.user.username }}</p>
-                                    <p class="text-base text-gray-500 dark:text-gray-400">{{ props.article.published_at
-                                        ? props.article.published_at : 'unpublished' }}</p>
-                                </div>
-                            </div>
-                        </address>
-                        <h1
-                            class="mb-4 text-3xl font-extrabold leading-tight text-gray-900 lg:mb-6 lg:text-4xl dark:text-white">
-                            {{ props.article.title }}</h1>
-                    </header>
-                    <figure v-if="props.article.cover"> <img :src="`/storage/${props.article.cover}`"
-                         alt="Cover Image">
-                    </figure>
-                    <div v-html="article.body"></div>
-                </article>
-            </div>
-        </main>
+        <Head :title="article?.title">
+        <link rel="preconnect" href="https://rsms.me/" />
+        <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+    </Head>
+    <div class="flex flex-col py-14">
+        <div class="bg-gray-100 pt-8 dark:bg-zinc-900">
+            <div class="container mx-auto px-4">
+                <h1 class="text-4xl font-bold text-gray-800 dark:text-gray-200 mb-4">
+                    {{ article.title }}
+                </h1>
 
-        <aside aria-label="Related articles" class="py-8 lg:py-24 bg-gray-50 dark:bg-gray-800">
-            <div class="px-4 mx-auto max-w-screen-xl">
-                <h2 class="mb-8 text-2xl font-bold text-gray-900 dark:text-white">Related articles</h2>
-                <div class="grid gap-12 sm:grid-cols-2 lg:grid-cols-4">
-                    <article class="max-w-xs">
-                        <a href="#">
-                            <img src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/article/blog-1.png"
-                                class="mb-5 rounded-lg" alt="Image 1">
+                <div class="flex items-center text-gray-600 dark:text-gray-300 mb-4">
+                    <img :src="article.user.avatar
+                        ? `/storage/${article.user.avatar}`
+                        : `https://ui-avatars.com/api/?name=${getInitials(article.user.username)}&background=random`"
+                        alt="user avatar" class="w-8 h-8 rounded-full object-cover mr-2" />
+                    <span>
+                        by
+                        <a :href="`/author/${article.user.username}`" class="hover:text-green-400 font-medium">
+                            {{ article.user.name }}
                         </a>
-                        <h2 class="mb-2 text-xl font-bold leading-tight text-gray-900 dark:text-white">
-                            <a href="#">Our first office</a>
-                        </h2>
-                        <p class="mb-4 text-gray-500 dark:text-gray-400">Over the past year, Volosoft has undergone many
-                            changes! After months of preparation.</p>
-                        <a href="#"
-                            class="inline-flex items-center font-medium underline underline-offset-4 text-primary-600 dark:text-primary-500 hover:no-underline">
-                            Read in 2 minutes
-                        </a>
-                    </article>
-                    <article class="max-w-xs">
-                        <a href="#">
-                            <img src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/article/blog-2.png"
-                                class="mb-5 rounded-lg" alt="Image 2">
-                        </a>
-                        <h2 class="mb-2 text-xl font-bold leading-tight text-gray-900 dark:text-white">
-                            <a href="#">Enterprise design tips</a>
-                        </h2>
-                        <p class="mb-4  text-gray-500 dark:text-gray-400">Over the past year, Volosoft has undergone
-                            many changes! After months of preparation.</p>
-                        <a href="#"
-                            class="inline-flex items-center font-medium underline underline-offset-4 text-primary-600 dark:text-primary-500 hover:no-underline">
-                            Read in 12 minutes
-                        </a>
-                    </article>
-                    <article class="max-w-xs">
-                        <a href="#">
-                            <img src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/article/blog-3.png"
-                                class="mb-5 rounded-lg" alt="Image 3">
-                        </a>
-                        <h2 class="mb-2 text-xl font-bold leading-tight text-gray-900 dark:text-white">
-                            <a href="#">We partnered with Google</a>
-                        </h2>
-                        <p class="mb-4  text-gray-500 dark:text-gray-400">Over the past year, Volosoft has undergone
-                            many changes! After months of preparation.</p>
-                        <a href="#"
-                            class="inline-flex items-center font-medium underline underline-offset-4 text-primary-600 dark:text-primary-500 hover:no-underline">
-                            Read in 8 minutes
-                        </a>
-                    </article>
-                    <article class="max-w-xs">
-                        <a href="#">
-                            <img src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/article/blog-4.png"
-                                class="mb-5 rounded-lg" alt="Image 4">
-                        </a>
-                        <h2 class="mb-2 text-xl font-bold leading-tight text-gray-900 dark:text-white">
-                            <a href="#">Our first project with React</a>
-                        </h2>
-                        <p class="mb-4  text-gray-500 dark:text-gray-400">Over the past year, Volosoft has undergone
-                            many changes! After months of preparation.</p>
-                        <a href="#"
-                            class="inline-flex items-center font-medium underline underline-offset-4 text-primary-600 dark:text-primary-500 hover:no-underline">
-                            Read in 4 minutes
-                        </a>
-                    </article>
+                    </span>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-4 text-sm text-gray-500 dark:text-gray-400 mb-6">
+                    <div>
+                        <span class="font-semibold">Category: </span>
+                        <template v-for="(category, index) in article.categories" :key="category.id">
+                            <a :href="route('category.show', category.slug)" class="hover:text-green-400">
+                                {{ category.name }}
+                            </a>
+                            <span v-if="index < article.categories.length - 1">,</span>
+                        </template>
+                    </div>
+
+                    <div>
+                        <span class="font-semibold">Tags: </span>
+                        <template v-for="(tag, index) in article.tags" :key="tag.id">
+                            <a :href="`/tag/${tag.slug}`" class="hover:text-green-400">
+                                {{ tag.name }}
+                            </a>
+                            <span v-if="index < article.tags.length - 1">, </span>
+                        </template>
+                    </div>
+
+                    <div>
+                        <span class="font-semibold">Views:</span> {{ article.views }}
+                    </div>
+
+                    <div>
+                        <span class="font-semibold">Hits:</span> {{ article.hits }}
+                    </div>
+
+                    <div>
+                        <span class="font-semibold">Likes:</span> {{ article.likes }}
+                    </div>
                 </div>
             </div>
-        </aside>
+        </div>
+
+        <div class="bg-white py-8 dark:bg-zinc-800">
+            <div class="container mx-auto px-4 flex flex-col md:flex-row">
+                <div class="w-full md:w-3/4 px-4">
+                    <img :src="'/storage/' + article.cover" alt="Blog Featured Image" class="mb-8">
+                    <div class="prose max-w-none dark:text-gray-200 lg:text-lg max-sm:text-sm" v-html="article.body">
+
+                    </div>
+                </div>
+                <div class="w-full md:w-1/4 px-4 space-y-6">
+                    <div class="bg-white dark:bg-zinc-800 rounded-lg shadow p-4 sticky top-20">
+                        <h2 class="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4 md:text-lg">Recent Posts</h2>
+                        <div v-for="article in recent" :key="article.id" class="mb-4">
+                            <a :href="route('article.show', article.slug)" class="block group">
+                                <img :src="`/storage/` + article.cover" alt="cover"
+                                    class="w-full object-cover rounded-lg mb-2 group-hover:opacity-80 transition aspect-16/9" />
+                                <h3
+                                    class="text-gray-700 dark:text-gray-200 font-medium group-hover:text-green-600 md:text-xs">
+                                    {{ article.title }}
+                                </h3>
+                            </a>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+    </div>
 </template>
