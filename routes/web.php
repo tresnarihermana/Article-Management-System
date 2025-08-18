@@ -53,6 +53,7 @@ Route::get('/auth/google/callback', function () {
     return redirect('/dashboard')->with("message", "Selamat datang");
 });
 Route::post('profile/avatar', [ProfileController::class, 'updateAvatar'])->name('profile.avatar.update');
+Route::post('profile/cover', [ProfileController::class, 'updateCover'])->name('profile.cover.update');
 
 // Main Page
 Route::middleware(['auth', 'web', 'verified'])->group(function () {
@@ -64,8 +65,8 @@ Route::middleware(['auth', 'web', 'verified'])->group(function () {
     Route::get('/articles', [MainPageController::class, 'articles'])
         ->name('articles.list');
 
-    Route::get('/author/{username}', [MainPageController::class, 'author'])
-        ->name('author.show');
+    Route::get('/profile/@{username}', [MainPageController::class, 'profile'])
+        ->name('profile.show');
 
     Route::get('/search', [MainPageController::class, 'search'])
         ->name('search.list');
