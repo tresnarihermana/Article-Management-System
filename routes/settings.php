@@ -20,6 +20,7 @@ Route::middleware(['web','auth'])->group(function () {
     Route::put('settings/password', [PasswordController::class, 'update'])->name('setting.password.update');
 
     Route::patch('/profile/avatar', [ProfileController::class, 'updateAvatar'])->name('profile.avatar');
+    Route::patch('/profile/cover', [ProfileController::class, 'updateCover'])->name('profile.cover');
 
     Route::get('settings/appearance', function () {
         return Inertia::render('settings/Appearance');

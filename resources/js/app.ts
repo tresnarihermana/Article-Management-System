@@ -7,7 +7,7 @@ import { createApp, h } from 'vue';
 import { ZiggyVue } from 'ziggy-js';
 import { initializeTheme } from './composables/useAppearance';
 import PrimeVue from 'primevue/config';
-import Lara from '@primeuix/themes/lara';
+import Aura from '@primeuix/themes/lara';
 import '@primeuix/themes/lara';
 import 'primeicons/primeicons.css';
 import ToastService from 'primevue/toastservice';
@@ -24,7 +24,7 @@ createInertiaApp({
             .use(ToastService)
             .use(PrimeVue, {
                 theme: {
-                    preset: Lara,
+                    preset: Aura,
                     
                 }
             })

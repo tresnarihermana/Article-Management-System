@@ -17,6 +17,10 @@ import { can } from '@/lib/can';
 import { router } from '@inertiajs/vue3';
 const breadcrumbs: BreadcrumbItem[] = [
     {
+        title: 'Users',
+        href: route('users.index'),
+    },
+    {
         title: 'User Edit',
         href: '/users',
     },
@@ -135,10 +139,10 @@ function deleteUser(id) {
                 <div class="max-w-lg">
                     <div class="bg-white shadow-xl rounded-lg py-3">
                         <div class="photo-wrapper p-2">
-                    <img class="w-full h-56 object-cover object-center"
-                        :src="props.user.avatar ? `/storage/` + props.user.avatar : 'https://ui-avatars.com/api/?name=' + getInitials(props.user.username) + '&background=random'"
-                        :alt="props.user.name + `avatar`" alt="John Doe">
-          
+                            <img class="w-full h-56 object-cover object-center"
+                                :src="props.user.avatar ? `/storage/` + props.user.avatar : 'https://ui-avatars.com/api/?name=' + getInitials(props.user.username) + '&background=random'"
+                                :alt="props.user.name + `avatar`" alt="John Doe">
+
                         </div>
                         <div class="p-2">
                             <h3 class="text-center text-xl text-gray-900 font-medium leading-8">{{ props.user.name }}
@@ -184,17 +188,20 @@ function deleteUser(id) {
                             </table>
 
                             <div class="text-center my-3">
-                                <table >
+                                <table>
                                     <tbody>
                                         <tr>
                                             <td class="px-2 py-2">
-                                                <Button  v-if="can('users.edit')" as="a" :href="route('users.edit', props.user.id)" size="small" severity="info">
+                                                <Button v-if="can('users.edit')" as="a"
+                                                    :href="route('users.edit', props.user.id)" size="small"
+                                                    severity="info">
                                                     <PencilIcon />
                                                     Edit
                                                 </Button>
                                             </td>
                                             <td class="px-2 py-2">
-                                                <Button v-if="can('users.delete')" @click="deleteUser(props.user.id)" size="small" severity="danger">
+                                                <Button v-if="can('users.delete')" @click="deleteUser(props.user.id)"
+                                                    size="small" severity="danger">
                                                     <TrashIcon />
                                                     Delete
                                                 </Button>

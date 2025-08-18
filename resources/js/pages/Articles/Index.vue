@@ -6,6 +6,9 @@ import Swal from 'sweetalert2';
 import { usePage } from '@inertiajs/vue3';
 import { can } from '@/lib/can';
 import { ref, watch } from 'vue';
+import Popover from 'primevue/popover';
+import Tag from 'primevue/tag';
+import Button from 'primevue/button';
 const page = usePage();
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -101,6 +104,48 @@ watch(() => form.search, () => {
 watch(() => form.tag, () => {
     form.get(route('articles.index'), { preserveState: true, replace: true })
 })
+
+// pop over
+
+
+const members = ref([
+    { name: 'Amy Elsner', image: 'amyelsner.png', email: 'amy@email.com', role: 'Owner' },
+    { name: 'Bernardo Dominic', image: 'bernardodominic.png', email: 'bernardo@email.com', role: 'Editor' },
+    { name: 'Ioni Bowcher', image: 'ionibowcher.png', email: 'ioni@email.com', role: 'Viewer' }
+]);
+
+const popoverRefs = ref({});
+
+function showPopover(event, articleId) {
+    if (popoverRefs.value[articleId]) {
+        popoverRefs.value[articleId].show(event);
+    }
+}
+function hidePopover(event, articleId) {
+    if (popoverRefs.value[articleId]) {
+        popoverRefs.value[articleId].hide(event);
+    }
+}
+
+
+const getSeverity = (articles) => {
+    switch (articles.status) {
+        case 'published':
+            return 'success';
+
+        case 'pending':
+            return 'secondary';
+
+        case 'draft':
+            return 'info';
+
+        case 'rejected':
+            return 'warn';
+
+        default:
+            return 'secondary';
+    }
+}
 </script>
 
 <template>
@@ -181,8 +226,8 @@ watch(() => form.tag, () => {
                         </div>
 
                         <div class="-mx-4 sm:-mx-8 px-4 sm:px-8 py-4 overflow-x-auto">
-                            <div class="inline-block w-full overflow-x-auto shadow rounded-lg">
-                                <table class="min-w-[1200px] leading-normal">
+                            <div class="inline-block min-w-full overflow-x-auto shadow rounded-lg overflow-hidden">
+                                <table class="min-w-full leading-normal">
 
                                     <thead>
                                         <tr>
@@ -276,22 +321,78 @@ watch(() => form.tag, () => {
                                                 </p>
                                             </td>
                                             <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                                                <span
+                                                <span @click="showPopover($event, article.id)"
                                                     class="cursor-pointer relative inline-block px-3 py-1 font-semibold leading-tight"
                                                     :class="{
                                                         'text-green-900': article.status === 'published',
                                                         'text-blue-900': article.status === 'draft',
-                                                        'text-gray-900': article.status === 'pending'
+                                                        'text-gray-900': article.status === 'pending',
+                                                        'text-orange-500': article.status === 'rejected',
                                                     }">
                                                     <span aria-hidden class="absolute inset-0 opacity-50 rounded-full"
                                                         :class="{
                                                             'bg-green-200': article.status === 'published',
                                                             'bg-blue-200': article.status === 'draft',
-                                                            'bg-gray-300': article.status === 'pending'
+                                                            'bg-gray-300': article.status === 'pending',
+                                                            'bg-orange-200': article.status === 'rejected'
                                                         }"></span>
-                                                    <span class="relative">{{ article.status }}</span>
-                                                </span>
 
+
+                                                    <Popover :ref="el => popoverRefs[article.id] = el" @mouseleave="hidePopover($event, article.id)">
+                                                        <div  class="rounded flex flex-col max-w-xs">
+                                                            <div class="flex justify-center rounded">
+                                                                <div class="relative mx-auto">
+                                                                    <img class="rounded w-44 sm:w-64"
+                                                                        :src="article.cover ? `/storage/${article.cover}` : `https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/No-Image-Placeholder.svg/1665px-No-Image-Placeholder.svg.png`"
+                                                                        :alt="article.name" />
+                                                                    <Tag :value="article.status"
+                                                                        :severity="getSeverity(article)"
+                                                                        class="absolute dark:!bg-surface-900"
+                                                                        style="left: 4px; top: 4px"
+                                                                        rounded
+                                                                        ></Tag>
+                                                                </div>
+                                                            </div>
+                                                            <div class="pt-4">
+                                                                <div
+                                                                    class="flex flex-row justify-between items-start gap-2 mb-4">
+                                                                    <div>
+                                                                        <span v-for="category in article.categories"
+                                                                            class="font-medium text-surface-500 dark:text-surface-400 text-sm">{{
+                                                                             category.name}}</span>
+                                                                        <div class="text-lg font-medium mt-1">{{
+                                                                            article.title.length > 40 ? article.title.slice(0, 40)+'...' : article.title }}</div>
+                                                                        <div class="text-lg font-small mt-1" v-if="article.rejected_message">
+                                                                        <span class="font-semibold font-small text-red-500"> Rejected Reasons:</span>
+                                                                        <p class="text-orange-500">{{article.rejected_message }}</p>
+                                                                    </div>
+                                                                    </div>
+                                                                    <div class="bg-surface-100 p-1"
+                                                                        style="border-radius: 30px">
+                                                                        <div class="bg-surface-0 flex items-center gap-2 justify-center py-1 px-2"
+                                                                            style="border-radius: 30px; box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.04), 0px 1px 2px 0px rgba(0, 0, 0, 0.06)">
+                                                                            <span
+                                                                                class="text-surface-900 font-medium text-sm">{{
+                                                                                article.user.name }}</span>
+                                                                        
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="flex gap-2">
+                                                                    <Button icon="pi pi-eye" as="a"
+                                                                        label="Preview"
+                                                                        severity="secondary"
+                                                                        class="flex-auto whitespace-nowrap"
+                                                                        :href="route('articles.show', article.slug)"></Button>
+                                                                    <Button icon="pi pi-pencil" variant="outlined" as="a"
+                                                                    severity="info"
+                                                                        :href="route('articles.edit', article.id)"></Button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </Popover> <span class="relative">{{ article.status }}</span>
+
+                                                </span>
                                             </td>
                                             <td
                                                 class="px-5 py-5 border-b border-gray-200 bg-white text-sm whitespace-nowrap">
@@ -311,7 +412,7 @@ watch(() => form.tag, () => {
                                     </tbody>
                                 </table>
                                 <div
-                                    class="px-5 py-5 bg-white border-t flex flex-col xs:flex-row items-center xs:justify-between          ">
+                                    class="px-5 py-5 border-b bg-white border-t flex flex-col xs:flex-row items-center xs:justify-between          ">
                                     <span class="text-xs xs:text-sm text-gray-900">
                                         Showing
                                         {{ (articles.current_page - 1) * articles.per_page + 1 }}

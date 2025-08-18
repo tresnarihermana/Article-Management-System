@@ -1,0 +1,453 @@
+<script setup lang="ts">
+import AppLayout from '@/layouts/AppLayout.vue';
+import { type BreadcrumbItem } from '@/types';
+import { Head, Link, useForm, router } from '@inertiajs/vue3';
+import Swal from 'sweetalert2';
+import { usePage } from '@inertiajs/vue3';
+import { can } from '@/lib/can';
+import { ref, watch } from 'vue';
+import Popover from 'primevue/popover';
+import Tag from 'primevue/tag';
+import Button from 'primevue/button';
+const page = usePage();
+const breadcrumbs: BreadcrumbItem[] = [
+    {
+        title: 'Articles',
+        href: route('articles.index'),
+    },
+];
+const props = defineProps<{
+    articles: {
+        data: any[],
+        current_page: number,
+        last_page: number,
+        per_page: number,
+        total: number,
+        next_page_url: string | null,
+        prev_page_url: string | null,
+    },
+    tags: any[],
+    categories: any[],
+    filters: {
+        data: any[],
+    }
+}>();
+const flash = page.props?.flash?.message;
+if (flash) {
+    let timerInterval;
+    Swal.fire({
+        title: "Process Success",
+        icon: "success",
+        html: "article Succesfully added",
+        timer: 1000,
+        timerProgressBar: true,
+        didOpen: () => {
+            const timer = Swal.getPopup().querySelector("b");
+            timerInterval = setInterval(() => {
+                timer.textContent = `${Swal.getTimerLeft()}`;
+            }, 100);
+        },
+        willClose: () => {
+            clearInterval(timerInterval);
+        }
+    })
+}
+
+function deleteArticle(id) {
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, delete it!'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            router.delete(route('approve.destroy', id), {
+                onSuccess: () => {
+                    Swal.fire({
+                        title: 'Deleted!',
+                        text: 'This article has been deleted.',
+                        icon: 'success',
+                        timer: 1000,
+                        timerProgressBar: true,
+                    });
+                },
+                onError: () => {
+                    Swal.fire({
+                        title: 'Failed!',
+                        text: 'Something went wrong. The article was not deleted.',
+                        icon: 'error',
+                    });
+                }
+            });
+        }
+    });
+}
+// pagination atau apalah
+const perPage = ref(new URLSearchParams(window.location.search).get('per_page') || 10)
+watch(perPage, (value) => {
+    router.get(route('approve.index'), 
+    { per_page: value, page: 1 }, { preserveState: true, replace: true })
+})
+const form = useForm({
+    search: props.filters.search || '',
+    status: props.filters.status,
+     per_page: parseInt(new URLSearchParams(window.location.search).get('per_page')) || 10
+
+})
+function fetchData(page = 1) {
+    form.get(route('approve.index'), {
+        search: form.search,
+        status: form.status,
+        per_page: form.per_page,
+        page: page
+    }, {
+        preserveState: true,
+        replace: true
+    });
+}
+watch(() => form.search, () => fetchData(1));
+watch(() => form.status, () => fetchData(1));
+watch(() => form.per_page, () => fetchData(1));
+
+
+
+// pop over
+
+
+const popoverRefs = ref({});
+
+function showPopover(event, articleId) {
+    if (popoverRefs.value[articleId]) {
+        popoverRefs.value[articleId].show(event);
+    }
+}
+function hidePopover(event, articleId) {
+    if (popoverRefs.value[articleId]) {
+        popoverRefs.value[articleId].hide(event);
+    }
+}
+
+
+const getSeverity = (articles) => {
+    switch (articles.status) {
+        case 'published':
+            return 'success';
+
+        case 'pending':
+            return 'secondary';
+
+        case 'draft':
+            return 'info';
+
+        case 'rejected':
+            return 'warn';
+
+        default:
+            return 'secondary';
+    }
+}
+</script>
+
+<template>
+
+    <Head title="Articles" />
+    <AppLayout :breadcrumbs="breadcrumbs">
+        <!-- component -->
+        <div class="text-gray-900 bg-gray-200">
+            <!-- <div class="p-4 flex">
+                <h1 class="text-3xl">
+                    Articles
+                </h1>
+            </div>
+            <div class="px-4">
+                <Button v-if="can('articles.create')" label="Add article" as="a" :href="route('articles.create')"
+                    icon="pi pi-plus" icon-pos="left" />
+            </div> -->
+
+            <div class="antialiased font-sans bg-gray-200">
+                <div class="container mx-auto px-4 sm:px-8">
+                    <div class="py-8">
+                        <div>
+                            <h2 class="text-2xl font-semibold leading-tight">Articles</h2>
+                        </div>
+                        <div class="my-2 flex sm:flex-row flex-col">
+                            <div class="flex flex-row mb-1 sm:mb-0">
+                                <div class="relative">
+                                    <select v-model="form.per_page"
+                                        class="appearance-none h-full rounded-l border block appearance-none w-full bg-white border-gray-400 text-gray-700 py-2 px-4 pr-8 leading-tight focus:outline-none focus:bg-white focus:border-gray-500">
+                                        <option :value="5">5</option>
+                                        <option :value="10">10</option>
+                                        <option :value="20">20</option>
+                                    </select>
+                                    <div
+                                        class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                        <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg"
+                                            viewBox="0 0 20 20">
+                                            <path
+                                                d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
+                                        </svg>
+                                    </div>
+                                </div>
+                                <div class="relative">
+                                    <select v-model="form.status"
+                                        class="appearance-none h-full rounded-r border-t sm:rounded-r-none sm:border-r-0 border-r border-b block appearance-none w-full bg-white border-gray-400 text-gray-700 py-2 px-4 pr-8 leading-tight focus:outline-none focus:border-l focus:border-r focus:bg-white focus:border-gray-500">
+                                        <option :value="null">All</option>
+                                        <option :value="`pending`">pending</option>
+                                        <option :value="`published`">published</option>
+                                        <option :value="`rejected`">rejected</option>
+                                    </select>
+                                    <div
+                                        class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                        <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg"
+                                            viewBox="0 0 20 20">
+                                            <path
+                                                d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="block relative">
+                                <span class="h-full absolute inset-y-0 left-0 flex items-center pl-2">
+                                    <svg viewBox="0 0 24 24" class="h-4 w-4 fill-current text-gray-500">
+                                        <path
+                                            d="M10 4a6 6 0 100 12 6 6 0 000-12zm-8 6a8 8 0 1114.32 4.906l5.387 5.387a1 1 0 01-1.414 1.414l-5.387-5.387A8 8 0 012 10z">
+                                        </path>
+                                    </svg>
+                                </span>
+                                <input v-model="form.search" placeholder="Search"
+                                    class="appearance-none rounded-r rounded-l sm:rounded-l-none border border-gray-400 border-b block pl-8 pr-6 py-2 w-full bg-white text-sm placeholder-gray-400 text-gray-700 focus:bg-white focus:placeholder-gray-600 focus:text-gray-700 focus:outline-none" />
+                            </div>
+                            <div class="flex justify-end px-3">
+                                <button v-if="can('articles.create')" @click="router.get(route('articles.create'))"
+                                    type="button"
+                                    class="rounded border block appearance-none bg-green-400 border-green-400 text-white py-2 px-4 pr-8 leading-tight focus:outline-none focus:bg-green focus:border-green-500">
+                                    + Add Article
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="-mx-4 sm:-mx-8 px-4 sm:px-8 py-4 overflow-x-auto">
+                            <div class="inline-block min-w-full overflow-x-auto shadow rounded-lg overflow-hidden">
+                                <table class="min-w-full leading-normal">
+
+                                    <thead>
+                                        <tr>
+                                            <th
+                                                class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                                ID
+                                            </th>
+                                            <th
+                                                class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                                title
+                                            </th>
+                                            <th
+                                                class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                                category
+                                            </th>
+                                            <th
+                                                class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                                tag
+                                            </th>
+                                            <th
+                                                class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                                Author
+                                            </th>
+                                            <th
+                                                class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                                Created At
+                                            </th>
+                                            <th
+                                                class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                                Updated At
+                                            </th>
+                                            <th
+                                                class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                                Status
+                                            </th>
+                                            <th
+                                                class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                                Action
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-for="article in articles.data">
+                                            <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                                                <div class="flex items-center">
+                                                    <div class="flex-shrink-0 w-10 h-10">
+                                                        {{ article.id }}
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                                                <p class="text-gray-900 whitespace-no-wrap">
+                                                    {{ article.title.length > 20 ? article.title.slice(0,30)+ '...' : article.title }}
+                                                </p>
+                                            </td>
+                                            <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                                                <p class="text-gray-900 whitespace-no-wrap"
+                                                    v-for="category in article.categories" :key="category.id">
+                                                    {{ category.name }}
+                                                </p>
+                                            </td>
+                                            <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm max-w-s">
+                                                <div class="flex whitespace-nowrap gap-1">
+                                                    <template v-for="(tag, index) in article.tags.slice(0, 5)"
+                                                        :key="tag.id">
+                                                        <span
+                                                            class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded">
+                                                            {{ tag.name }}
+                                                        </span>
+                                                    </template>
+                                                    <span v-if="article.tags.length > 5"
+                                                        class="bg-gray-100 text-gray-600 text-xs font-medium px-2.5 py-0.5 rounded"
+                                                        :title="article.tags.map(t => t.name).join(', ')">
+                                                        +{{ article.tags.length - 5 }} more
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                                                <p class="text-gray-900 whitespace-no-wrap">
+                                                    {{ article.user.name }}
+                                                </p>
+                                            </td>
+                                            <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                                                <p class="text-gray-900 whitespace-no-wrap">
+                                                    {{ article.created_at }}
+                                                </p>
+                                            </td>
+                                            <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                                                <p class="text-gray-900 whitespace-no-wrap">
+                                                    {{ article.updated_at }}
+                                                </p>
+                                            </td>
+                                            <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                                                <span @click="showPopover($event, article.id)"
+                                                    class="cursor-pointer relative inline-block px-3 py-1 font-semibold leading-tight"
+                                                    :class="{
+                                                        'text-green-900': article.status === 'published',
+                                                        'text-blue-900': article.status === 'draft',
+                                                        'text-gray-900': article.status === 'pending',
+                                                        'text-orange-500': article.status === 'rejected',
+                                                    }">
+                                                    <span aria-hidden class="absolute inset-0 opacity-50 rounded-full"
+                                                        :class="{
+                                                            'bg-green-200': article.status === 'published',
+                                                            'bg-blue-200': article.status === 'draft',
+                                                            'bg-gray-300': article.status === 'pending',
+                                                            'bg-orange-200': article.status === 'rejected'
+                                                        }"></span>
+
+
+                                                    <Popover :ref="el => popoverRefs[article.id] = el" @mouseleave="hidePopover($event, article.id)">
+                                                        <div  class="rounded flex flex-col max-w-xs">
+                                                            <div class="flex justify-center rounded">
+                                                                <div class="relative mx-auto">
+                                                                    <img class="rounded w-44 sm:w-64"
+                                                                        :src="article.cover ? `/storage/${article.cover}` : `https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/No-Image-Placeholder.svg/1665px-No-Image-Placeholder.svg.png`"
+                                                                        :alt="article.name" />
+                                                                    <Tag :value="article.status"
+                                                                        :severity="getSeverity(article)"
+                                                                        class="absolute dark:!bg-surface-900"
+                                                                        style="left: 4px; top: 4px"
+                                                                        rounded
+                                                                        ></Tag>
+                                                                </div>
+                                                            </div>
+                                                            <div class="pt-4">
+                                                                <div
+                                                                    class="flex flex-row justify-between items-start gap-2 mb-4">
+                                                                    <div>
+                                                                        <span v-for="category in article.categories"
+                                                                            class="font-medium text-surface-500 dark:text-surface-400 text-sm">{{
+                                                                             category.name}}</span>
+                                                                        <div class="text-lg font-medium mt-1">{{
+                                                                            article.title.length > 20 ? article.title.slice(0, 40)+'....' : article.title }}</div>
+                                                                        <div class="text-lg font-small mt-1" v-if="article.rejected_message">
+                                                                        <span class="font-semibold font-small text-red-500"> Rejected Reasons:</span>
+                                                                        <p class="text-orange-500">{{article.rejected_message }}</p>
+                                                                    </div>
+                                                                    </div>
+                                                                    <div class="bg-surface-100 p-1"
+                                                                        style="border-radius: 30px">
+                                                                        <div class="bg-surface-0 flex items-center gap-2 justify-center py-1 px-2"
+                                                                            style="border-radius: 30px; box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.04), 0px 1px 2px 0px rgba(0, 0, 0, 0.06)">
+                                                                            <span
+                                                                                class="text-surface-900 font-medium text-sm">{{
+                                                                                article.user.name }}</span>
+                                                                        
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="flex gap-2">
+                                                                    <Button icon="pi pi-eye" as="a"
+                                                                        label="Preview"
+                                                                        severity="secondary"
+                                                                        class="flex-auto whitespace-nowrap"
+                                                                        :href="route('articles.show', article.slug)"></Button>
+                                                                    <Button icon="pi pi-pencil" variant="outlined" as="a"
+                                                                    severity="info"
+                                                                        :href="route('articles.edit', article.id)"></Button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </Popover> <span class="relative">{{ article.status }}</span>
+
+                                                </span>
+                                            </td>
+                                            <td
+                                                class="px-5 py-5 border-b border-gray-200 bg-white text-sm whitespace-nowrap">
+                                                <Link v-if="can('articles.show')"
+                                                    :href="route('articles.show', article.slug)" type="button"
+                                                    class="mr-3 text-sm bg-green-500 hover:bg-green-700 text-white py-1 px-2 rounded focus:outline-none focus:shadow-outline">
+                                                Show</Link>
+                                                <Link v-if="can('articles.edit')"
+                                                    :href="route('articles.edit', article.id)" type="button"
+                                                    class="mr-3 text-sm bg-blue-500 hover:bg-blue-700 text-white py-1 px-2 rounded focus:outline-none focus:shadow-outline">
+                                                Edit</Link>
+                                                <button v-if="can('articles.delete')" @click="deleteArticle(article.id)"
+                                                    type="button"
+                                                    class="text-sm bg-red-500 hover:bg-red-700 text-white py-1 px-2 rounded focus:outline-none focus:shadow-outline">Delete</button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <div
+                                    class="px-5 py-5 border-b bg-white border-t flex flex-col xs:flex-row items-center xs:justify-between          ">
+                                    <span class="text-xs xs:text-sm text-gray-900">
+                                        Showing
+                                        {{ (articles.current_page - 1) * articles.per_page + 1 }}
+                                        to
+                                        {{
+                                            articles.current_page * articles.per_page > articles.total
+                                                ? articles.total
+                                                : articles.current_page * articles.per_page
+                                        }}
+                                        of {{ articles.total }} entries
+                                    </span>
+                                    <div class="inline-flex mt-2 xs:mt-0 flex">
+                                        <button @click="router.get(articles.prev_page_url)"
+                                            :disabled="!articles.prev_page_url"
+                                            class="text-sm bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-l">
+                                            Prev
+                                        </button>
+
+                                        <button @click="router.get(articles.next_page_url)"
+                                            :disabled="!articles.next_page_url"
+                                            class="text-sm bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-r">
+                                            Next
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </AppLayout>
+</template>

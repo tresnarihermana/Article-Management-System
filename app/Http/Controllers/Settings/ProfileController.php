@@ -39,7 +39,6 @@ class ProfileController extends Controller
 
         $request->user()->save();
         return to_route('profile.edit');
-        
     }
 
     /**
@@ -48,7 +47,7 @@ class ProfileController extends Controller
     public function destroy(Request $request): RedirectResponse
     {
         $request->validate([
-            'password' => ['required', 'current_password','regex:/^[A-Za-z0-9_\-!@#$%^&*()+=\[\]{}]+$/'],
+            'password' => ['required', 'current_password', 'regex:/^[A-Za-z0-9_\-!@#$%^&*()+=\[\]{}]+$/'],
         ]);
 
         $user = $request->user();
@@ -62,16 +61,33 @@ class ProfileController extends Controller
 
         return redirect('/');
     }
-    
-public function updateAvatar(Request $request): RedirectResponse
-{
-    if ($request->hasFile('avatar')) {
-        $link = Storage::disk('public')->putFile('avatar', $request->file('avatar'));
-        $user = $request->user();
-        $user->avatar = $link;
-        $user->save();
+
+    public function updateAvatar(Request $request): RedirectResponse
+    {
+        if ($request->hasFile('avatar')) {
+            $user = $request->user();
+            if ($user->avatar) {
+                Storage::disk('public')->delete($user->avatar);
+            }
+            $link = Storage::disk('public')->putFile('profile/avatar', $request->file('avatar'));
+            $user->avatar = $link;
+            $user->save();
+            return redirect()->back();
+        }
         return redirect()->back();
     }
-    return redirect()->back();
-}
+    public function updateCover(Request $request): RedirectResponse
+    {
+        if ($request->hasFile('cover')) {
+            $user = $request->user();
+            if ($user->cover) {
+                Storage::disk('public')->delete($user->cover);
+            }
+            $link = Storage::disk('public')->putFile('profile/cover', $request->file('cover'));
+            $user->cover = $link;
+            $user->save();
+            return redirect()->back();
+        }
+        return redirect()->back();
+    }
 }

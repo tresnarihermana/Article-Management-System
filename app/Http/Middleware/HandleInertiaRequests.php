@@ -59,11 +59,14 @@ class HandleInertiaRequests extends Middleware
                         'username' => $user->username,
                         'email' => $user->email,
                         'avatar' => $user->avatar,
+                        'bio' => $user->bio,
+                        'cover' => $user->cover,
                         'email_verified_at' => $user->email_verified_at,
                         'has_password' => !is_null($user->password),
                     ] : null;
                 },
                 'permissions' => fn() => $request->user()?->getAllPermissions()->pluck("name") ?? [],
+                'roles' => fn() => $request->user()?->getRoleNames()->toArray() ?? [],
 
             ],
             'ziggy' => [

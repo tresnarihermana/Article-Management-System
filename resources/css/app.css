@@ -71,6 +71,7 @@
   color utility to any element that depends on these defaults.
 */
 @layer base {
+
     *,
     ::after,
     ::before,
@@ -81,6 +82,7 @@
 }
 
 @layer utilities {
+
     body,
     html {
         --font-sans:
@@ -89,7 +91,7 @@
 }
 
 :root {
-    --background: hsl(0 0% 100%);
+    --background: hsl(0, 0%, 100%);
     --foreground: hsl(0 0% 3.9%);
     --card: hsl(0 0% 100%);
     --card-foreground: hsl(0 0% 3.9%);
@@ -126,7 +128,7 @@
 }
 
 .dark {
-    --background: hsl(0 0% 3.9%);
+    --background: hsl(0, 0%, 10%);
     --foreground: hsl(0 0% 98%);
     --card: hsl(0 0% 3.9%);
     --card-foreground: hsl(0 0% 98%);
@@ -159,13 +161,26 @@
     --sidebar-border: hsl(0 0% 15.9%);
     --sidebar-ring: hsl(217.2 91.2% 59.8%);
     --sidebar: hsl(240 5.9% 10%);
+    
 }
 
 @layer base {
     * {
         @apply border-border outline-ring/50;
     }
+
     body {
-        @apply bg-background text-foreground;
+        background: var(--background);
+        color: var(--foreground);
     }
+}
+.dark .p-inputtext {
+    background-color: #1c1c1c;
+    color: white;
+    border-color: #1d222a;
+}
+.dark .p-textarea {
+    background-color: #1c1c1c;
+    color: white;
+    border-color: #1d222a;
 }

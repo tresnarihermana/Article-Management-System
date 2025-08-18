@@ -10,6 +10,10 @@ import CheckboxGroup from 'primevue/checkboxgroup';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
+        title: 'Roles',
+        href: route('roles.index'),
+    },
+    {
         title: 'Role Create',
         href: '/roles',
     },
@@ -77,8 +81,9 @@ const submit = () => {
                                         <label :for="'perm-' + permission.id">{{ permission.name }}</label>
                                     </div>
                                 </div>
-                                <Message v-if="form.errors.permissions" severity="error" size="small" variant="simple">{{
-                                    form.errors?.permissions }}</Message>
+                                <Message v-if="form.errors.permissions" severity="error" size="small" variant="simple">
+                                    {{
+                                        form.errors?.permissions }}</Message>
                             </div>
                         </div>
                         <!-- Save button -->

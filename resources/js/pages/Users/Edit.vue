@@ -15,6 +15,10 @@ import Checkbox from 'primevue/checkbox';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
+        title: 'Users',
+        href: route('users.index'),
+    },
+    {
         title: 'User Edit',
         href: '/users',
     },
@@ -160,21 +164,20 @@ watch(() => form.password, validatePassword)
                             <InputError :message="form.errors.password_confirmation" />
                         </div>
 
-           <!-- Input field for 'role' -->
+                        <!-- Input field for 'role' -->
 
                         <div class="grid gap-2">
                             <Label for="roles">Roles</Label>
                             <div class="flex flex-col gap-2">
                                 <div class="flex flex-wrap gap-4">
-                                    <div v-for="role in roles" :key="role.name"
-                                        class="flex items-center gap-2">
+                                    <div v-for="role in roles" :key="role.name" class="flex items-center gap-2">
                                         <Checkbox v-model="form.roles" :value="role.name"
                                             :inputId="'perm-' + role.name" />
                                         <label :for="'perm-' + role.name">{{ role.name }}</label>
                                     </div>
                                 </div>
                                 <Message v-if="form.errors.roles" severity="error" size="small" variant="simple">
-                                    {{form.errors?.roles }}</Message>
+                                    {{ form.errors?.roles }}</Message>
                             </div>
                         </div>
 

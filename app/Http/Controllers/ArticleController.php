@@ -45,6 +45,8 @@ class ArticleController extends Controller
                     'updated_at' => $article->updated_at->format('Y-m-d H:i:s'),
                     'status' => $article->status,
                     'slug' => $article->slug,
+                    'rejected_message' => $article->rejected_message,
+                    'cover' => $article->cover,
                 ];
             });
         return Inertia::render('Articles/Index', [
@@ -189,15 +191,4 @@ class ArticleController extends Controller
         ]);
     }
 
-    public function approve(Article $article): RedirectResponse
-    {
-        $article->update(['status' => 'published', 'published_at' => now()]);
-        return back()->with('success', 'Article approved!');
-    }
-
-    public function reject(Article $article): RedirectResponse
-    {
-        $article->update(['status' => 'rejected']);
-        return back()->with('success', 'Article rejected!');
-    }
 }

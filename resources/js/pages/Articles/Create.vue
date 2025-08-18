@@ -13,11 +13,11 @@ import InputError from '@/components/InputError.vue';
 const breadcrumbs: BreadcrumbItem[] = [
   {
     title: 'Article',
-    href: '/articles',
+    href: route('articles.index'),
   },
   {
     title: 'Create Article',
-    href: '/create',
+    href: route('articles.create'),
   },
 ];
 const props = defineProps({
@@ -99,10 +99,41 @@ const processFile = (file: File) => {
     alert('File size must be less than 10MB.')
     return
   }
-  form.cover = file;
-  // Buat preview
-  previewUrl.value = URL.createObjectURL(file)
 
+  const img = new Image()
+  img.src = URL.createObjectURL(file)
+
+  img.onload = () => {
+    const targetRatio = 16 / 9
+    const canvas = document.createElement('canvas')
+    let sx, sy, sw, sh
+
+    if (img.width / img.height > targetRatio) {
+      sh = img.height
+      sw = sh * targetRatio
+      sx = (img.width - sw) / 2
+      sy = 0
+    } else {
+      sw = img.width
+      sh = sw / targetRatio
+      sx = 0
+      sy = (img.height - sh) / 2
+    }
+
+    canvas.width = 1280
+    canvas.height = 720
+    const ctx = canvas.getContext('2d')
+    if (ctx) {
+      ctx.drawImage(img, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height)
+      canvas.toBlob((blob) => {
+        if (blob) {
+          const croppedFile = new File([blob], file.name, { type: 'image/jpeg' })
+          form.cover = croppedFile
+          previewUrl.value = URL.createObjectURL(croppedFile)
+        }
+      }, 'image/jpeg', 0.9)
+    }
+  }
 }
 const UploadArticleCover = () => {
   form.post(route('articles.uploadCover'), {

@@ -1,13 +1,18 @@
 <script setup lang="ts">
-import { Head, Link, usePage } from '@inertiajs/vue3';
-import PageNav from '@/components/PageNav.vue';
-import LatestArticles from '@/components/LatestArticles.vue';
+import { Head, usePage } from '@inertiajs/vue3';
 import PageLayout from '@/layouts/PageLayout.vue';
-const { articles, tags, categories, users, title } =usePage().props;
+import MainHeroSection from '@/components/WelcomeHeroSection.vue';
+import ArticleList from '@/components/ArticleList.vue';
+import LatestArticleCarousel from '@/components/LatestArticleCarousel.vue';
+const { articles, tags, categories, users, title } = usePage().props;
 </script>
 
 <template>
-<PageLayout>
-    <LatestArticles :articles="articles"/>
-</PageLayout>
+    <Head title="Welcome">
+        <link rel="preconnect" href="https://rsms.me/" />
+        <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+    </Head>
+    <PageLayout>
+        <MainHeroSection class="mx-auto relative max-md:pt-10" />
+    </PageLayout>
 </template>

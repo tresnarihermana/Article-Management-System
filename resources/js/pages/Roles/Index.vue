@@ -12,7 +12,7 @@ const page = usePage();
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Roles',
-        href: '/roles',
+        href: route('roles.index'),
     },
 ];
 const props = defineProps<{
@@ -109,7 +109,7 @@ watch(() => form.permission, () => {
     <Head title="Roles" />
     <AppLayout :breadcrumbs="breadcrumbs">
         <!-- component -->
-        <div class="text-gray-900 bg-gray-200">
+        <div class="text-gray-900 bg-gray-200 dark:bg-transparent">
             <!-- <div class="p-4 flex">
                 <h1 class="text-3xl">
                     Roles
@@ -120,17 +120,17 @@ watch(() => form.permission, () => {
                     icon="pi pi-plus" icon-pos="left" />
             </div> -->
 
-            <div class="antialiased font-sans bg-gray-200">
+            <div class="antialiased font-sans">
                 <div class="container mx-auto px-4 sm:px-8">
                     <div class="py-8">
                         <div>
-                            <h2 class="text-2xl font-semibold leading-tight">Roles</h2>
+                            <h2 class="text-2xl font-semibold leading-tight dark:text-gray-200">Roles</h2>
                         </div>
                         <div class="my-2 flex sm:flex-row flex-col">
                             <div class="flex flex-row mb-1 sm:mb-0">
                                 <div class="relative">
                                     <select v-model="perPage"
-                                        class="appearance-none h-full rounded-l border block appearance-none w-full bg-white border-gray-400 text-gray-700 py-2 px-4 pr-8 leading-tight focus:outline-none focus:bg-white focus:border-gray-500">
+                                        class="appearance-none h-full rounded-l border block appearance-none w-full bg-white border-gray-400 text-gray-700 py-2 px-4 pr-8 leading-tight focus:outline-none focus:bg-white focus:border-gray-500 dark:bg-zinc-800 dark:border-zinc-800 dark:text-gray-200">
                                         <option :value="5">5</option>
                                         <option :value="10">10</option>
                                         <option :value="20">20</option>
@@ -146,7 +146,7 @@ watch(() => form.permission, () => {
                                 </div>
                                 <div class="relative">
                                     <select v-model="form.permission"
-                                        class="appearance-none h-full rounded-r border-t sm:rounded-r-none sm:border-r-0 border-r border-b block appearance-none w-full bg-white border-gray-400 text-gray-700 py-2 px-4 pr-8 leading-tight focus:outline-none focus:border-l focus:border-r focus:bg-white focus:border-gray-500">
+                                        class="appearance-none h-full rounded-r border-t sm:rounded-r-none sm:border-r-0 border-r border-b block appearance-none w-full bg-white border-gray-400 text-gray-700 py-2 px-4 pr-8 leading-tight focus:outline-none focus:border-l focus:border-r focus:bg-white focus:border-gray-500 dark:bg-zinc-800 dark:border-zinc-800 dark:text-gray-200">
                                         <option :value="null">All</option>
                                         <option v-for="permission in permissions" :key="permission.id"
                                             :value="permission.name">{{ permission.name }}</option>
@@ -170,7 +170,7 @@ watch(() => form.permission, () => {
                                     </svg>
                                 </span>
                                 <input v-model="form.search" placeholder="Search"
-                                    class="appearance-none rounded-r rounded-l sm:rounded-l-none border border-gray-400 border-b block pl-8 pr-6 py-2 w-full bg-white text-sm placeholder-gray-400 text-gray-700 focus:bg-white focus:placeholder-gray-600 focus:text-gray-700 focus:outline-none" />
+                                    class="appearance-none rounded-r rounded-l sm:rounded-l-none border border-gray-400 border-b block pl-8 pr-6 py-2 w-full bg-white text-sm placeholder-gray-400 text-gray-700 focus:bg-white focus:placeholder-gray-600 focus:text-gray-700 focus:outline-none dark:bg-zinc-800 dark:border-zinc-800 dark:text-gray-200" />
                             </div>
                             <div class="flex justify-end px-3">
                                 <button v-if="can('roles.create')" @click="router.get(route('roles.create'))"
@@ -187,38 +187,38 @@ watch(() => form.permission, () => {
                                     <thead>
                                         <tr>
                                             <th
-                                                class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                                class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider dark:bg-zinc-900 dark:border-zinc-900 dark:text-gray-50">
                                                 ID
                                             </th>
                                             <th
-                                                class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                                class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider dark:bg-zinc-900 dark:border-zinc-900 dark:text-gray-50">
                                                 Name
                                             </th>
                                             <th
-                                                class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                                class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider dark:bg-zinc-900 dark:border-zinc-900 dark:text-gray-50">
                                                 Permission
                                             </th>
                                             <th
-                                                class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                                class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider dark:bg-zinc-900 dark:border-zinc-900 dark:text-gray-50">
                                                 Action
                                             </th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <tr v-for="role in roles.data">
-                                            <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                                            <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm dark:bg-zinc-800 dark:border-zinc-800 dark:text-white  ">
                                                 <div class="flex items-center">
                                                     <div class="flex-shrink-0 w-10 h-10">
                                                         {{ role.id }}
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                                                <p class="text-gray-900 whitespace-no-wrap">
+                                            <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm dark:bg-zinc-800 dark:border-zinc-800 ">
+                                                <p class="text-gray-900 whitespace-no-wrap dark:text-white">
                                                     {{ role.name }}
                                                 </p>
                                             </td>
-                                            <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm max-w-s">
+                                            <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm max-w-s dark:bg-zinc-800 dark:border-zinc-800 dark:text-white  ">
                                                 <div class="flex flex-wrap gap-1">
                                                     <template
                                                         v-for="(permission, index) in role.permissions.slice(0, 5)" :key="permission.id">
@@ -235,7 +235,7 @@ watch(() => form.permission, () => {
                                                 </div>
                                             </td>
 
-                                            <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm whitespace-nowrap">
+                                            <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm whitespace-nowrap dark:bg-zinc-800 dark:border-zinc-800 dark:text-white dark:border-gray-900 ">
                                                 <Link v-if="can('roles.edit')" :href="route('roles.edit', role.id)"
                                                     type="button"
                                                     class="mr-3 text-sm bg-blue-500 hover:bg-blue-700 text-white py-1 px-2 rounded focus:outline-none focus:shadow-outline">
@@ -248,8 +248,8 @@ watch(() => form.permission, () => {
                                     </tbody>
                                 </table>
                                 <div
-                                    class="px-5 py-5 bg-white border-t flex flex-col xs:flex-row items-center xs:justify-between          ">
-                                    <span class="text-xs xs:text-sm text-gray-900">
+                                    class="px-5 py-5 bg-white border-t flex flex-col xs:flex-row items-center xs:justify-between  dark:bg-zinc-800 dark:border-zinc-800 dark:text-white dark:border-gray-900         ">
+                                    <span class="text-xs xs:text-sm text-gray-900 dark:text-white">
                                         Showing
                                         {{ (roles.current_page - 1) * roles.per_page + 1 }}
                                         to

@@ -11,6 +11,7 @@ import InputText from 'primevue/inputtext';
 import { reactive, watch, ref, onMounted } from 'vue';
 import Divider from 'primevue/divider';
 import Swal from 'sweetalert2';
+import { useAppearance } from '@/composables/useAppearance';
 const form = useForm({
     name: '',
     username: '',
@@ -85,6 +86,7 @@ onMounted(() => {
     }
 });
 const sitekey = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
+const { appearance } = useAppearance();
 </script>
 
 <template>
@@ -144,7 +146,7 @@ const sitekey = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
                 </div>
                 
                 <!-- Box reCAPTCHA v2 -->
-                <div class="g-recaptcha" :data-sitekey="sitekey"></div>
+                <div class="g-recaptcha" :data-theme="appearance" :data-sitekey="sitekey"></div>
                 <Button type="submit" class="mt-2 w-full" tabindex="5" :disabled="form.processing">
                     <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin" />
                     Create account
