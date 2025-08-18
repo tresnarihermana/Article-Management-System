@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Head, usePage } from '@inertiajs/vue3';
 import PageLayout from '@/layouts/PageLayout.vue';
-import MainHeroSection from '@/components/MainHeroSection.vue';
+import MainHeroSection from '@/components/WelcomeHeroSection.vue';
 import ArticleList from '@/components/ArticleList.vue';
 import LatestArticleCarousel from '@/components/LatestArticleCarousel.vue';
 const { articles, tags, categories, users, title } = usePage().props;
