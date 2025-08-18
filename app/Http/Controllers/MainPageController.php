@@ -14,7 +14,7 @@ class MainPageController extends Controller
 {
     public function index()
     {
-        $categories = Category::with(['articles' => function ($query) {
+        $categorized = Category::with(['articles' => function ($query) {
             $query->where('status', 'published')->latest();
         }])
             ->whereHas('articles', function ($query) {
@@ -25,26 +25,28 @@ class MainPageController extends Controller
 
         $article = Article::with('tags', 'user', 'categories')
             ->where('status', 'published')
-            ->latest()
-            ->limit(3)
+            ->orderBy('views', 'desc')
+            ->limit(5)
             ->get();
         if (Auth::check()) {
             return Inertia::render('Home', [
-                "articles" => $article,
-                "categories" => $categories
+                "popArticles" => $article,
+                "categorized" => $categorized,
+                "categories" => Category::all(),
+
 
 
             ]);
         } else {
             return Inertia::render('Welcome', [
                 "articles" => $article,
-                "categories" => $categories
+                "categorized" => $categorized
 
 
             ]);
         }
     }
-    public function show($slug)
+    public function show(Request $request, $slug)
     {
         $article = Article::with('tags', 'user', 'categories')
             ->where('slug', $slug)
@@ -63,6 +65,8 @@ class MainPageController extends Controller
             "slug" => $article->slug,
             "cover" => $article->cover,
             "id" => $article->id,
+            "views" => $article->views,
+            "hits" => $article->hits,
         ];
         $recentArticle = Article::query()
             ->where([
@@ -72,6 +76,13 @@ class MainPageController extends Controller
             ->latest()
             ->take(3)
             ->get();
+        // hits dan views mulai disini
+        $article->increment('hits');
+        $sessionKey = 'viewed_article_' . $article->id;
+        if (!$request->session()->has($sessionKey)) {
+            $article->increment('views');
+            $request->session()->put($sessionKey, true);
+        }
         return Inertia::render("Main/Read", [
             "article" => $articledata,
             "recent" => $recentArticle,
@@ -80,7 +91,7 @@ class MainPageController extends Controller
     }
     public function articles()
     {
-        $categories = Category::with(['articles' => function ($query) {
+        $categorized = Category::with(['articles' => function ($query) {
             $query->where('status', 'published')->latest();
         }])
             ->whereHas('articles', function ($query) {
@@ -89,7 +100,8 @@ class MainPageController extends Controller
             ->latest()
             ->get();
         return Inertia::render('Main/Articles', [
-            "categories" => $categories,
+            "categorized" => $categorized,
+            "categories" => Category::all(),
             "articles" => Article::all()
         ]);
     }
@@ -140,17 +152,13 @@ class MainPageController extends Controller
             ]
         ]);
     }
-public function author($username)
-{
-    $author = Article::with('user')
-        ->whereHas('user', function ($query) use ($username) {
-            $query->where('username', $username);
-        })
-        ->get();
-
-    return Inertia::render('Main/Author', [
-        'author' => $author
-    ]);
-}
-
+    public function profile($username)
+    {
+        $author = User::with('articles.categories', 'roles')
+            ->where('username', $username)
+            ->firstOrFail();
+        return Inertia::render('Main/Author', [
+            'author' => $author
+        ]);
+    }
 }
