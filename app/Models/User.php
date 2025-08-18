@@ -31,6 +31,10 @@ class User extends Authenticatable implements MustVerifyEmail
         return LogOptions::defaults()->logAll()
         ->setDescriptionForEvent(fn(string $eventName) => "This model has been {$eventName}");
     }
+    public function articles()
+{
+    return $this->hasMany(Article::class);
+}
 
     /**
      * The attributes that are mass assignable.
@@ -44,6 +48,8 @@ class User extends Authenticatable implements MustVerifyEmail
         'email_verified_at',
         'avatar',
         'password',
+        'cover',
+        'bio',
     ];
 
     /**

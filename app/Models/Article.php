@@ -22,6 +22,8 @@ class Article extends Model
         'is_pinned',
         'published_at',
         'rejected_message',
+        'views',
+        'hits',
         
     ];
 
