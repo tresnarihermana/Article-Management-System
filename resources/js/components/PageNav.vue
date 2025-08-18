@@ -32,16 +32,18 @@
           <transition enter-active-class="transition ease-out duration-200" enter-from-class="opacity-0 translate-y-1"
             enter-to-class="opacity-100 translate-y-0" leave-active-class="transition ease-in duration-150"
             leave-from-class="opacity-100 translate-y-0" leave-to-class="opacity-0 translate-y-1">
+            <teleport to='body' >
             <PopoverPanel
-              class="absolute left-30 top-7 z-10 mt-3 w-screen max-w-7xl -translate-x-1/2 overflow-hidden rounded-xl dark:backdrop-blur-md bg-white shadow-lg ring-1 ring-gray-900/5 dark:bg-black/50">
+              class="fixed max-lg:hidden right-0 left-1/2 top-11 z-10 mt-3 w-screen max-w-7xl -translate-x-1/2 overflow-hidden rounded-xl dark:backdrop-blur-md bg-gray-200/30 backdrop-blur-md shadow-lg ring-1 ring-gray-900/5 dark:bg-black/50">
 
 
               <div class="p-8 grid grid-cols-3 gap-8">
 
                 <div v-for="item in products" :key="item.name" class="flex gap-x-4">
                   <div
-                    class="flex size-12 flex-none items-center justify-center rounded-lg bg-gray-50 group-hover:bg-white dark:bg-gray-800/50 dark:group-hover:bg-gray-800">
-                    <component :is="item.icon" class="size-6 text-green-600 group-hover:text-indigo-600"
+                    class="flex size-12 flex-none items-center justify-center rounded-lg bg-neutral-200/50 WIP group-hover:bg-white dark:bg-gray-800/50 dark:group-hover:bg-gray-800">
+                    <component :is="item.icon"
+                      class="size-6 text-green-500 dark:text-green-600 group-hover:text-indigo-600"
                       aria-hidden="true" />
                   </div>
                   <div>
@@ -55,16 +57,16 @@
               </div>
 
 
-              <div class="grid grid-cols-2 divide-x divide-gray-900/5 bg-gray-50 dark:bg-black/60">
+              <div class="grid grid-cols-2 divide-x divide-gray-900/5 bg-gray-50/40 dark:bg-black/60">
                 <a v-for="item in callsToAction" :key="item.name" :href="item.href"
-                  class="flex items-center justify-center gap-x-2.5 p-4 text-sm font-semibold text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-black/70 dark:hover:text-green-500">
+                  class="flex items-center justify-center gap-x-2.5 p-4 text-sm font-semibold text-gray-900 hover:bg-gray-100/50 dark:text-gray-300 dark:hover:bg-black/70 dark:hover:text-green-500">
                   <component :is="item.icon" class="size-5 flex-none text-gray-400 dark:text-green-600 "
                     aria-hidden="true" />
                   {{ item.name }}
                 </a>
               </div>
             </PopoverPanel>
-
+          </teleport>
           </transition>
         </Popover>
 
@@ -93,11 +95,16 @@
           <transition enter-active-class="transition ease-out duration-200" enter-from-class="opacity-0 translate-y-1"
             enter-to-class="opacity-100 translate-y-0" leave-active-class="transition ease-in duration-150"
             leave-from-class="opacity-100 translate-y-0" leave-to-class="opacity-0 translate-y-1">
+            <teleport to='body' >
             <PopoverPanel
-              class="absolute right-0 z-20 mt-12 w-48 rounded-2xl bg-white shadow-lg ring-1 ring-gray-900/5 dark:bg-black/60 dark:backdrop-blur-md">
+              class="fixed max-lg:hidden right-15 top-2.5 z-20 mt-12 w-48 rounded-2xl bg-white/30 filter backdrop-blur-md shadow-lg ring-1 ring-gray-900/5 dark:bg-black/60 dark:backdrop-blur-md">
               <div class="py-2">
+                <a :href="route('profile.show', $page.props.auth.user.username)"
+                  class="block px-4 py-2 text-sm/6 text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-green-700 hover:rounded-t-lg">
+                  Lihat Profile
+                </a>
                 <a :href="route('profile.edit')"
-                  class="block px-4 py-2 text-sm/6 text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-green-700">
+                  class="block px-4 py-2 text-sm/6 text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-green-700 hover:rounded-t-lg">
                   Edit Profile
                 </a>
                 <a :href="route('dashboard')"
@@ -105,11 +112,12 @@
                   Dashboard
                 </a>
                 <button :href="route('logout')" @click="handleLogout" type="submit"
-                  class="w-full text-left px-4 py-2 text-sm/6 text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-green-700">
+                  class="w-full text-left px-4 py-2 text-sm/6 text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-green-700 hover:rounded-b-lg">
                   Logout
                 </button>
               </div>
             </PopoverPanel>
+            </teleport>
           </transition>
         </Popover>
         <ThemeMode></ThemeMode>
@@ -175,9 +183,12 @@
                         aria-hidden="true" />
                     </DisclosureButton>
                     <DisclosurePanel class="mt-2 space-y-2">
+                      <DisclosureButton as="a" :href="route('profile.show', $page.props.auth.user.username)"
+                        class="block rounded-lg py-2 pr-3 pl-6 text-sm/7 font-semibold text-gray-900 hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-green-700">
+                        Lihat Profile</DisclosureButton>
                       <DisclosureButton as="a" :href="route('profile.edit')"
                         class="block rounded-lg py-2 pr-3 pl-6 text-sm/7 font-semibold text-gray-900 hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-green-700">
-                        Edit Proflie</DisclosureButton>
+                        Edit Profile</DisclosureButton>
                       <DisclosureButton as="a" :href="route('dashboard')"
                         class="block rounded-lg py-2 pr-3 pl-6 text-sm/7 font-semibold text-gray-900 hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-green-700">
                         Dashboard</DisclosureButton>
@@ -229,7 +240,7 @@ const products = [
   { name: 'See More', description: 'Lihat lebih banyak Kategori seru lainnya!', href: '#', icon: SquaresPlusIcon },
 ]
 const callsToAction = [
-  { name: 'Show All Articles', href: '#', icon: ListBulletIcon },
+  { name: 'Show All Articles', href: route('articles.list'), icon: ListBulletIcon },
   { name: 'Become Writer', href: '#', icon: PencilIcon },
 ]
 const mobileMenuOpen = ref(false)
