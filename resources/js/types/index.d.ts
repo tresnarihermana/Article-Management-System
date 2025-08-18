@@ -33,6 +33,8 @@ export interface User {
     name: string;
     email: string;
     has_password: boolean;
+    bio: string;
+    cover?:string;
     avatar?: string;
     email_verified_at: string | null;
     created_at: string;
