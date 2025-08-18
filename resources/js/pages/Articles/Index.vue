@@ -339,7 +339,7 @@ const getSeverity = (articles) => {
 
 
                                                     <Popover :ref="el => popoverRefs[article.id] = el" @mouseleave="hidePopover($event, article.id)">
-                                                        <div  class="rounded flex flex-col">
+                                                        <div  class="rounded flex flex-col max-w-xs">
                                                             <div class="flex justify-center rounded">
                                                                 <div class="relative mx-auto">
                                                                     <img class="rounded w-44 sm:w-64"
@@ -361,7 +361,7 @@ const getSeverity = (articles) => {
                                                                             class="font-medium text-surface-500 dark:text-surface-400 text-sm">{{
                                                                              category.name}}</span>
                                                                         <div class="text-lg font-medium mt-1">{{
-                                                                            article.title }}</div>
+                                                                            article.title.length > 40 ? article.title.slice(0, 40)+'...' : article.title }}</div>
                                                                         <div class="text-lg font-small mt-1" v-if="article.rejected_message">
                                                                         <span class="font-semibold font-small text-red-500"> Rejected Reasons:</span>
                                                                         <p class="text-orange-500">{{article.rejected_message }}</p>

@@ -88,22 +88,31 @@ function deleteArticle(id) {
 // pagination atau apalah
 const perPage = ref(new URLSearchParams(window.location.search).get('per_page') || 10)
 watch(perPage, (value) => {
-    router.get(route('approve.index'), { per_page: value, page: 1 }, { preserveState: true, replace: true })
+    router.get(route('approve.index'), 
+    { per_page: value, page: 1 }, { preserveState: true, replace: true })
 })
 const form = useForm({
     search: props.filters.search || '',
-    status: props.filters.status || null,
+    status: props.filters.status,
+     per_page: parseInt(new URLSearchParams(window.location.search).get('per_page')) || 10
 
 })
-watch(() => form.search, () => {
+function fetchData(page = 1) {
     form.get(route('approve.index'), {
-        preserveScroll: true,
+        search: form.search,
+        status: form.status,
+        per_page: form.per_page,
+        page: page
+    }, {
         preserveState: true,
+        replace: true
     });
-});
-watch(() => form.status, () => {
-    form.get(route('approve.index'), { preserveState: true, replace: true })
-})
+}
+watch(() => form.search, () => fetchData(1));
+watch(() => form.status, () => fetchData(1));
+watch(() => form.per_page, () => fetchData(1));
+
+
 
 // pop over
 
@@ -167,7 +176,7 @@ const getSeverity = (articles) => {
                         <div class="my-2 flex sm:flex-row flex-col">
                             <div class="flex flex-row mb-1 sm:mb-0">
                                 <div class="relative">
-                                    <select v-model="perPage"
+                                    <select v-model="form.per_page"
                                         class="appearance-none h-full rounded-l border block appearance-none w-full bg-white border-gray-400 text-gray-700 py-2 px-4 pr-8 leading-tight focus:outline-none focus:bg-white focus:border-gray-500">
                                         <option :value="5">5</option>
                                         <option :value="10">10</option>
@@ -334,7 +343,7 @@ const getSeverity = (articles) => {
 
 
                                                     <Popover :ref="el => popoverRefs[article.id] = el" @mouseleave="hidePopover($event, article.id)">
-                                                        <div  class="rounded flex flex-col">
+                                                        <div  class="rounded flex flex-col max-w-xs">
                                                             <div class="flex justify-center rounded">
                                                                 <div class="relative mx-auto">
                                                                     <img class="rounded w-44 sm:w-64"
@@ -356,7 +365,7 @@ const getSeverity = (articles) => {
                                                                             class="font-medium text-surface-500 dark:text-surface-400 text-sm">{{
                                                                              category.name}}</span>
                                                                         <div class="text-lg font-medium mt-1">{{
-                                                                            article.title }}</div>
+                                                                            article.title.length > 20 ? article.title.slice(0, 40)+'....' : article.title }}</div>
                                                                         <div class="text-lg font-small mt-1" v-if="article.rejected_message">
                                                                         <span class="font-semibold font-small text-red-500"> Rejected Reasons:</span>
                                                                         <p class="text-orange-500">{{article.rejected_message }}</p>
