@@ -28,7 +28,7 @@ const { getInitials } = useInitials();
                         alt="user avatar" class="w-8 h-8 rounded-full object-cover mr-2" />
                     <span>
                         by
-                        <a :href="`/author/${article.user.username}`" class="hover:text-green-400 font-medium">
+                        <a :href="route('profile.show', article.user.username)" class="hover:text-green-400 font-medium">
                             {{ article.user.name }}
                         </a>
                     </span>
