@@ -33,7 +33,7 @@ const search = ref("");
 
 const doSearch = () => {
   if (search.value.trim() !== "") {
-    router.get("/articles", { search: search.value }, { preserveState: false, replace: true });
+    router.get("/search", { search: search.value }, { preserveState: false, replace: true });
   }
 };
 </script>
