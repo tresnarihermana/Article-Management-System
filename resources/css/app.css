@@ -179,3 +179,8 @@
     color: white;
     border-color: #1d222a;
 }
+.dark .p-textarea {
+    background-color: #1c1c1c;
+    color: white;
+    border-color: #1d222a;
+}
