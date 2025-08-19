@@ -5,6 +5,7 @@ import ArticleList from '@/components/ArticleList.vue';
 import HeroSection from '@/components/HeroSection.vue';
 import SlidableCategories from '@/components/SlidableCategories.vue';
 import PopularSectionSidebar from '@/components/PopularSectionSidebar.vue';
+import Button from 'primevue/button';
 const { categorized, categories, popArticles } = usePage().props;
 </script>
 <template>
@@ -14,10 +15,10 @@ const { categorized, categories, popArticles } = usePage().props;
         <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
     </Head>
     <PageLayout>
-        <HeroSection/>
-        <SlidableCategories :categories="categories" class="max-w-[1200px]"/>
-        <ArticleList :categorized="categorized" class="max-w-[1200px] mx-auto relative" >
-            <PopularSectionSidebar :popArticles="popArticles"/>
+        <HeroSection />
+        <SlidableCategories :categories="categories" class="max-w-[1200px]" />
+        <ArticleList :categorized="categorized" class="max-w-[1200px] mx-auto relative">
+            <PopularSectionSidebar :popArticles="popArticles" />
         </ArticleList>
     </PageLayout>
 </template>
