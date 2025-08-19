@@ -7,6 +7,7 @@ use App\Models\Category;
 use Illuminate\Support\Str;
 use Illuminate\Database\Seeder;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\Article;
 
 class ArticleSeeder extends Seeder
 {
@@ -136,5 +137,19 @@ class ArticleSeeder extends Seeder
 
             ]);
         }
+        Article::factory()
+            ->count(200)
+            ->create()
+            ->each(function ($article) {
+                // random 1–3 kategori
+                $article->categories()->attach(
+                    Category::inRandomOrder()->limit(rand(1, 3))->pluck('id')
+                );
+
+                // random 2–5 tag
+                $article->tags()->attach(
+                    Tag::inRandomOrder()->limit(rand(2, 5))->pluck('id')
+                );
+            });
     }
 }
