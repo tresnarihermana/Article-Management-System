@@ -4,8 +4,9 @@ import ArticleList from '@/components/ArticleList.vue';
 import { Head, usePage } from '@inertiajs/vue3';
 import SearchBar from '@/components/SearchBar.vue';
 import SlidableCategories from '@/components/SlidableCategories.vue';
+import PopularSectionSidebar from '@/components/PopularSectionSidebar.vue';
 const page = usePage()
-const {categorized, categories} = page.props
+const {categorized, categories, popArticles} = page.props
 </script>
 
 <template>
@@ -16,6 +17,7 @@ const {categorized, categories} = page.props
   <PageLayout>
     <SlidableCategories :categories="categories" class="max-w-[1200px] top-15"/>
     <ArticleList :categorized="categorized">
+      <PopularSectionSidebar :popArticles="popArticles"></PopularSectionSidebar>
     </ArticleList>
   </PageLayout>
 </template>
