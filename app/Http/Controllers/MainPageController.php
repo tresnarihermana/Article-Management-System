@@ -139,7 +139,8 @@ class MainPageController extends Controller
                 $query->where('status', 'published');
             })
             ->latest()
-            ->get();
+            ->paginate(5)
+            ->withQueryString();
         $article = Article::with('tags', 'user', 'categories')
             ->where('status', 'published')
             ->orderBy('views', 'desc')
@@ -147,6 +148,12 @@ class MainPageController extends Controller
             ->get();
         return Inertia::render('Main/Articles', [
             "categorized" => $categorized,
+            "ArticlesPagination" => [
+                "last_page" => $categorized->lastPage(),
+                "current_page" => $categorized->currentPage(),
+                "total" => $categorized->total(),
+                "per_page" => $categorized->perPage(),
+            ],
             "categories" => Category::all(),
             "popArticles" => $article,
         ]);
@@ -165,17 +172,25 @@ class MainPageController extends Controller
 
     public function category($slug)
     {
+        $category = Category::with(['articles' => function ($q) {
+            $q->latest()->paginate(18);
+        }])->where('slug', $slug)->firstOrFail();
 
-        $category = Category::with('articles')
-            ->where('slug', $slug)
-            ->latest()
-            ->get();
+        $articles = $category->articles()->latest()->paginate(18)->withQueryString();
+        $popCat = $category->articles()->limit(5)->orderBy('views', 'desc')->get();
+
         return Inertia::render('Main/Category', [
-            "category" => $category,
-
-
+            'category' => $category,
+            'popCat' => $popCat,
+            'articlesPagination' => [
+                'per_page' => $articles->perPage(),
+                'current_page' => $articles->currentPage(),
+                'last_page' => $articles->lastPage(),
+                'total' => $articles->total(),
+            ],
         ]);
     }
+
 
     public function search()
     {
@@ -189,33 +204,40 @@ class MainPageController extends Controller
                     ->orWhere('body', 'like', '%' . $search . '%');
             })
             ->latest()
-            ->get();
+            ->paginate(18)
+            ->withQueryString();
 
         return Inertia::render('Main/Search', [
             "articles" => $articles,
+            "ArticlesPagination" => [
+                "per_page" => $articles->perPage(),
+                "last_page" => $articles->lastPage(),
+                "current_page" => $articles->currentPage(),
+                "total" => $articles->total(),
+            ],
             "filters" => [
                 "search" => $search
             ]
         ]);
     }
-public function profile($username)
-{
-    $author = User::with('roles')
-        ->where('username', $username)
-        ->firstOrFail();
+    public function profile($username)
+    {
+        $author = User::with('roles')
+            ->where('username', $username)
+            ->firstOrFail();
 
-    $articles = Article::with('tags', 'user', 'categories')
-        ->where('user_id', $author->id)
-        ->where('status', 'published')
-        ->latest()
-        ->paginate(5)
-        ->withQueryString();
+        $articles = Article::with('tags', 'user', 'categories')
+            ->where('user_id', $author->id)
+            ->where('status', 'published')
+            ->latest()
+            ->paginate(6)
+            ->withQueryString();
 
-    return Inertia::render('Main/Author', [
-        'author' => $author,
-        'articles' => $articles
-    ]);
-}
+        return Inertia::render('Main/Author', [
+            'author' => $author,
+            'articles' => $articles
+        ]);
+    }
 
 
     public function like(Article $article)
