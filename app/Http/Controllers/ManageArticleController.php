@@ -19,14 +19,13 @@ class ManageArticleController extends Controller
         $search = $request->input('search');
         $status = $request->input('status');
         $articles = Article::with('user', 'tags', 'categories')
-            ->where('status', 'pending')
             ->when($search, function ($query, $search) {
                 $query->where(function ($q) use ($search) {
-                    $q->where('titile', 'like', "%$search%")
+                    $q->where('title', 'like', "%$search%")
                         ->orWhere('slug', 'like', "%$search%");
                 });
             })->when($status, function ($query, $status) {
-                $query->whereHas('status', function ($q) use ($status) {
+                $query->where(function ($q) use ($status) {
                     $q->where('status', '=', $status);
                 });
             })
@@ -44,12 +43,15 @@ class ManageArticleController extends Controller
                     'updated_at' => $article->updated_at->format('Y-m-d H:i:s'),
                     'status' => $article->status,
                     'slug' => $article->slug,
+                    'cover' => $article->cover,
+                    'rejected_message' => $article->rejected_message,
                 ];
             });
         return Inertia::render('Articles/Manage/Index', [
             'articles' => $articles,
             'search' => $search,
-            'filters' => $request->only('input', 'tag'),
+            'filters' => $request->only(['per_page', 'status', 'search'])
+
 
         ]);
     }
@@ -171,7 +173,7 @@ class ManageArticleController extends Controller
     {
         Article::destroy($id);
 
-        return to_route("articles.index")->with("message", "Success Delete Article");
+        return to_route("approve.index")->with("message", "Success Delete Article");
     }
 
 
