@@ -18,7 +18,15 @@ const { categorized, categories, popArticles } = usePage().props;
         <HeroSection />
         <SlidableCategories :categories="categories" class="max-w-[1200px]" />
         <ArticleList :categorized="categorized" class="max-w-[1200px] mx-auto relative">
-            <PopularSectionSidebar :popArticles="popArticles" />
+
+            <template #pagination>
+                <div class="w-full flex justify-center py-6">
+                    <Button as="a" :href="route('articles.list')" label="See More" severity="info" class="mx-auto" />
+                </div>
+            </template>
+            <template #sidebar>
+                <PopularSectionSidebar :popArticles="popArticles"></PopularSectionSidebar>
+            </template>
         </ArticleList>
     </PageLayout>
 </template>
