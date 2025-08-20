@@ -4,9 +4,14 @@ import { Navigation, Pagination } from 'swiper/modules'
 import 'swiper/css';
 import 'swiper/css/pagination';
 import 'swiper/css/navigation';
+import Button from 'primevue/button';
+import { Inertia } from '@inertiajs/inertia';
+import { computed } from 'vue';
 const props = defineProps<{
   categorized: Array<any>,
+  ArticlesPagination: Object,
 }>();
+
 </script>
 
 <template>
@@ -25,13 +30,13 @@ const props = defineProps<{
               640: { slidesPerView: 1 },
               768: { slidesPerView: 2 },
               1024: { slidesPerView: 3 }
-            }" :pagination="{ dynamicBullets: true }" :navigation="true" :modules="[Pagination, Navigation]"
+            }" :pagination="{ dynamicBullets: true }" :navigation="true" :lazy="true" :modules="[Pagination, Navigation]"
               class="mySwiper">
               <SwiperSlide v-for="article in category.articles" :key="article.id" class="group transition duration-300">
                 <a :href="route('article.show', article.slug)"
                   class="block bg-white dark:bg-zinc-800 rounded-2xl shadow-md hover:shadow-xl overflow-hidden transition flex flex-col h-[360px]">
                   <img class="w-full h-40 object-cover rounded-t-2xl group-hover:scale-105 transition duration-500"
-                    :src="`/storage/${article.cover}`" :alt="article.title" />
+                    :src="`/storage/${article.cover}`" :alt="article.title" loading="lazy"/>
 
                   <div class="flex flex-col flex-grow p-4">
                     <h3 class="text-lg font-bold leading-tight mb-2 group-hover:text-green-600 transition line-clamp-2">
@@ -49,12 +54,36 @@ const props = defineProps<{
                   </div>
                 </a>
               </SwiperSlide>
+              <SwiperSlide class="group transition duration-300">
+              <a :href="route('category.show', category.slug)"
+                  class="block bg-white dark:bg-zinc-800 rounded-2xl shadow-md hover:shadow-xl overflow-hidden transition flex flex-col h-[360px]">
+                  <img class="w-full h-40 object-cover rounded-t-2xl group-hover:scale-105 transition duration-500"
+                    loading="lazy"/>
+
+                  <div class="flex flex-col flex-grow p-4">
+                    <h3 class="text-lg font-bold leading-tight mb-2 group-hover:text-green-600 transition line-clamp-2">
+                     hello
+                    </h3>
+                    <p class="hidden md:block text-gray-600 dark:text-gray-400 text-sm mb-2 flex-grow line-clamp-3"
+                      > hello
+                    </p>
+
+                    <a class="mt-auto inline-flex items-center text-sm text-green-600 font-medium hover:underline"
+                      :href="route('category.show', category.slug)">
+                      <span class="inline-block h-2 w-2 rounded-full bg-green-600 mr-2"></span>
+                      hello
+                    </a>
+                  </div>
+                </a>
+              </SwiperSlide>
             </Swiper>
           </div>
+          <slot name="pagination" />
+
         </div>
 
         <!-- ini Sidebar -->
-        <slot />
+        <slot name="sidebar" />
 
       </div>
     </div>
