@@ -199,6 +199,10 @@ watch(() => form.permission, () => {
                                                 Description
                                             </th>
                                             <th
+                                                class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider dark:bg-zinc-900 dark:border-zinc-900 dark:text-gray-50 whitespace-nowrap">
+                                                Used By
+                                            </th>
+                                            <th
                                                 class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider dark:bg-zinc-900 dark:border-zinc-900 dark:text-gray-50">
                                                 Action
                                             </th>
@@ -225,6 +229,14 @@ watch(() => form.permission, () => {
                                                 <div class="flex flex-wrap gap-1">
                                                     <p class="text-gray-900 whitespace-no-wrap dark:text-white">
                                                         {{ category.description }}
+                                                    </p>
+                                                </div>
+                                            </td>
+                                            <td
+                                                class="px-5 py-5 border-b border-gray-200 bg-white text-sm max-w-s dark:bg-zinc-800 dark:border-zinc-800 dark:text-white  ">
+                                                <div class="flex flex-wrap gap-1 justify-between">
+                                                    <p class="text-gray-900 dark:text-white">
+                                                        <span class="font-semibold">{{ category.articles.length }} </span> 
                                                     </p>
                                                 </div>
                                             </td>
