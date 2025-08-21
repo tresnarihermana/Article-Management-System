@@ -46,7 +46,7 @@ class Article extends Model
     }
     public function likes()
     {
-        return $this->hasMany(ArticleLikes::class);
+        return $this->hasMany(Like::class);
     }
 
     public function likedByUser($userId)
