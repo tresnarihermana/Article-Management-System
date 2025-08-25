@@ -11,34 +11,23 @@ use App\Http\Controllers\Controller;
 class TagController extends Controller
 {
     public function index(Request $request)
-    {   
-        
-        $perPage = $request->input('perPage', 10);
-        $search = $request->input('search');
+    {
+
         $tags = Tag::with('articles')
-            ->when($search, function ($query, $search) {
-                $query->where(function ($q) use ($search) {
-                    $q->where('name', 'like', "%$search%")
-                        ->orWhere('slug', 'like', "%$search%");
-                });
-            })
             ->orderBy('id', 'desc')
-            ->paginate($perPage)
-            ->withQueryString()
-            ->through(function ($tag) {
+            ->get()
+            ->map(function ($tag) {
                 return [
                     'id' => $tag->id,
                     'name' => $tag->name,
                     'created_at' => $tag->created_at->format('Y-m-d H:i:s'),
                     'updated_at' => $tag->updated_at->format('Y-m-d H:i:s'),
                     'slug' => $tag->slug,
-                    'articles' => $tag
+                    'articles' => $tag->articles->count()
                 ];
             });
         return Inertia::render('Tags/Index', [
             'tags' => $tags,
-            'search' => $search,
-            'filters' => $request->only('input')
         ]);
     }
 
@@ -63,7 +52,7 @@ class TagController extends Controller
     {
         // Show a form to edit an existing tag
         $tag = Tag::findOrFail($id);
-        return Inertia::render('Tags/Edit',[
+        return Inertia::render('Tags/Edit', [
             'tag' => $tag,
         ]);
     }
@@ -73,13 +62,12 @@ class TagController extends Controller
         // Validate and update an existing tag
         $tag = Tag::findOrFail($id);
         $request->validate([
-            'name' => 'required|string|unique:'.Tag::class,
+            'name' => 'required|string|unique:' . Tag::class,
         ]);
         $tag->update($request->only(['name']));
         $tag->slug = Str::slug($request->name);
         $tag->save();
         return to_route('tags.index')->with('message', 'tag berhasil di edit');
-
     }
 
     public function destroy($id)
@@ -87,5 +75,15 @@ class TagController extends Controller
         // Delete an existing tag
         Tag::destroy($id);
         return to_route('tags.index')->with('message', 'Tag berhasil dihapus');
+    }
+    public function bulkDestroy(Request $request)
+    {
+        $ids = $request->input('ids', []);
+        // dd($ids);
+        if (!empty($ids)) {
+            Tag::whereIn('id', $ids)->delete();
+        }
+
+        return redirect()->back(303)->with('success', 'Selected users deleted successfully');
     }
 }

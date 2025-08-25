@@ -14,25 +14,11 @@ class RoleController extends Controller
      */
     public function index(Request $request)
     {
-        $perPage = $request->input('per_page', 10);
-        $search = $request->input('search');
-        $permission = $request->input('permission');
         $roles = Role::with('permissions')
-            ->when($search, function ($query, $search) {
-                $query->where(function ($q) use ($search) {
-                    $q->where('name', 'like', "%$search%");
-                });
-            })->when($permission, function ($query, $permission) {
-                $query->whereHas('permissions', function ($q) use ($permission) {
-                    $q->where('name', '=', $permission);
-                });
-            })
-            ->paginate($perPage)
-            ->withQueryString();
+            ->get();
         return Inertia::render("Roles/Index", [
             "roles" => $roles,
             "permissions" => Permission::all(),
-            'filters' => $request->only(['search','role']),
         ]);
     }
 
@@ -117,5 +103,15 @@ class RoleController extends Controller
 
         Role::destroy($id);
         return to_route("roles.index")->with("message", "Success Delete Role");
+    }
+        public function bulkDestroy(Request $request)
+    {
+        $ids = $request->input('ids', []);
+        // dd($ids);
+        if (!empty($ids)) {
+            Role::whereIn('id', $ids)->delete();
+        }
+
+        return redirect()->back(303)->with('success', 'Selected roles deleted successfully');
     }
 }
