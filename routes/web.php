@@ -7,12 +7,14 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LogController;
+use App\Http\Controllers\TagController;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Requests\Auth\LoginRequest;
 use Laravel\Socialite\Facades\Socialite;
 use App\Http\Controllers\ArticleController;
+use App\Http\Controllers\CommentController;
 use Spatie\Permission\Contracts\Permission;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\MainPageController;
@@ -21,7 +23,6 @@ use App\Http\Middleware\EnsureProfileComplete;
 use App\Http\Controllers\ManageArticleController;
 use App\Http\Controllers\ApproveArticleController;
 use App\Http\Controllers\Settings\ProfileController;
-use App\Http\Controllers\TagController;
 use Illuminate\Session\Middleware\AuthenticateSession;
     Route::get('/', [MainPageController::class, 'index'], function () {
         
@@ -76,6 +77,13 @@ Route::middleware(['auth', 'web', 'verified'])->group(function () {
 
     Route::get('/categories', [MainPageController::class, 'categories'])
     ->name('categories.list');
+
+    Route::post('/article/read/{article}/like', [MainPageController::class, 'like'])->middleware('auth');
+
+    Route::post('/articles/read/{article}/comments', [CommentController::class, 'store'])
+    ->middleware(['throttle:comments', 'auth'])
+    ->name('comments.store');
+
 });
 
 // Roles and Permissions mulai disini

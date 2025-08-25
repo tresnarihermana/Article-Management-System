@@ -24,7 +24,7 @@ class Article extends Model
         'rejected_message',
         'views',
         'hits',
-        
+
     ];
 
     protected $casts = [
@@ -44,6 +44,20 @@ class Article extends Model
     {
         return $this->belongsToMany(Tag::class, 'article_tag')->withTimestamps();
     }
+    public function likes()
+    {
+        return $this->hasMany(Like::class);
+    }
+
+    public function likedByUser($userId)
+    {
+        return $this->likes()->where('user_id', $userId)->exists();
+    }
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
+    }
+
 
     // public function comments()
     // {

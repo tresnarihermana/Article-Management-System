@@ -93,7 +93,7 @@ watch(perPage, (value) => {
 })
 const form = useForm({
     search: props.filters.search || '',
-    status: props.filters.status,
+    status: props.filters.status || null,
      per_page: parseInt(new URLSearchParams(window.location.search).get('per_page')) || 10
 
 })
@@ -172,6 +172,7 @@ const getSeverity = (articles) => {
                     <div class="py-8">
                         <div>
                             <h2 class="text-2xl font-semibold leading-tight">Articles</h2>
+                            <h3 class="text-xl font-semibold leading-tight">Total Current Articles: {{ articles.total }}</h3>
                         </div>
                         <div class="my-2 flex sm:flex-row flex-col">
                             <div class="flex flex-row mb-1 sm:mb-0">

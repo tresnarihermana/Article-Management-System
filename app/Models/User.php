@@ -4,14 +4,16 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 
+use App\Models\LikesComments;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Permission\Traits\HasRoles;
+use App\Notifications\CustomVerifyEmail;
+use Illuminate\Notifications\Notifiable;
+use Spatie\Activitylog\Traits\LogsActivity;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
-use App\Notifications\CustomVerifyEmail;
-use Spatie\Activitylog\LogOptions;
-use Spatie\Activitylog\Traits\LogsActivity;
-use Spatie\Permission\Traits\HasRoles;
+
 class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
@@ -29,12 +31,17 @@ class User extends Authenticatable implements MustVerifyEmail
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()->logAll()
-        ->setDescriptionForEvent(fn(string $eventName) => "This model has been {$eventName}");
+            ->setDescriptionForEvent(fn(string $eventName) => "This model has been {$eventName}");
     }
     public function articles()
-{
-    return $this->hasMany(Article::class);
-}
+    {
+        return $this->hasMany(Article::class);
+    }
+    public function likes()
+    {
+        return $this->hasMany(Like::class);
+    }
+
 
     /**
      * The attributes that are mass assignable.

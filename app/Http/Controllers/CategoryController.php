@@ -14,7 +14,7 @@ public function index(Request $request)
     {
         $perPage = $request->input('per_page', 10);
         $search = $request->input('search');
-        $categories = Category::query()
+        $categories = Category::with('articles')
             ->when($search, function ($query, $search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('name', 'like', "%$search%")
@@ -31,6 +31,7 @@ public function index(Request $request)
                     'created_at' => $category->created_at->format('Y-m-d H:i:s'),
                     'updated_at' => $category->updated_at->format('Y-m-d H:i:s'),
                     'description' => $category->description,
+                    'articles' => $category->articles,
                     'slug' => $category->slug,
                 ];
             });

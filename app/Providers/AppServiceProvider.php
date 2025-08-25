@@ -6,7 +6,9 @@ use Inertia\Inertia;
 use Anhskohbo\NoCaptcha\NoCaptcha;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\RateLimiter;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -31,5 +33,12 @@ class AppServiceProvider extends ServiceProvider
         return $user->hasRole('Super Admin') ? true : null;
     });
      Inertia::share('csrf_token', csrf_token());
+     $this->configureRateLimiting();
     }
+    protected function configureRateLimiting(): void
+{
+    RateLimiter::for('comments', function ($request) {
+        return Limit::perMinute(3)->by(optional($request->user())->id ?: $request->ip());
+    });
+}
 }

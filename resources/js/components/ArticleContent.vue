@@ -10,7 +10,8 @@ const { getInitials } = useInitials();
 </script>
 
 <template>
-        <Head :title="article?.title">
+
+    <Head :title="article?.title">
         <link rel="preconnect" href="https://rsms.me/" />
         <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
     </Head>
@@ -28,7 +29,8 @@ const { getInitials } = useInitials();
                         alt="user avatar" class="w-8 h-8 rounded-full object-cover mr-2" />
                     <span>
                         by
-                        <a :href="route('profile.show', article.user.username)" class="hover:text-green-400 font-medium">
+                        <a :href="route('profile.show', article.user.username)"
+                            class="hover:text-green-400 font-medium">
                             {{ article.user.name }}
                         </a>
                     </span>
@@ -64,7 +66,7 @@ const { getInitials } = useInitials();
                     </div>
 
                     <div>
-                        <span class="font-semibold">Likes:</span> {{ article.likes }}
+                         <span class="font-semibold">Likes:</span> {{ article.likes_count }}
                     </div>
                 </div>
             </div>
