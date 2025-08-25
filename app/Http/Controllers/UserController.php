@@ -19,28 +19,13 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
-        $perPage = $request->input('per_page', 10);
-        $search = $request->input('search');
-        $role = $request->input('role');
         $users = User::with('roles')
-            ->when($search, function ($query, $search) {
-                $query->where(function ($q) use ($search) {
-                    $q->where('name', 'like', "%$search%")
-                        ->orWhere('username', 'like', "%$search%")
-                        ->orWhere('email', 'like', "%$search%");
-                });
-            })->when($role, function ($query, $role) {
-                $query->whereHas('roles', function ($q) use ($role) {
-                    $q->where('name', '=', $role);
-                });
-            })
-            ->paginate($perPage)
-            ->withQueryString();
+            ->orderby('id', 'desc')
+            ->get();
 
         return Inertia::render("Users/Index", [
             "users" => $users,
             "roles" => Role::all(),
-            'filters' => $request->only(['search', 'role']),
         ]);
     }
 
@@ -274,5 +259,27 @@ class UserController extends Controller
         $user->is_active = !$user->is_active;
         $user->save();
         return redirect()->back()->with('message', 'Status berhasil diubah.');
+    }
+    public function bulkDestroy(Request $request)
+    {
+        $ids = $request->input('ids', []);
+        $user = User::findorFail($ids);
+        // dd($ids);
+        $users = User::whereIn('id', $ids)->get();
+
+        foreach ($users as $user) {
+            if ($user->hasRole('admin') && !auth()->user()->hasRole('Super Admin')) {
+                abort(403, 'You are not allowed to delete another Admin.');
+            }
+
+            if ($user->hasRole('Super Admin') && !auth()->user()->hasRole('Super Admin')) {
+                abort(403, 'You are not allowed to delete Super Admin.');
+            }
+        }
+        if (!empty($ids)) {
+            User::whereIn('id', $ids)->delete();
+        }
+
+        return redirect()->back(303)->with('success', 'Selected users deleted successfully');
     }
 }
