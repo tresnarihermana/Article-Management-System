@@ -9,18 +9,24 @@ use Illuminate\Http\Request;
 class CommentController extends Controller
 {
     public function store(Request $request, $articleId)
-{
-    $request->validate([
-        'content' => 'required|string|max:1000',
-    ]);
+    {
+        $request->validate([
+            'content' => 'required|string|max:1000',
+        ]);
 
-    Comment::create([
-        'article_id' => $articleId,
-        'user_id' => auth()->id(),
-        'content' => $request->content,
-    ]);
+        Comment::create([
+            'article_id' => $articleId,
+            'user_id' => auth()->id(),
+            'content' => $request->content,
+        ]);
 
-    return redirect()->back();
-}
+        return redirect()->back();
+    }
 
+    public function destroy(string $id)
+    {
+        Comment::destroy($id);
+
+        return back()->with("message", "Success Delete Article");
+    }
 }
