@@ -262,10 +262,10 @@ const UploadUserCover = () => {
                         <div class="text-center pointer-events-none">
                             <img class="mx-auto h-12 w-12" src="https://www.svgrepo.com/show/357902/image-upload.svg"
                                 alt="upload" />
-                            <h3 class="mt-2 text-sm font-medium text-gray-900">
+                            <h3 class="mt-2 text-sm font-medium">
                                 <label for="file-upload" class="relative cursor-pointer">
                                     <span>Drag and drop</span>
-                                    <span class="text-indigo-600"> atau telusuri </span>
+                                    <span class="text-green-600"> atau telusuri </span>
                                     <span>untuk mengunggah</span>
                                     <input id="file-upload" name="file-upload" type="file" class="sr-only" />
                                 </label>
@@ -285,7 +285,7 @@ const UploadUserCover = () => {
           alt="Preview Cover Baru"
         />
                     </div>
-                    <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-4 mt-5">
                         <Button  type="submit" :disabled="usercoverform.processing || !usercoverform.cover">
                             Unggah
                         </Button>
