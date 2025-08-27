@@ -16,22 +16,29 @@ class MainPageController extends Controller
     {
         $categorized = Category::with(['articles' => function ($query) {
             $query->where('status', 'published')->latest();
-        }])
+        }, 'articles.user'])
             ->whereHas('articles', function ($query) {
                 $query->where('status', 'published');
             })
             ->latest()
             ->limit(4)
             ->get();
-
-        $article = Article::with('tags', 'user', 'categories')
+        $poparticle = Article::with('tags', 'user', 'categories')
             ->where('status', 'published')
             ->orderBy('views', 'desc')
             ->limit(5)
             ->get();
+
+        $pinnedArticle =  Article::with('tags', 'user', 'categories')
+            ->where('status', 'published')
+            ->where('is_pinned', true)
+            ->limit(7)
+            ->get();
+
         if (Auth::check()) {
             return Inertia::render('Home', [
-                "popArticles" => $article,
+                "popArticles" => $poparticle,
+                "pinnedArticle" => $pinnedArticle,
                 "categorized" => $categorized,
                 "categories" => Category::all(),
 
@@ -40,7 +47,7 @@ class MainPageController extends Controller
             ]);
         } else {
             return Inertia::render('Welcome', [
-                "articles" => $article,
+                "articles" => $poparticle,
                 "categorized" => $categorized
 
 
@@ -64,6 +71,7 @@ class MainPageController extends Controller
             ->paginate(10);
 
 
+
         $commentsData = $comments->map(function ($comment) {
             return [
                 'id' => $comment->id,
@@ -72,7 +80,7 @@ class MainPageController extends Controller
                     'id' => $comment->user->id ?? null,
                     'name' => $comment->user->name ?? 'Unknown',
                     'username' => $comment->user->username ?? 'Unknown',
-                    'avatar' => $comment->user->avatar ?? '/default-avatar.png',
+                    'avatar' => $comment->user->avatar ?? null,
                 ],
                 'created_at' => $comment->created_at->format('Y-m-d H:i:s'),
             ];
@@ -134,7 +142,7 @@ class MainPageController extends Controller
     {
         $categorized = Category::with(['articles' => function ($query) {
             $query->where('status', 'published')->latest();
-        }])
+        }, 'articles.user'])
             ->whereHas('articles', function ($query) {
                 $query->where('status', 'published');
             })
@@ -201,7 +209,7 @@ class MainPageController extends Controller
         $articles = Article::query()
             ->when($search, function ($query) use ($search) {
                 $query->where('title', 'like', '%' . $search . '%')
-                    ->orWhere('body', 'like', '%' . $search . '%');
+                    ->orWhere('slug', 'like', '%' . $search . '%');
             })
             ->latest()
             ->paginate(18)
