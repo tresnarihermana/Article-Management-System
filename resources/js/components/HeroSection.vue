@@ -15,7 +15,7 @@ const props = defineProps({
 
 </script>
 <style>
-.dark section {
+.dark .HeroSection {
     background-image: url(/public/bg.jpg);
     background-position: center;
     background-repeat: no-repeat;
@@ -24,7 +24,7 @@ const props = defineProps({
 }
 </style>
 <template>
-    <section class="bg-white py-8 antialiased  md:py-16">
+    <section class="bg-white py-8 antialiased  md:py-16 HeroSection">
         <div class="mx-auto grid max-w-screen-xl px-4 pb-8 md:grid-cols-12 lg:gap-12 lg:pb-16 xl:gap-0">
             <div class="content-center justify-self-start md:col-span-7 md:text-start">
                 <h1
