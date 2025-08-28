@@ -35,11 +35,17 @@ class MainPageController extends Controller
             ->limit(7)
             ->get();
 
+        $articles = Article::with('tags', 'user', 'categories')
+            ->where('status', 'published')
+            ->latest()
+            ->limit(12)
+            ->get();
         if (Auth::check()) {
             return Inertia::render('Home', [
                 "popArticles" => $poparticle,
                 "pinnedArticle" => $pinnedArticle,
                 "categorized" => $categorized,
+                "articles" => $articles,
                 "categories" => Category::all(),
 
 
