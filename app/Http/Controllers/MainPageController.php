@@ -14,47 +14,46 @@ class MainPageController extends Controller
 {
     public function index()
     {
-        $categorized = Category::with(['articles' => function ($query) {
-            $query->where('status', 'published')->latest();
-        }, 'articles.user'])
-            ->whereHas('articles', function ($query) {
-                $query->where('status', 'published');
-            })
-            ->latest()
-            ->limit(4)
-            ->get();
         $poparticle = Article::with('tags', 'user', 'categories')
             ->where('status', 'published')
             ->orderBy('views', 'desc')
             ->limit(5)
             ->get();
 
-        $pinnedArticle =  Article::with('tags', 'user', 'categories')
-            ->where('status', 'published')
-            ->where('is_pinned', true)
-            ->limit(7)
-            ->get();
-
-        $articles = Article::with('tags', 'user', 'categories')
+        $articles = Article::with('tags', 'user', 'categories', 'comments', 'likes')
             ->where('status', 'published')
             ->latest()
             ->limit(12)
             ->get();
+
+        $articleData = $articles->map(function ($article) {
+            return [
+                'id' => $article->id,
+                'title' => $article->title,
+                'slug' => $article->slug,
+                'excerpt' => $article->excerpt,
+                'cover' => $article->cover,
+                'created_at' => $article->created_at,
+                'updated_at' => $article->updated_at,
+                'user' => $article->user,
+                'tags' => $article->tags,
+                'categories' => $article->categories,
+                'comments' => $article->comments,
+                'likes' => $article->likes,
+            ];
+        });
+
+
         if (Auth::check()) {
             return Inertia::render('Home', [
                 "popArticles" => $poparticle,
-                "pinnedArticle" => $pinnedArticle,
-                "categorized" => $categorized,
-                "articles" => $articles,
+                // "pinnedArticle" => $pinnedArticle,
+                "articles" => $articleData,
                 "categories" => Category::all(),
-
-
-
             ]);
         } else {
             return Inertia::render('Welcome', [
                 "articles" => $poparticle,
-                "categorized" => $categorized
 
 
             ]);
