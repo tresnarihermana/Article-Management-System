@@ -10,6 +10,14 @@ import Multiselect from 'vue-multiselect';
 import 'vue-multiselect/dist/vue-multiselect.min.css';
 import { route } from '../../../../vendor/tightenco/ziggy/src/js/index';
 import InputError from '@/components/InputError.vue';
+import BlotFormatter from 'quill-blot-formatter';
+const modules = [
+  {
+    name: 'blotFormatter',
+    module: BlotFormatter,
+    options: {} // Optional: configure BlotFormatter options here
+  }
+];
 const breadcrumbs: BreadcrumbItem[] = [
   {
     title: 'Article',
@@ -45,8 +53,10 @@ const submit = () => {
   });
 };
 
-function saveAsDraft(){
+function saveAsDraft() {
   form.status = 'draft';
+  form.category_id = form.category_id.id
+  form.tag_ids = form.tag_ids.map(tag => tag.id)
   form.post(route('articles.store'), {
     forceFormData: true,
   })
@@ -147,6 +157,7 @@ const UploadArticleCover = () => {
 </script>
 
 <template>
+
   <Head title="Article Create" />
   <AppLayout :breadcrumbs="breadcrumbs">
     <div class="text-gray-900 bg-gray-200">
@@ -166,16 +177,8 @@ const UploadArticleCover = () => {
     <!-- Category -->
     <div class="p-4">
       <label class="block mb-1 text-sm font-medium text-gray-700">Kategori</label>
-      <multiselect
-        v-model="form.category_id"
-        :options="cat"
-        :multiple="false"
-        :group-select="true"
-        searchable="true"
-        placeholder="Cari dan pilih kategori"
-        track-by="name"
-        :label="`name`"
-      >
+      <multiselect v-model="form.category_id" :options="cat" :multiple="false" :group-select="true" searchable="true"
+        placeholder="Cari dan pilih kategori" track-by="name" :label="`name`">
         <template v-slot:noResult>Oops! Tidak ditemukan.</template>
       </multiselect>
       <InputError :message="form.errors.category_id" />
@@ -184,15 +187,8 @@ const UploadArticleCover = () => {
     <!-- Tags -->
     <div class="p-4">
       <label class="block mb-1 text-sm font-medium text-gray-700">Tag</label>
-      <multiselect
-        v-model="form.tag_ids"
-        :options="tags"
-        :multiple="true"
-        :group-select="true"
-        placeholder="Cari dan pilih tag"
-        track-by="name"
-        :label="`name`"
-      >
+      <multiselect v-model="form.tag_ids" :options="tags" :multiple="true" :group-select="true"
+        placeholder="Cari dan pilih tag" track-by="name" :label="`name`">
         <template v-slot:noResult>Oops! Tidak ditemukan.</template>
       </multiselect>
       <InputError :message="form.errors.tag_ids" />
@@ -201,23 +197,14 @@ const UploadArticleCover = () => {
     <!-- Form for Article content -->
     <div class="p-4">
       <label class="block mb-1 text-sm font-medium text-gray-700">Konten Artikel</label>
-      <QuillEditor
-        v-model:content="form.body"
-        theme="snow"
-        toolbar="full"
-        contentType="html"
-        style="height: 400px;" />
+      <QuillEditor v-model:content="form.body" theme="snow" toolbar="full" contentType="html" :modules="modules"  style="height: 400px;" />
       <InputError :message="form.errors.body" />
     </div>
 
     <!-- Excerpt -->
     <div class="p-4">
       <label class="block mb-1 text-sm font-medium text-gray-700">Excerpt (Ringkasan)</label>
-      <QuillEditor
-        v-model:content="form.excerpt"
-        theme="snow"
-        toolbar="full"
-        contentType="html"
+      <QuillEditor v-model:content="form.excerpt" theme="snow" toolbar="full" contentType="html"
         style="height: 200px;" />
       <InputError :message="form.errors.excerpt" />
     </div>
@@ -225,16 +212,9 @@ const UploadArticleCover = () => {
     <!-- Upload Cover -->
     <form @submit.prevent="UploadArticleCover" class="p-4">
       <label class="block mb-1 text-sm font-medium text-gray-700">Upload Gambar Cover</label>
-      <div class="w-[400px] border-2 border-gray-300 border-dashed rounded-lg p-6"
-        id="dropzone"
-        @dragover.prevent="onDragOver"
-        @drop.prevent="onDrop">
-        <input
-          for="cover"
-          ref="fileInput"
-          type="file"
-          accept="image/*"
-          class="inset-0 w-full h-full opacity-0 z-50"
+      <div class="w-[400px] border-2 border-gray-300 border-dashed rounded-lg p-6" id="dropzone"
+        @dragover.prevent="onDragOver" @drop.prevent="onDrop">
+        <input for="cover" ref="fileInput" type="file" accept="image/*" class="inset-0 w-full h-full opacity-0 z-50"
           @change="onFileChange" />
         <div class="text-center pointer-events-none">
           <img class="mx-auto h-12 w-12" src="https://www.svgrepo.com/show/357902/image-upload.svg" alt="upload" />
@@ -252,33 +232,14 @@ const UploadArticleCover = () => {
       </div>
     </form>
 
-  <!-- Tombol Simpan -->
-      <div class="flex justify-end gap-3">
-        <Button
-          label="Kembali"
-          as="a"
-          :href="route('articles.index')"
-          icon="pi pi-arrow-left"
-          icon-pos="left"
-          severity="secondary"
-        />
-        <Button
-          type="submit"
-          @click="saveAsDraft"
-          label="Save as draft"
-          severity="info"
-          icon="pi pi-save"
-          icon-pos="left"
-        />
-        <Button
-          type="submit"
-          @click="submit"
-          label="Submit Article"
-          severity="success"
-          icon="pi pi-upload"
-          icon-pos="left"
-        />
-      </div>
+    <!-- Tombol Simpan -->
+    <div class="flex justify-end gap-3">
+      <Button label="Kembali" as="a" :href="route('articles.index')" icon="pi pi-arrow-left" icon-pos="left"
+        severity="secondary" />
+      <Button type="submit" @click="saveAsDraft" label="Save as draft" severity="info" icon="pi pi-save"
+        icon-pos="left" />
+      <Button type="submit" @click="submit" label="Submit Article" severity="success" icon="pi pi-upload"
+        icon-pos="left" />
+    </div>
   </AppLayout>
 </template>
-
