@@ -140,6 +140,7 @@ class ArticleController extends Controller
 
 
         if (!empty($validated['category_id'])) {
+            $article->categories()->detach();
             $article->categories()->sync($validated['category_id']);
         }
 
@@ -175,14 +176,13 @@ class ArticleController extends Controller
     }
 
     public function bulkDestroy(Request $request)
-{
-    $ids = $request->input('ids', []);
-    // dd($ids);
-    if (!empty($ids)) {
-        Article::whereIn('id', $ids)->delete();
+    {
+        $ids = $request->input('ids', []);
+        // dd($ids);
+        if (!empty($ids)) {
+            Article::whereIn('id', $ids)->delete();
+        }
+
+        return redirect()->back(303)->with('success', 'Selected articles deleted successfully');
     }
-
-    return redirect()->back(303)->with('success', 'Selected articles deleted successfully');
-}
-
 }
