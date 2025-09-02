@@ -75,10 +75,10 @@ const { getInitials } = useInitials();
         <div class="bg-white py-8 dark:bg-zinc-800">
             <div class="container mx-auto px-4 flex flex-col md:flex-row">
                 <div class="w-full md:w-3/4 px-4">
-                    <img :src="'/storage/' + article.cover" alt="Blog Featured Image" class="mb-8">
-                    <div class="prose max-w-none dark:text-gray-200 lg:text-lg max-sm:text-sm" v-html="article.body">
+                    <img :src="'/storage/' + article.cover" alt="cover" class="mb-8 rounded-2xl">
+                    <article class="[&_strong]:dark:text-gray-200 format dark:format-invert max-w-none dark:text-gray-200 lg:text-lg max-sm:text-sm" v-html="article.body">
 
-                    </div>
+                    </article>
                 </div>
                 <div class="w-full md:w-1/4 px-4 space-y-6">
                     <div class="bg-white dark:bg-zinc-800 rounded-lg shadow p-4 sticky top-20">

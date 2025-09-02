@@ -1,3 +1,4 @@
+
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
@@ -90,7 +91,7 @@ watch(() => form.password, validatePassword)
         <div class="my-5">
             <!-- Main container for the form, responsive to screen sizes -->
             <div
-                class="container mx-auto max-w-xs sm:max-w-md md:max-w-lg lg:max-w-xl shadow-md dark:shadow-white py-4 px-6 sm:px-10 bg-white dark:bg-gray-800 border-emerald-500 rounded-md">
+                class="container mx-auto max-w-xs sm:max-w-md md:max-w-lg lg:max-w-xl  py-4 px-6 sm:px-10 bg-white dark:bg-zinc-800 border-emerald-500 rounded-md">
 
                 <div class="my-3">
                     <!-- Form title -->

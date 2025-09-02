@@ -14,34 +14,46 @@ class MainPageController extends Controller
 {
     public function index()
     {
-        $categorized = Category::with(['articles' => function ($query) {
-            $query->where('status', 'published')->latest();
-        }])
-            ->whereHas('articles', function ($query) {
-                $query->where('status', 'published');
-            })
-            ->latest()
-            ->limit(4)
-            ->get();
-
-        $article = Article::with('tags', 'user', 'categories')
+        $poparticle = Article::with('tags', 'user', 'categories')
             ->where('status', 'published')
             ->orderBy('views', 'desc')
             ->limit(5)
             ->get();
+
+        $articles = Article::with('tags', 'user', 'categories', 'comments', 'likes')
+            ->where('status', 'published')
+            ->latest()
+            ->limit(12)
+            ->get();
+
+        $articleData = $articles->map(function ($article) {
+            return [
+                'id' => $article->id,
+                'title' => $article->title,
+                'slug' => $article->slug,
+                'excerpt' => $article->excerpt,
+                'cover' => $article->cover,
+                'created_at' => $article->created_at,
+                'updated_at' => $article->updated_at,
+                'user' => $article->user,
+                'tags' => $article->tags,
+                'categories' => $article->categories,
+                'comments' => $article->comments,
+                'likes' => $article->likes,
+            ];
+        });
+
+
         if (Auth::check()) {
             return Inertia::render('Home', [
-                "popArticles" => $article,
-                "categorized" => $categorized,
+                "popArticles" => $poparticle,
+                // "pinnedArticle" => $pinnedArticle,
+                "articles" => $articleData,
                 "categories" => Category::all(),
-
-
-
             ]);
         } else {
             return Inertia::render('Welcome', [
-                "articles" => $article,
-                "categorized" => $categorized
+                "articles" => $poparticle,
 
 
             ]);
@@ -64,6 +76,7 @@ class MainPageController extends Controller
             ->paginate(10);
 
 
+
         $commentsData = $comments->map(function ($comment) {
             return [
                 'id' => $comment->id,
@@ -72,7 +85,7 @@ class MainPageController extends Controller
                     'id' => $comment->user->id ?? null,
                     'name' => $comment->user->name ?? 'Unknown',
                     'username' => $comment->user->username ?? 'Unknown',
-                    'avatar' => $comment->user->avatar ?? '/default-avatar.png',
+                    'avatar' => $comment->user->avatar ?? null,
                 ],
                 'created_at' => $comment->created_at->format('Y-m-d H:i:s'),
             ];
@@ -134,7 +147,7 @@ class MainPageController extends Controller
     {
         $categorized = Category::with(['articles' => function ($query) {
             $query->where('status', 'published')->latest();
-        }])
+        }, 'articles.user'])
             ->whereHas('articles', function ($query) {
                 $query->where('status', 'published');
             })
@@ -201,7 +214,7 @@ class MainPageController extends Controller
         $articles = Article::query()
             ->when($search, function ($query) use ($search) {
                 $query->where('title', 'like', '%' . $search . '%')
-                    ->orWhere('body', 'like', '%' . $search . '%');
+                    ->orWhere('slug', 'like', '%' . $search . '%');
             })
             ->latest()
             ->paginate(18)

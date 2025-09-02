@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 @import "flowbite/src/themes/default";
+@plugin "flowbite-typography";
 
 /* @plugin "flowbite/plugin"; */
 
@@ -161,7 +162,7 @@
     --sidebar-border: hsl(0 0% 15.9%);
     --sidebar-ring: hsl(217.2 91.2% 59.8%);
     --sidebar: hsl(240 5.9% 10%);
-    
+
 }
 
 @layer base {
@@ -173,14 +174,17 @@
         background: var(--background);
         color: var(--foreground);
     }
+    
 }
-.dark .p-inputtext {
-    background-color: #1c1c1c;
-    color: white;
-    border-color: #1d222a;
+@layer base {
+  .prose-invert strong {
+    color: #e5e7eb; /* gray-200 */
+  }
+
+  .prose-invert h1,
+  .prose-invert h2,
+  .prose-invert h3 {
+    color: #6b0707;
+  }
 }
-.dark .p-textarea {
-    background-color: #1c1c1c;
-    color: white;
-    border-color: #1d222a;
-}
+

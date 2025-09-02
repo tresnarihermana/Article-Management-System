@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Article;
+use App\Models\Like;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
@@ -14,7 +15,6 @@ class ArticleFactory extends Factory
     public function definition(): array
     {
         $title = $this->faker->sentence(6, true);
-
         $paragraphs = $this->faker->paragraphs(10);
         $body = '';
         foreach ($paragraphs as $i => $para) {
@@ -35,6 +35,22 @@ class ArticleFactory extends Factory
             'status' => $this->faker->randomElement(['draft', 'published']),
             'is_pinned' => $this->faker->boolean(10),
             'published_at' => now(),
+            'views' => $this->faker->numberBetween(0, 35600),
+            'hits' => $this->faker->numberBetween(0, 35700),
+            'created_at' => $this->faker->dateTimeBetween('-2 years', 'now'),
         ];
+    }
+
+    public function configure()
+    {
+        return $this->afterCreating(function ($article) {
+            $users = User::inRandomOrder()->take(rand(1, 10))->get();
+            foreach ($users as $user) {
+                \App\Models\Like::factory()->create([
+                    'article_id' => $article->id,
+                    'user_id' => $user->id,
+                ]);
+            }
+        });
     }
 }

@@ -1,71 +1,123 @@
 <script setup lang="ts">
-import AppLayout from '@/layouts/AppLayout.vue';
-import { type BreadcrumbItem } from '@/types';
-import { Head, Link, useForm, router } from '@inertiajs/vue3';
-import Swal from 'sweetalert2';
-import { usePage } from '@inertiajs/vue3';
-import { can } from '@/lib/can';
-import { ref, watch } from 'vue';
+import { ref } from "vue";
+import { FilterMatchMode } from "@primevue/core/api";
+import { useToast } from "primevue/usetoast";
+import DataTable from "primevue/datatable";
+import Column from "primevue/column";
+import Toolbar from "primevue/toolbar";
+import Button from "primevue/button";
+import InputText from "primevue/inputtext";
+import Tag from "primevue/tag";
+import { router } from "@inertiajs/vue3";
+import AppLayout from "@/layouts/AppLayout.vue";
+import Swal from "sweetalert2";
 import Popover from 'primevue/popover';
-import Tag from 'primevue/tag';
-import Button from 'primevue/button';
-const page = usePage();
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Articles',
-        href: route('articles.index'),
-    },
-];
 const props = defineProps<{
-    articles: {
-        data: any[],
-        current_page: number,
-        last_page: number,
-        per_page: number,
-        total: number,
-        next_page_url: string | null,
-        prev_page_url: string | null,
-    },
+    articles: any[],
     tags: any[],
     categories: any[],
-    filters: {
-        data: any[],
-    }
+    search?: string
 }>();
-const flash = page.props?.flash?.message;
-if (flash) {
-    let timerInterval;
-    Swal.fire({
-        title: "Process Success",
-        icon: "success",
-        html: "article Succesfully added",
-        timer: 1000,
-        timerProgressBar: true,
-        didOpen: () => {
-            const timer = Swal.getPopup().querySelector("b");
-            timerInterval = setInterval(() => {
-                timer.textContent = `${Swal.getTimerLeft()}`;
-            }, 100);
-        },
-        willClose: () => {
-            clearInterval(timerInterval);
-        }
-    })
-}
 
-function deleteArticle(id) {
+const toast = useToast();
+const dt = ref();
+const articles = ref(props.articles);
+const categories = ref(props.categories);
+const selectedArticles = ref();
+const article = ref<any>({});
+const submitted = ref(false);
+const lazyLoading = ref(false);
+const totalRecords = ref(props.articles.length);
+const lazyParams = ref({
+    first: 0,
+    rows: 10,
+    page: 0,
+});
+const filters = ref({
+    global: { value: props.search ?? null, matchMode: FilterMatchMode.CONTAINS }
+});
+
+
+
+const onPage = (event: any) => {
+    lazyParams.value = event;
+    loadLazyData();
+    selectedArticles.value = [];
+};
+
+
+const onSort = (event: any) => {
+    lazyParams.value = event;
+    loadLazyData();
+    selectedArticles.value = [];
+};
+
+const loadLazyData = () => {
+    lazyLoading.value = true;
+    setTimeout(() => {
+        let data = [...props.articles];
+
+
+        if (filters.value.global.value) {
+            const search = filters.value.global.value.toLowerCase();
+            data = data.filter((a: any) =>
+                a.title.toLowerCase().includes(search) ||
+                a.user.name.toLowerCase().includes(search)
+            );
+        }
+
+        if (lazyParams.value.sortField) {
+            data.sort((a: any, b: any) => {
+                const field = lazyParams.value.sortField;
+                let value1 = a[field];
+                let value2 = b[field];
+
+
+                if (field.includes('.')) {
+                    const keys = field.split('.');
+                    value1 = keys.reduce((obj, key) => obj?.[key], a);
+                    value2 = keys.reduce((obj, key) => obj?.[key], b);
+                }
+
+                let result = 0;
+                if (value1 == null && value2 != null) result = -1;
+                else if (value1 != null && value2 == null) result = 1;
+                else if (value1 == null && value2 == null) result = 0;
+                else if (typeof value1 === 'string' && typeof value2 === 'string')
+                    result = value1.localeCompare(value2);
+                else result = value1 < value2 ? -1 : value1 > value2 ? 1 : 0;
+
+                return (lazyParams.value.sortOrder ?? 1) * result;
+            });
+        }
+
+
+        const start = lazyParams.value.first;
+        const end = start + lazyParams.value.rows;
+        articles.value = data.slice(start, end);
+
+        totalRecords.value = data.length;
+        lazyLoading.value = false;
+    }, 300);
+};
+
+loadLazyData();
+
+const confirmDeleteArticle = (art: any) => {
     Swal.fire({
-        title: 'Are you sure?',
-        text: "You won't be able to revert this!",
         icon: 'warning',
+        title: 'Hapus Article ini?',
+        text: art.title,
         showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Yes, delete it!'
+        confirmButtonText: 'Ya, hapus',
+        cancelButtonText: 'Batal',
+        confirmButtonColor: '#d33'
     }).then((result) => {
         if (result.isConfirmed) {
-            router.delete(route('approve.destroy', id), {
+            router.delete(route('articles.destroy', art.id), {
+                preserveState: true,
                 onSuccess: () => {
+                    articles.value = articles.value.filter(val => val.id !== art.id);
                     Swal.fire({
                         title: 'Deleted!',
                         text: 'This article has been deleted.',
@@ -84,39 +136,47 @@ function deleteArticle(id) {
             });
         }
     });
-}
-// pagination atau apalah
-const perPage = ref(new URLSearchParams(window.location.search).get('per_page') || 10)
-watch(perPage, (value) => {
-    router.get(route('approve.index'), 
-    { per_page: value, page: 1 }, { preserveState: true, replace: true })
-})
-const form = useForm({
-    search: props.filters.search || '',
-    status: props.filters.status || null,
-     per_page: parseInt(new URLSearchParams(window.location.search).get('per_page')) || 10
+};
 
-})
-function fetchData(page = 1) {
-    form.get(route('approve.index'), {
-        search: form.search,
-        status: form.status,
-        per_page: form.per_page,
-        page: page
-    }, {
-        preserveState: true,
-        replace: true
+const confirmDeleteSelected = () => {
+    Swal.fire({
+        icon: 'warning',
+        title: 'Hapus Articles terpilih?',
+        html: `${selectedArticles.value.length} Artikel yang dipilih akan dihapus permanen`,
+        showCancelButton: true,
+        confirmButtonText: 'Ya, hapus',
+        cancelButtonText: 'Batal',
+        confirmButtonColor: '#d33'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const ids = selectedArticles.value.map((a: any) => a.id);
+            router.delete(route('articles.bulk-destroy', ids), {
+                data: { ids },
+                preserveState: true,
+                onSuccess: () => {
+                    articles.value = articles.value.filter(
+                        (val) => !ids.includes(val.id)
+                    );
+                    selectedArticles.value = null;
+                    Swal.fire({
+                        title: 'Deleted!',
+                        text: 'Selected articles have been deleted.',
+                        icon: 'success',
+                        timer: 1000,
+                        timerProgressBar: true,
+                    });
+                },
+                onError: () => {
+                    Swal.fire({
+                        title: 'Failed!',
+                        text: 'Something went wrong. The articles were not deleted.',
+                        icon: 'error',
+                    });
+                }
+            });
+        }
     });
-}
-watch(() => form.search, () => fetchData(1));
-watch(() => form.status, () => fetchData(1));
-watch(() => form.per_page, () => fetchData(1));
-
-
-
-// pop over
-
-
+};
 const popoverRefs = ref({});
 
 function showPopover(event, articleId) {
@@ -129,8 +189,6 @@ function hidePopover(event, articleId) {
         popoverRefs.value[articleId].hide(event);
     }
 }
-
-
 const getSeverity = (articles) => {
     switch (articles.status) {
         case 'published':
@@ -152,303 +210,115 @@ const getSeverity = (articles) => {
 </script>
 
 <template>
+    <AppLayout>
+        <div>
+            <div class="card">
+                <Toolbar class="mb-6">
+                    <template #start>
+                        <Button label="New" icon="pi pi-plus" class="mr-2" as="a" :href="route('articles.create')" />
+                        <Button label="Delete" icon="pi pi-trash" severity="danger" outlined
+                            @click="confirmDeleteSelected" :disabled="!selectedArticles || !selectedArticles.length" />
+                    </template>
+                    <template #end>
+                        <Button label="Export" icon="pi pi-upload" severity="secondary" @click="dt.exportCSV()" />
+                    </template>
+                </Toolbar>
 
-    <Head title="Articles" />
-    <AppLayout :breadcrumbs="breadcrumbs">
-        <!-- component -->
-        <div class="text-gray-900 bg-gray-200">
-            <!-- <div class="p-4 flex">
-                <h1 class="text-3xl">
-                    Articles
-                </h1>
-            </div>
-            <div class="px-4">
-                <Button v-if="can('articles.create')" label="Add article" as="a" :href="route('articles.create')"
-                    icon="pi pi-plus" icon-pos="left" />
-            </div> -->
-
-            <div class="antialiased font-sans bg-gray-200">
-                <div class="container mx-auto px-4 sm:px-8">
-                    <div class="py-8">
-                        <div>
-                            <h2 class="text-2xl font-semibold leading-tight">Articles</h2>
-                            <h3 class="text-xl font-semibold leading-tight">Total Current Articles: {{ articles.total }}</h3>
+                <DataTable ref="dt" v-model:selection="selectedArticles" :value="articles" dataKey="id"
+                    :showGridlines="true" :stripedRows="true" :lazy="true" :paginator="true" :rows="10"
+                    :totalRecords="totalRecords" :filters="filters" @page="onPage" @sort="onSort"
+                    paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+                    :rowsPerPageOptions="[5, 10, 25,]"
+                    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} articles"
+                    class="container mx-auto">
+                    <template #header>
+                        <div class="flex flex-wrap gap-2 items-center justify-between">
+                            <h4 class="m-0">Manage Articles</h4>
+                            <span class="p-input-icon-left">
+                                <i class="pi pi-search mr-2" />
+                                <InputText v-model="filters['global'].value" placeholder="Search..."
+                                    @input="loadLazyData" />
+                            </span>
                         </div>
-                        <div class="my-2 flex sm:flex-row flex-col">
-                            <div class="flex flex-row mb-1 sm:mb-0">
-                                <div class="relative">
-                                    <select v-model="form.per_page"
-                                        class="appearance-none h-full rounded-l border block appearance-none w-full bg-white border-gray-400 text-gray-700 py-2 px-4 pr-8 leading-tight focus:outline-none focus:bg-white focus:border-gray-500">
-                                        <option :value="5">5</option>
-                                        <option :value="10">10</option>
-                                        <option :value="20">20</option>
-                                    </select>
-                                    <div
-                                        class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                                        <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg"
-                                            viewBox="0 0 20 20">
-                                            <path
-                                                d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
-                                        </svg>
+                    </template>
+
+                    <Column selectionMode="multiple" style="width: 3rem" :exportable="false"></Column>
+                    <Column field="title" header="Title" sortable style="min-width: 12rem">
+                    </Column>
+                    <Column field="user.name" header="Author" sortable style="min-width: 10rem"></Column>
+
+                    <Column field="categories" header="Categories" sortable style="min-width: 14rem">
+                        <template #body="slotProps">
+                            <div class="flex flex-wrap gap-1">
+                                <Tag v-for="cat in slotProps.data.categories" :key="cat.id" :value="cat.name"
+                                    severity="info" />
+                            </div>
+                        </template>
+                    </Column>
+
+                    <Column field="tags" header="Tags" sortable style="min-width: 14rem" >
+                        <template #body="slotProps">
+                            <div class="flex flex-wrap gap-1">
+                                <Tag v-for="tag in slotProps.data.tags" :key="tag.id" :value="tag.name"
+                                    severity="secondary" />
+                            </div>
+                        </template>
+                    </Column>
+
+                    <Column field="created_at" header="Created At" sortable style="min-width: 12rem"></Column>
+                    <Column field="status" header="Status">
+                        <template #body="slotProps">
+                            <Tag :value="slotProps.data.status" :severity="getSeverity(slotProps.data)"
+                                @click="showPopover($event, slotProps.data.id)" class="cursor-pointer" />
+                            <Popover :ref="(el) => (popoverRefs[slotProps.data.id] = el)"
+                                @mouseleave="hidePopover(slotProps.data.id)">
+                                <div class="p-3 max-w-xs">
+                                    <div class="flex flex-col items-center">
+                                        <img class="rounded w-44 sm:w-64" :src="slotProps.data.cover
+                                                ? `/storage/${slotProps.data.cover}`
+                                                : `https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/No-Image-Placeholder.svg/1665px-No-Image-Placeholder.svg.png`
+                                            " :alt="slotProps.data.title" />
+                                        <Tag :value="slotProps.data.status" :severity="getSeverity(slotProps.data)"
+                                            class="absolute left-2 top-2" rounded />
+                                    </div>
+                                    <div class="pt-4">
+                                        <div class="text-lg font-medium">
+                                            {{
+                                                slotProps.data.title.length > 40
+                                                    ? slotProps.data.title.slice(0, 40) + "..."
+                                            : slotProps.data.title
+                                            }}
+                                        </div>
+                                        <div class="text-sm text-red-500 mt-2" v-if="slotProps.data.rejected_message">
+                                            <span class="font-semibold">Rejected Reasons:</span>
+                                            <p class="text-orange-500">
+                                                {{ slotProps.data.rejected_message }}
+                                            </p>
+                                        </div>
+                                        <div class="flex gap-2 mt-4">
+                                            <Button icon="pi pi-eye" as="a" label="Preview" severity="secondary"
+                                                class="flex-auto" :href="route('articles.show', slotProps.data.slug)" />
+                                            <Button icon="pi pi-pencil" variant="outlined" as="a" severity="success"
+                                                :href="route('articles.edit', slotProps.data.id)" />
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="relative">
-                                    <select v-model="form.status"
-                                        class="appearance-none h-full rounded-r border-t sm:rounded-r-none sm:border-r-0 border-r border-b block appearance-none w-full bg-white border-gray-400 text-gray-700 py-2 px-4 pr-8 leading-tight focus:outline-none focus:border-l focus:border-r focus:bg-white focus:border-gray-500">
-                                        <option :value="null">All</option>
-                                        <option :value="`pending`">pending</option>
-                                        <option :value="`published`">published</option>
-                                        <option :value="`rejected`">rejected</option>
-                                    </select>
-                                    <div
-                                        class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                                        <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg"
-                                            viewBox="0 0 20 20">
-                                            <path
-                                                d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
-                                        </svg>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="block relative">
-                                <span class="h-full absolute inset-y-0 left-0 flex items-center pl-2">
-                                    <svg viewBox="0 0 24 24" class="h-4 w-4 fill-current text-gray-500">
-                                        <path
-                                            d="M10 4a6 6 0 100 12 6 6 0 000-12zm-8 6a8 8 0 1114.32 4.906l5.387 5.387a1 1 0 01-1.414 1.414l-5.387-5.387A8 8 0 012 10z">
-                                        </path>
-                                    </svg>
-                                </span>
-                                <input v-model="form.search" placeholder="Search"
-                                    class="appearance-none rounded-r rounded-l sm:rounded-l-none border border-gray-400 border-b block pl-8 pr-6 py-2 w-full bg-white text-sm placeholder-gray-400 text-gray-700 focus:bg-white focus:placeholder-gray-600 focus:text-gray-700 focus:outline-none" />
-                            </div>
-                            <div class="flex justify-end px-3">
-                                <button v-if="can('articles.create')" @click="router.get(route('articles.create'))"
-                                    type="button"
-                                    class="rounded border block appearance-none bg-green-400 border-green-400 text-white py-2 px-4 pr-8 leading-tight focus:outline-none focus:bg-green focus:border-green-500">
-                                    + Add Article
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="-mx-4 sm:-mx-8 px-4 sm:px-8 py-4 overflow-x-auto">
-                            <div class="inline-block min-w-full overflow-x-auto shadow rounded-lg overflow-hidden">
-                                <table class="min-w-full leading-normal">
-
-                                    <thead>
-                                        <tr>
-                                            <th
-                                                class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                                ID
-                                            </th>
-                                            <th
-                                                class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                                title
-                                            </th>
-                                            <th
-                                                class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                                category
-                                            </th>
-                                            <th
-                                                class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                                tag
-                                            </th>
-                                            <th
-                                                class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                                Author
-                                            </th>
-                                            <th
-                                                class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                                Created At
-                                            </th>
-                                            <th
-                                                class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                                Updated At
-                                            </th>
-                                            <th
-                                                class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                                Status
-                                            </th>
-                                            <th
-                                                class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                                Action
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr v-for="article in articles.data">
-                                            <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                                                <div class="flex items-center">
-                                                    <div class="flex-shrink-0 w-10 h-10">
-                                                        {{ article.id }}
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                                                <p class="text-gray-900 whitespace-no-wrap">
-                                                    {{ article.title.length > 20 ? article.title.slice(0,30)+ '...' : article.title }}
-                                                </p>
-                                            </td>
-                                            <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                                                <p class="text-gray-900 whitespace-no-wrap"
-                                                    v-for="category in article.categories" :key="category.id">
-                                                    {{ category.name }}
-                                                </p>
-                                            </td>
-                                            <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm max-w-s">
-                                                <div class="flex whitespace-nowrap gap-1">
-                                                    <template v-for="(tag, index) in article.tags.slice(0, 5)"
-                                                        :key="tag.id">
-                                                        <span
-                                                            class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded">
-                                                            {{ tag.name }}
-                                                        </span>
-                                                    </template>
-                                                    <span v-if="article.tags.length > 5"
-                                                        class="bg-gray-100 text-gray-600 text-xs font-medium px-2.5 py-0.5 rounded"
-                                                        :title="article.tags.map(t => t.name).join(', ')">
-                                                        +{{ article.tags.length - 5 }} more
-                                                    </span>
-                                                </div>
-                                            </td>
-                                            <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                                                <p class="text-gray-900 whitespace-no-wrap">
-                                                    {{ article.user.name }}
-                                                </p>
-                                            </td>
-                                            <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                                                <p class="text-gray-900 whitespace-no-wrap">
-                                                    {{ article.created_at }}
-                                                </p>
-                                            </td>
-                                            <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                                                <p class="text-gray-900 whitespace-no-wrap">
-                                                    {{ article.updated_at }}
-                                                </p>
-                                            </td>
-                                            <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                                                <span @click="showPopover($event, article.id)"
-                                                    class="cursor-pointer relative inline-block px-3 py-1 font-semibold leading-tight"
-                                                    :class="{
-                                                        'text-green-900': article.status === 'published',
-                                                        'text-blue-900': article.status === 'draft',
-                                                        'text-gray-900': article.status === 'pending',
-                                                        'text-orange-500': article.status === 'rejected',
-                                                    }">
-                                                    <span aria-hidden class="absolute inset-0 opacity-50 rounded-full"
-                                                        :class="{
-                                                            'bg-green-200': article.status === 'published',
-                                                            'bg-blue-200': article.status === 'draft',
-                                                            'bg-gray-300': article.status === 'pending',
-                                                            'bg-orange-200': article.status === 'rejected'
-                                                        }"></span>
-
-
-                                                    <Popover :ref="el => popoverRefs[article.id] = el" @mouseleave="hidePopover($event, article.id)">
-                                                        <div  class="rounded flex flex-col max-w-xs">
-                                                            <div class="flex justify-center rounded">
-                                                                <div class="relative mx-auto">
-                                                                    <img class="rounded w-44 sm:w-64"
-                                                                        :src="article.cover ? `/storage/${article.cover}` : `https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/No-Image-Placeholder.svg/1665px-No-Image-Placeholder.svg.png`"
-                                                                        :alt="article.name" />
-                                                                    <Tag :value="article.status"
-                                                                        :severity="getSeverity(article)"
-                                                                        class="absolute dark:!bg-surface-900"
-                                                                        style="left: 4px; top: 4px"
-                                                                        rounded
-                                                                        ></Tag>
-                                                                </div>
-                                                            </div>
-                                                            <div class="pt-4">
-                                                                <div
-                                                                    class="flex flex-row justify-between items-start gap-2 mb-4">
-                                                                    <div>
-                                                                        <span v-for="category in article.categories"
-                                                                            class="font-medium text-surface-500 dark:text-surface-400 text-sm">{{
-                                                                             category.name}}</span>
-                                                                        <div class="text-lg font-medium mt-1">{{
-                                                                            article.title.length > 20 ? article.title.slice(0, 40)+'....' : article.title }}</div>
-                                                                        <div class="text-lg font-small mt-1" v-if="article.rejected_message">
-                                                                        <span class="font-semibold font-small text-red-500"> Rejected Reasons:</span>
-                                                                        <p class="text-orange-500">{{article.rejected_message }}</p>
-                                                                    </div>
-                                                                    </div>
-                                                                    <div class="bg-surface-100 p-1"
-                                                                        style="border-radius: 30px">
-                                                                        <div class="bg-surface-0 flex items-center gap-2 justify-center py-1 px-2"
-                                                                            style="border-radius: 30px; box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.04), 0px 1px 2px 0px rgba(0, 0, 0, 0.06)">
-                                                                            <span
-                                                                                class="text-surface-900 font-medium text-sm">{{
-                                                                                article.user.name }}</span>
-                                                                        
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                                <div class="flex gap-2">
-                                                                    <Button icon="pi pi-eye" as="a"
-                                                                        label="Preview"
-                                                                        severity="secondary"
-                                                                        class="flex-auto whitespace-nowrap"
-                                                                        :href="route('articles.show', article.slug)"></Button>
-                                                                    <Button icon="pi pi-pencil" variant="outlined" as="a"
-                                                                    severity="info"
-                                                                        :href="route('articles.edit', article.id)"></Button>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </Popover> <span class="relative">{{ article.status }}</span>
-
-                                                </span>
-                                            </td>
-                                            <td
-                                                class="px-5 py-5 border-b border-gray-200 bg-white text-sm whitespace-nowrap">
-                                                <Link v-if="can('articles.show')"
-                                                    :href="route('articles.show', article.slug)" type="button"
-                                                    class="mr-3 text-sm bg-green-500 hover:bg-green-700 text-white py-1 px-2 rounded focus:outline-none focus:shadow-outline">
-                                                Show</Link>
-                                                <Link v-if="can('articles.edit')"
-                                                    :href="route('articles.edit', article.id)" type="button"
-                                                    class="mr-3 text-sm bg-blue-500 hover:bg-blue-700 text-white py-1 px-2 rounded focus:outline-none focus:shadow-outline">
-                                                Edit</Link>
-                                                <button v-if="can('articles.delete')" @click="deleteArticle(article.id)"
-                                                    type="button"
-                                                    class="text-sm bg-red-500 hover:bg-red-700 text-white py-1 px-2 rounded focus:outline-none focus:shadow-outline">Delete</button>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                                <div
-                                    class="px-5 py-5 border-b bg-white border-t flex flex-col xs:flex-row items-center xs:justify-between          ">
-                                    <span class="text-xs xs:text-sm text-gray-900">
-                                        Showing
-                                        {{ (articles.current_page - 1) * articles.per_page + 1 }}
-                                        to
-                                        {{
-                                            articles.current_page * articles.per_page > articles.total
-                                                ? articles.total
-                                                : articles.current_page * articles.per_page
-                                        }}
-                                        of {{ articles.total }} entries
-                                    </span>
-                                    <div class="inline-flex mt-2 xs:mt-0 flex">
-                                        <button @click="router.get(articles.prev_page_url)"
-                                            :disabled="!articles.prev_page_url"
-                                            class="text-sm bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-l">
-                                            Prev
-                                        </button>
-
-                                        <button @click="router.get(articles.next_page_url)"
-                                            :disabled="!articles.next_page_url"
-                                            class="text-sm bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-r">
-                                            Next
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                            </Popover>
+                        </template>
+                    </Column>
+                    <Column :exportable="false" style="min-width: 12rem">
+                        <template #body="slotProps">
+                            <Button icon="pi pi-eye" outlined rounded class="mr-2" as="a" severity="info"
+                                :href="route('articles.show', slotProps.data.slug)" />
+                            <Button icon="pi pi-pencil" outlined rounded class="mr-2" as="a"
+                                :href="route('articles.edit', slotProps.data)" />
+                            <Button icon="pi pi-trash" outlined rounded severity="danger"
+                                @click="confirmDeleteArticle(slotProps.data)" />
+                        </template>
+                    </Column>
+                    <template #empty>data not found</template>
+                </DataTable>
             </div>
         </div>
-
     </AppLayout>
 </template>

@@ -1,73 +1,114 @@
 <script setup lang="ts">
-import AppLayout from '@/layouts/AppLayout.vue';
-import { type BreadcrumbItem } from '@/types';
-import { Head, Link, useForm, router } from '@inertiajs/vue3';
-import Button from 'primevue/button';
-import Swal from 'sweetalert2';
-import { defineProps, ref, watch } from 'vue';
-import { usePage } from '@inertiajs/vue3';
-import { can } from '@/lib/can';
-import { useInitials } from '@/composables/useInitials';
-import { Form } from '@primevue/forms';
-import { Search, Save, Plus } from 'lucide-vue-next';
-const page = usePage();
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Users',
-        href: route('users.index'),
-    },
-];
+import { ref } from "vue";
+import { FilterMatchMode } from "@primevue/core/api";
+import { useToast } from "primevue/usetoast";
+import DataTable from "primevue/datatable";
+import Column from "primevue/column";
+import Toolbar from "primevue/toolbar";
+import Button from "primevue/button";
+import InputText from "primevue/inputtext";
+import Tag from "primevue/tag";
+import { router } from "@inertiajs/vue3";
+import AppLayout from "@/layouts/AppLayout.vue";
+import Swal from "sweetalert2";
+import { useInitials } from "@/composables/useInitials";
+import Select from "primevue/select";
+import { can } from "@/lib/can";
+
+const { getInitials } = useInitials();
+
 const props = defineProps<{
-    users: {
-        data: any[],
-        current_page: number,
-        last_page: number,
-        per_page: number,
-        total: number,
-        next_page_url: string | null,
-        prev_page_url: string | null
-    },
+    users: any[],
     roles: any[],
-    filters: {
-        data: any[],
-    }
+    search?: string
 }>();
 
+const toast = useToast();
+const dt = ref();
+const users = ref(props.users);
+const selectedUsers = ref();
+const lazyLoading = ref(false);
+const totalRecords = ref(props.users.length);
+const lazyParams = ref({
+    first: 0,
+    rows: 10,
+    page: 0,
+});
+const filters = ref({
+    global: { value: props.search ?? null, matchMode: FilterMatchMode.CONTAINS },
+    is_active: { value: null, matchMode: FilterMatchMode.EQUALS }
+});
 
-const flash = page.props?.flash?.message;
-if (flash) {
-    let timerInterval;
-    Swal.fire({
-        title: "Process Success",
-        icon: "success",
-        html: "User Succesfully added",
-        timer: 1000,
-        timerProgressBar: true,
-        didOpen: () => {
-            const timer = Swal.getPopup().querySelector("b");
-            timerInterval = setInterval(() => {
-                timer.textContent = `${Swal.getTimerLeft()}`;
-            }, 100);
-        },
-        willClose: () => {
-            clearInterval(timerInterval);
+const onPage = (event: any) => {
+    lazyParams.value = event;
+    loadLazyData();
+    selectedUsers.value = [];
+};
+
+const onSort = (event: any) => {
+    lazyParams.value = event;
+    loadLazyData();
+    selectedUsers.value = [];
+};
+
+
+const loadLazyData = () => {
+    lazyLoading.value = true;
+    setTimeout(() => {
+        let data = [...props.users];
+        if (filters.value.global.value) {
+            const search = filters.value.global.value.toLowerCase();
+            data = data.filter((u: any) =>
+                u.name.toLowerCase().includes(search) ||
+                u.username.toLowerCase().includes(search) ||
+                u.email.toLowerCase().includes(search)
+            );
         }
-    })
-}
+        if (lazyParams.value.sortField) {
+            data.sort((a: any, b: any) => {
+                const field = lazyParams.value.sortField;
+                let value1 = a[field];
+                let value2 = b[field];
+                if (field.includes('.')) {
+                    const keys = field.split('.');
+                    value1 = keys.reduce((obj, key) => obj?.[key], a);
+                    value2 = keys.reduce((obj, key) => obj?.[key], b);
+                }
+                let result = 0;
+                if (value1 == null && value2 != null) result = -1;
+                else if (value1 != null && value2 == null) result = 1;
+                else if (value1 == null && value2 == null) result = 0;
+                else if (typeof value1 === 'string' && typeof value2 === 'string')
+                    result = value1.localeCompare(value2);
+                else result = value1 < value2 ? -1 : value1 > value2 ? 1 : 0;
+                return (lazyParams.value.sortOrder ?? 1) * result;
+            });
+        }
+        const start = lazyParams.value.first;
+        const end = start + lazyParams.value.rows;
+        users.value = data.slice(start, end);
+        totalRecords.value = data.length;
+        lazyLoading.value = false;
+    }, 300);
+};
 
-function deleteUser(id) {
+loadLazyData();
+
+const confirmDeleteUser = (usr: any) => {
     Swal.fire({
-        title: 'Are you sure?',
-        text: "You won't be able to revert this!",
         icon: 'warning',
+        title: 'Hapus User ini?',
+        text: usr.name,
         showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Yes, delete it!'
+        confirmButtonText: 'Ya, hapus',
+        cancelButtonText: 'Batal',
+        confirmButtonColor: '#d33'
     }).then((result) => {
         if (result.isConfirmed) {
-            router.delete(route('users.destroy', id), {
+            router.delete(route('users.destroy', usr.id), {
+                preserveState: true,
                 onSuccess: () => {
+                    users.value = users.value.filter(val => val.id !== usr.id);
                     Swal.fire({
                         title: 'Deleted!',
                         text: 'This user has been deleted.',
@@ -79,245 +120,161 @@ function deleteUser(id) {
                 onError: () => {
                     Swal.fire({
                         title: 'Failed!',
-                        text: 'Something went wrong. The role was not deleted.',
+                        text: 'Something went wrong. The user was not deleted.',
                         icon: 'error',
                     });
-                },
-                
-
+                }
             });
         }
     });
-}
-const { getInitials } = useInitials();
+};
 
-
-// pagination atau apalah
-const perPage = ref(new URLSearchParams(window.location.search).get('per_page') || 10)
-watch(perPage, (value) => {
-    router.get(route('users.index'), { per_page: value, page: 1 }, { preserveState: true, replace: true })
-})
-const form = useForm({
-    search: props.filters.search || '',
-    role: props.filters.role || null,
-})
-watch(() => form.search, () => {
-    form.get(route('users.index'), {
-        preserveScroll: true,
-        preserveState: true,
+const confirmDeleteSelected = () => {
+    Swal.fire({
+        icon: 'warning',
+        title: 'Hapus Users terpilih?',
+        text: 'User yang dipilih akan dihapus permanen',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, hapus',
+        cancelButtonText: 'Batal',
+        confirmButtonColor: '#d33'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const ids = selectedUsers.value.map((u: any) => u.id);
+            router.delete(route('users.bulk-destroy', ids), {
+                data: { ids },
+                preserveState: true,
+                onSuccess: () => {
+                    users.value = users.value.filter(
+                        (val) => !ids.includes(val.id)
+                    );
+                    selectedUsers.value = null;
+                    Swal.fire({
+                        title: 'Deleted!',
+                        text: 'Selected users have been deleted.',
+                        icon: 'success',
+                        timer: 1000,
+                        timerProgressBar: true,
+                    });
+                },
+                onError: () => {
+                    Swal.fire({
+                        title: 'Failed!',
+                        text: 'Something went wrong. The users were not deleted.',
+                        icon: 'error',
+                    });
+                }
+            });
+        }
     });
-});
-watch(() => form.role, () => {
-    form.get(route('users.index'), { preserveState: true, replace: true })
-})
+};
+const statusOptions = ref([
+    { label: 'Active', value: true, severity: 'success' },
+    { label: 'Inactive', value: false, severity: 'warn' },
+]);
 
 function toggleStatus(id) {
     router.put(route('users.toggleStatus', id), {}, {
         onSuccess: () => {
-
+            users.value = users.value.map(u => {
+                if (u.id === id) {
+                    return { ...u, is_active: !u.is_active };
+                }
+                return u;
+            });
         },
         onError: (errors) => {
             console.error(errors)
         }
     })
 }
-
 </script>
 
 <template>
+    <AppLayout>
+        <div>
+            <div class="card">
+                <Toolbar class="mb-6">
+                    <template #start>
+                        <Button label="New" icon="pi pi-plus" class="mr-2" as="a" :href="route('users.create')" v-if="can('users.create')" />
+                        <Button label="Delete" icon="pi pi-trash" severity="danger" outlined v-if="can('users.delete')"
+                            @click="confirmDeleteSelected" :disabled="!selectedUsers || !selectedUsers.length" />
+                    </template>
+                    <template #end>
+                        <Button label="Export" icon="pi pi-upload" severity="secondary" @click="dt.exportCSV()" />
+                    </template>
+                </Toolbar>
 
-    <Head title="Users" />
-    <AppLayout :breadcrumbs="breadcrumbs">
-        <!-- component -->
-
-        <body class="antialiased font-sans bg-gray-200 dark:bg-transparent">
-            <div class="container mx-auto px-4 sm:px-8">
-                <div class="py-8">
-                    <div>
-                        <h2 class="text-2xl font-semibold leading-tight">Users</h2>
-                    </div>
-                    <div class="my-2 flex sm:flex-row flex-col">
-                        <div class="flex flex-row mb-1 sm:mb-0">
-                            <div class="relative">
-                                <select v-model="perPage"
-                                    class="appearance-none h-full rounded-l border block appearance-none w-full bg-white border-gray-400 text-gray-700 py-2 px-4 pr-8 leading-tight focus:outline-none focus:bg-white focus:border-gray-500 dark:bg-zinc-800 dark:border-zinc-800 dark:text-white">
-                                    <option :value="5">5</option>
-                                    <option :value="10">10</option>
-                                    <option :value="20">20</option>
-                                </select>
-                                <div
-                                    class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                                    <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg"
-                                        viewBox="0 0 20 20">
-                                        <path
-                                            d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
-                                    </svg>
-                                </div>
-                            </div>
-                            <div class="relative">
-                                <select v-model="form.role"
-                                    class="appearance-none h-full rounded-r border-t sm:rounded-r-none sm:border-r-0 border-r border-b block appearance-none w-full bg-white border-gray-400 text-gray-700 py-2 px-4 pr-8 leading-tight focus:outline-none focus:border-l focus:border-r focus:bg-white focus:border-gray-500  dark:bg-zinc-800 dark:border-zinc-800 dark:text-white">
-                                    <option :value="null">All</option>
-                                    <option v-for="role in roles" :value="role.name">{{ role.name }}</option>
-                                </select>
-                                <div
-                                    class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                                    <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg"
-                                        viewBox="0 0 20 20">
-                                        <path
-                                            d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
-                                    </svg>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="block relative">
-                            <span class="h-full absolute inset-y-0 left-0 flex items-center pl-2">
-                                <svg viewBox="0 0 24 24" class="h-4 w-4 fill-current text-gray-500">
-                                    <path
-                                        d="M10 4a6 6 0 100 12 6 6 0 000-12zm-8 6a8 8 0 1114.32 4.906l5.387 5.387a1 1 0 01-1.414 1.414l-5.387-5.387A8 8 0 012 10z">
-                                    </path>
-                                </svg>
+                <DataTable ref="dt" v-model:selection="selectedUsers" :value="users" dataKey="id" :showGridlines="true"
+                    :stripedRows="true" :lazy="true" :paginator="true" :rows="10" :totalRecords="totalRecords"
+                    :filters="filters" @page="onPage" @sort="onSort"
+                    paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+                    :rowsPerPageOptions="[5, 10, 25]"
+                    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} users"
+                    class="container mx-auto">
+                    <template #header>
+                        <div class="flex flex-wrap gap-2 items-center justify-between">
+                            <h4 class="m-0">Manage Users</h4>
+                            <span class="p-input-icon-left">
+                                <i class="pi pi-search mr-2" />
+                                <InputText v-model="filters['global'].value" placeholder="Search..."
+                                    @input="loadLazyData" />
                             </span>
-                            <input placeholder="Search" v-model="form.search"
-                                class="appearance-none rounded-r rounded-l sm:rounded-l-none border border-gray-400 border-b block pl-8 pr-6 py-2 w-full bg-white text-sm placeholder-gray-400 text-gray-700 focus:bg-white focus:placeholder-gray-600 focus:text-gray-700 focus:outline-none  dark:bg-zinc-800 dark:border-zinc-800 dark:text-white dark:border-gray-800" />
                         </div>
-                        <div class="relative mx-2">
-                            <button v-if="can('users.create')" @click="router.get(route('users.create'))" type="button"
-                                class=" h-full rounded border block appearance-none w-full bg-green-400 border-green-400 text-white py-2 px-4 pr-8 leading-tight focus:outline-none focus:bg-green focus:border-green-500">
-                                + Add User
-                            </button>
-                        </div>
+                    </template>
 
-                    </div>
-                    <div class="-mx-4 sm:-mx-8 px-4 sm:px-8 py-4 overflow-x-auto">
-                        <div class="inline-block min-w-full shadow rounded-lg overflow-hidden">
-                            <table class="min-w-full leading-normal">
-                                <thead>
-                                    <tr>
-                                        <th
-                                            class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider  dark:bg-zinc-900 dark:border-zinc-900 dark:text-gray-50">
-                                            Username
-                                        </th>
-                                        <th
-                                            class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider dark:bg-zinc-900 dark:border-zinc-900 dark:text-gray-50">
-                                            Fullname
-                                        </th>
-                                        <th
-                                            class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider dark:bg-zinc-900 dark:border-zinc-900 dark:text-gray-50">
-                                            Role
-                                        </th>
-                                        <th
-                                            class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider dark:bg-zinc-900 dark:border-zinc-900 dark:text-gray-50">
-                                            Email Address
-                                        </th>
-                                        <th
-                                            class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider dark:bg-zinc-900 dark:border-zinc-900 dark:text-gray-50">
-                                            Status
-                                        </th>
-                                        <th
-                                            class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider dark:bg-zinc-900 dark:border-zinc-900 dark:text-gray-50">
-                                            Action
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr v-for="user in users.data">
-                                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm dark:bg-zinc-800 dark:border-zinc-800 dark:text-white dark:border-gray-900 ">
-                                            <div class="flex items-center">
-                                                <div class="flex-shrink-0 w-10 h-10">
-                                                    <img class="w-full h-full rounded-full"
-                                                        :src="user.avatar ? `/storage/` + user.avatar : 'https://ui-avatars.com/api/?name=' + getInitials(user.username) + '&background=random'"
-                                                        :alt="user.name + `avatar`" alt="" />
-                                                </div>
-                                                <div class="ml-3">
-                                                    <p class="text-gray-900 whitespace-no-wrap dark:text-gray-50">
-                                                        {{ user.name }}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm  dark:bg-zinc-800 dark:border-zinc-800 dark:text-white dark:border-gray-900 ">
-                                            <p class="text-gray-900 whitespace-no-wrap dark:text-gray-50">
-                                                {{ user.username }}
-                                            </p>
-                                        </td>
-                                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm whitespace-nowrap dark:text-gray-50  dark:bg-zinc-800 dark:border-zinc-800 dark:text-white dark:border-gray-900 ">
-                                            <span v-for="role in user.roles"
-                                                class="relative inline-block px-3 py-1 font-semibold text-green-900 leading-tight">
-                                                <span aria-hidden
-                                                    class="absolute inset-0 bg-green-200 opacity-50 rounded-full"></span>
-                                                <span class="relative">{{ role.name }}</span>
-                                            </span>
-                                        </td>
-                                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm  dark:bg-zinc-800 dark:border-zinc-800 dark:text-white dark:border-gray-900 ">
-                                            <p class="text-gray-900 whitespace-no-wrap dark:text-gray-50">
-                                                {{ user.email }}
-                                            </p>
-                                        </td>
-                                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm whitespace-nowrap  dark:bg-zinc-800 dark:border-zinc-800 dark:text-white dark:border-gray-900 ">
-                                            <span v-if="can('users.toggleStatus')" @click="toggleStatus(user.id)"
-                                                class="cursor-pointer relative inline-block px-3 py-1 font-semibold text-green-900 leading-tight"
-                                                :class="user.is_active ? 'text-green-900' : 'text-red-900'">
-                                                <span aria-hidden class="absolute inset-0 opacity-50 rounded-full"
-                                                    :class="user.is_active ? 'bg-green-200' : 'bg-red-200'"></span>
-                                                <span class="relative">{{ user.is_active ? 'Active' : 'Inactive'
-                                                }}</span>
-                                            </span>
-                                            <span v-else
-                                                class="cursor-pointer relative inline-block px-3 py-1 font-semibold text-green-900 leading-tight"
-                                                :class="user.is_active ? 'text-green-900' : 'text-red-900'">
-                                                <span aria-hidden class="absolute inset-0 opacity-50 rounded-full"
-                                                    :class="user.is_active ? 'bg-green-200' : 'bg-red-200'"></span>
-                                                <span class="relative">{{ user.is_active ? 'Active' : 'Inactive'
-                                                }}</span>
-                                            </span>
-                                        </td>
-                                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm whitespace-nowrap  dark:bg-zinc-800 dark:border-zinc-800 dark:text-white dark:border-gray-900 ">
-                                            <Link v-if="can('users.show')" :href="route('users.show', user.id)"
-                                                type="button"
-                                                class="mr-3 text-sm bg-green-500 hover:bg-green-700 text-white py-1 px-2 rounded focus:outline-none focus:shadow-outline">
-                                            Show</Link>
-                                            <Link v-if="can('users.edit')" :href="route('users.edit', user.id)"
-                                                type="button"
-                                                class="mr-3 text-sm bg-blue-500 hover:bg-blue-700 text-white py-1 px-2 rounded focus:outline-none focus:shadow-outline">
-                                            Edit</Link>
-                                            <button v-if="can('users.delete')" @click="deleteUser(user.id)"
-                                                type="button"
-                                                class="text-sm bg-red-500 hover:bg-red-700 text-white py-1 px-2 rounded focus:outline-none focus:shadow-outline">Delete</button>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                            <div
-                                class="px-5 py-5 bg-white border-t flex flex-col xs:flex-row items-center xs:justify-between dark:bg-zinc-800 dark:border-zinc-800 dark:text-white dark:border-gray-900 ">
-                                <span class="text-xs xs:text-sm text-gray-900 dark:text-gray-50">
-                                    Showing
-                                    {{ (users.current_page - 1) * users.per_page + 1 }}
-                                    to
-                                    {{
-                                        users.current_page * users.per_page > users.total
-                                            ? users.total
-                                            : users.current_page * users.per_page
-                                    }}
-                                    of {{ users.total }} entries
-                                </span>
-                                <div class="inline-flex mt-2 xs:mt-0">
-                                    <button @click="router.get(users.prev_page_url)" :disabled="!users.prev_page_url"
-                                        class="text-sm bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-l">
-                                        Prev
-                                    </button>
-
-                                    <button @click="router.get(users.next_page_url)" :disabled="!users.next_page_url"
-                                        class="text-sm bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-r">
-                                        Next
-                                    </button>
-                                </div>
+                    <Column selectionMode="multiple" style="width: 3rem" :exportable="false"></Column>
+                    <Column field="name" header="Name" sortable style="min-width: 12rem">
+                        <template #body="slotProps">
+                            <div class="flex items-center">
+                                <img class="w-8 h-8 rounded-full mr-2"
+                                    :src="slotProps.data.avatar ? `/storage/` + slotProps.data.avatar : 'https://ui-avatars.com/api/?name=' + getInitials(slotProps.data.username) + '&background=random'" />
+                                {{ slotProps.data.name }}
                             </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </body>
+                        </template>
+                    </Column>
+                    <Column field="username" header="Username" sortable style="min-width: 10rem"></Column>
+                    <Column field="roles" header="Roles" style="min-width: 14rem">
+                        <template #body="slotProps">
+                            <div class="flex flex-wrap gap-1">
+                                <Tag v-for="role in slotProps.data.roles" :key="role.id" :value="role.name"
+                                    severity="info" />
+                            </div>
+                        </template>
+                    </Column>
+                    <Column field="email" header="Email" sortable style="min-width: 14rem"></Column>
+                    <Column field="is_active" header="Status" style="min-width: 10rem" filterField="is_active" sortable
+                        filterMatchMode="equals">
+                        <template #body="slotProps">
+                            <Tag :value="slotProps.data.is_active ? 'Active' : 'Inactive'"
+                                :severity="slotProps.data.is_active ? 'success' : 'warn'"
+                                :class="can('users.togglestatus') ? 'cursor-pointer' : 'cursor-not-allowed'"
+                                v-tooltip.bottom="can('users.togglestatus') ? 'aktif/nonaktifkan akun' : null"
+                                @click="can('users.togglestatus') ? toggleStatus(slotProps.data.id) : null" />
+                        </template>
+                        <template #filter="{ filterModel }">
+                            <Select v-model="filterModel.value" :options="statusOptions" placeholder="Select One"
+                                showClear>
+                                <template #option="slotProps">
+                                    <Tag :value="slotProps.option.label" :severity="slotProps.option.severity" />
+                                </template>
+                            </Select>
+                        </template>
+                    </Column>
 
+                    <Column :exportable="false" style="min-width: 12rem" v-if="can('users.edit') || can('users.delete')">
+                        <template #body="slotProps">
+                            <Button icon="pi pi-pencil" outlined rounded class="mr-2" as="a"
+                                v-tooltip.bottom="`Edit '${slotProps.data.name}'`"
+                                :href="route('users.edit', slotProps.data)" />
+                            <Button icon="pi pi-trash" outlined rounded severity="danger"
+                                v-tooltip.bottom="`Delete '${slotProps.data.name}'`"
+                                @click="confirmDeleteUser(slotProps.data)" />
+                        </template>
+                    </Column>
+                    <template #empty>data not found</template>
+                </DataTable>
+            </div>
+        </div>
     </AppLayout>
 </template>

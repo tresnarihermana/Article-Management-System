@@ -18,18 +18,19 @@ use App\Http\Controllers\CommentController;
 use Spatie\Permission\Contracts\Permission;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\MainPageController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Middleware\EnsureProfileComplete;
 use App\Http\Controllers\ManageArticleController;
 use App\Http\Controllers\ApproveArticleController;
 use App\Http\Controllers\Settings\ProfileController;
+use App\Models\Category;
 use Illuminate\Session\Middleware\AuthenticateSession;
-    Route::get('/', [MainPageController::class, 'index'], function () {
-        
-    })->name('home');
+
+Route::get('/', [MainPageController::class, 'index'], function () {})->name('home');
 
 
-Route::get('dashboard', function () {
+Route::get('dashboard', [DashboardController::class, 'index'], function () {
     return Inertia::render('Dashboard')->with('message', 'Selamat datang');
 })->middleware(['auth', 'verified'])->name('dashboard');
 Auth::routes(['verify' => true]);
@@ -76,14 +77,16 @@ Route::middleware(['auth', 'web', 'verified'])->group(function () {
         ->name('category.show');
 
     Route::get('/categories', [MainPageController::class, 'categories'])
-    ->name('categories.list');
+        ->name('categories.list');
 
     Route::post('/article/read/{article}/like', [MainPageController::class, 'like'])->middleware('auth');
 
     Route::post('/articles/read/{article}/comments', [CommentController::class, 'store'])
-    ->middleware(['throttle:comments', 'auth'])
-    ->name('comments.store');
+        ->middleware(['throttle:comments', 'auth'])
+        ->name('comments.store');
 
+    Route::delete('/articles/comment-delete/{id}', [CommentController::class, 'destroy'])
+        ->name('comments.delete');
 });
 
 // Roles and Permissions mulai disini
@@ -196,6 +199,8 @@ Route::middleware(['auth', 'web', 'verified'])->group(function () {
         ->only(['show'])
         ->middleware("permission:approve.show");
 
+
+
     // Article Categories
     Route::resource("manage/categories", CategoryController::class)
         ->only(['create', 'store'])
@@ -236,6 +241,18 @@ Route::middleware(['auth', 'web', 'verified'])->group(function () {
         ->name('approve')->middleware('permission:articles.approve');
     Route::put('articles/{article}/reject', [ApproveArticleController::class, 'reject'])
         ->name('reject')->middleware('permission:articles.approve');
+});
+
+// Bulk Action
+Route::delete("manage/articles/bulk-destroy/{ids}", [ArticleController::class, 'bulkDestroy'])->name('articles.bulk-destroy');
+Route::delete("manage/users/bulk-destroy/{ids}", [UserController::class, 'bulkDestroy'])->name('users.bulk-destroy');
+Route::delete("manage/roles/bulk-destroy/{ids}", [RoleController::class, 'bulkDestroy'])->name('roles.bulk-destroy');
+Route::delete("manage/permissions/bulk-destroy/{ids}", [PermissionController::class, 'bulkDestroy'])->name('permissions.bulk-destroy');
+Route::delete("manage/categories/bulk-destroy/{ids}", [CategoryController::class, 'bulkDestroy'])->name('categories.bulk-destroy');
+Route::delete("manage/tags/bulk-destroy/{ids}", [TagController::class, 'bulkDestroy'])->name('tags.bulk-destroy');
+
+Route::get('/bar', function () {
+    return Inertia::render('CategoriesStatsPieChart'); // TODO hello
 });
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';

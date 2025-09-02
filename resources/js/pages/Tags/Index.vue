@@ -1,69 +1,104 @@
 <script setup lang="ts">
-import AppLayout from '@/layouts/AppLayout.vue';
-import { type BreadcrumbItem } from '@/types';
-import { Head, Link, useForm, router } from '@inertiajs/vue3';
-import Button from 'primevue/button';
-import Swal from 'sweetalert2';
-import { usePage } from '@inertiajs/vue3';
-import { can } from '@/lib/can';
-import { ref, watch } from 'vue';
-import { RollerCoaster } from 'lucide-vue-next';
-const page = usePage();
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: '/Tags',
-        href: route('tags.index'),
-    },
-];
-const props = defineProps<{
-    tags: {
-        data: any[],
-        current_page: number,
-        last_page: number,
-        per_page: number,
-        total: number,
-        next_page_url: string | null,
-        prev_page_url: string | null
-    },
-    permissions: any[],
-    filters: {
-        data: any[],
-    }
-}>();
-const flash = page.props?.flash?.message;
-if (flash) {
-    let timerInterval;
-    Swal.fire({
-        title: "Process Success",
-        icon: "success",
-        html: "tag Succesfully added",
-        timer: 1000,
-        timerProgressBar: true,
-        didOpen: () => {
-            const timer = Swal.getPopup().querySelector("b");
-            timerInterval = setInterval(() => {
-                timer.textContent = `${Swal.getTimerLeft()}`;
-            }, 100);
-        },
-        willClose: () => {
-            clearInterval(timerInterval);
-        }
-    })
-}
+import { ref } from "vue";
+import { FilterMatchMode } from "@primevue/core/api";
+import { useToast } from "primevue/usetoast";
+import DataTable from "primevue/datatable";
+import Column from "primevue/column";
+import Toolbar from "primevue/toolbar";
+import Button from "primevue/button";
+import InputText from "primevue/inputtext";
+import Tag from "primevue/tag";
+import { router } from "@inertiajs/vue3";
+import AppLayout from "@/layouts/AppLayout.vue";
+import Swal from "sweetalert2";
 
-function deleteTag(id) {
+const props = defineProps<{
+    tags: any[],
+    search?: string
+}>();
+
+const toast = useToast();
+const dt = ref();
+const tags = ref(props.tags);
+const selectedTags = ref();
+const lazyLoading = ref(false);
+const totalRecords = ref(props.tags.length);
+const lazyParams = ref({
+    first: 0,
+    rows: 10,
+    page: 0,
+});
+const filters = ref({
+    global: { value: props.search ?? null, matchMode: FilterMatchMode.CONTAINS }
+});
+
+const onPage = (event: any) => {
+    lazyParams.value = event;
+    loadLazyData();
+    selectedTags.value = [];
+};
+
+const onSort = (event: any) => {
+    lazyParams.value = event;
+    loadLazyData();
+    selectedTags.value = [];
+};
+
+const loadLazyData = () => {
+    lazyLoading.value = true;
+    setTimeout(() => {
+        let data = [...props.tags];
+        if (filters.value.global.value) {
+            const search = filters.value.global.value.toLowerCase();
+            data = data.filter((t: any) =>
+                t.name.toLowerCase().includes(search)
+            );
+        }
+        if (lazyParams.value.sortField) {
+            data.sort((a: any, b: any) => {
+                const field = lazyParams.value.sortField;
+                let value1 = a[field];
+                let value2 = b[field];
+                if (field.includes('.')) {
+                    const keys = field.split('.');
+                    value1 = keys.reduce((obj, key) => obj?.[key], a);
+                    value2 = keys.reduce((obj, key) => obj?.[key], b);
+                }
+                let result = 0;
+                if (value1 == null && value2 != null) result = -1;
+                else if (value1 != null && value2 == null) result = 1;
+                else if (value1 == null && value2 == null) result = 0;
+                else if (typeof value1 === 'string' && typeof value2 === 'string')
+                    result = value1.localeCompare(value2);
+                else result = value1 < value2 ? -1 : value1 > value2 ? 1 : 0;
+                return (lazyParams.value.sortOrder ?? 1) * result;
+            });
+        }
+        const start = lazyParams.value.first;
+        const end = start + lazyParams.value.rows;
+        tags.value = data.slice(start, end);
+        totalRecords.value = data.length;
+        lazyLoading.value = false;
+    }, 300);
+};
+
+loadLazyData();
+
+const confirmDeleteTag = (tag: any) => {
     Swal.fire({
-        title: 'Are you sure?',
-        text: "You won't be able to revert this!",
         icon: 'warning',
+        title: 'Hapus Tag ini?',
+        text: tag.name,
         showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Yes, delete it!'
+        confirmButtonText: 'Ya, hapus',
+        cancelButtonText: 'Batal',
+        confirmButtonColor: '#d33'
     }).then((result) => {
         if (result.isConfirmed) {
-            router.delete(route('tags.destroy', id), {
+            router.delete(route('tags.destroy', tag.id), {
+                preserveState: true,
                 onSuccess: () => {
+                    tags.value = tags.value.filter(val => val.id !== tag.id);
                     Swal.fire({
                         title: 'Deleted!',
                         text: 'This tag has been deleted.',
@@ -82,205 +117,104 @@ function deleteTag(id) {
             });
         }
     });
-}
-// pagination atau apalah
-const perPage = ref(new URLSearchParams(window.location.search).get('per_page') || 10)
-watch(perPage, (value) => {
-    router.get(route('tags.index'), { per_page: value, page: 1 }, { preserveState: true, replace: true })
-})
-const form = useForm({
-    search: props.filters.search || '',
-    permission: props.filters.permission || null,
+};
 
-})
-watch(() => form.search, () => {
-    form.get(route('tags.index'), {
-        preserveScroll: true,
-        preserveState: true,
+const confirmDeleteSelected = () => {
+    Swal.fire({
+        icon: 'warning',
+        title: 'Hapus Tags terpilih?',
+        text: 'Tag yang dipilih akan dihapus permanen',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, hapus',
+        cancelButtonText: 'Batal',
+        confirmButtonColor: '#d33'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const ids = selectedTags.value.map((t: any) => t.id);
+            router.delete(route('tags.bulk-destroy', ids), {
+                data: { ids },
+                preserveState: true,
+                onSuccess: () => {
+                    tags.value = tags.value.filter(
+                        (val) => !ids.includes(val.id)
+                    );
+                    selectedTags.value = null;
+                    Swal.fire({
+                        title: 'Deleted!',
+                        text: 'Selected tags have been deleted.',
+                        icon: 'success',
+                        timer: 1000,
+                        timerProgressBar: true,
+                    });
+                },
+                onError: () => {
+                    Swal.fire({
+                        title: 'Failed!',
+                        text: 'Something went wrong. The tags were not deleted.',
+                        icon: 'error',
+                    });
+                }
+            });
+        }
     });
-});
-watch(() => form.permission, () => {
-    form.get(route('tags.index'), { preserveState: true, replace: true })
-})
-
-
-
+};
 </script>
 
 <template>
+    <AppLayout>
+        <div>
+            <div class="card">
+                <Toolbar class="mb-6">
+                    <template #start>
+                        <Button label="New" icon="pi pi-plus" class="mr-2" as="a" :href="route('tags.create')" />
+                        <Button label="Delete" icon="pi pi-trash" severity="danger" outlined
+                            @click="confirmDeleteSelected" :disabled="!selectedTags || !selectedTags.length" />
+                    </template>
+                    <template #end>
+                        <Button label="Export" icon="pi pi-upload" severity="secondary" @click="dt.exportCSV()" />
+                    </template>
+                </Toolbar>
 
-    <Head title="Tags" />
-    <AppLayout :breadcrumbs="breadcrumbs">
-        <!-- component -->
-        <div class="text-gray-900 bg-gray-200 dark:bg-transparent">
-            <!-- <div class="p-4 flex">
-                <h1 class="text-3xl">
-                    Tags
-                </h1>
-            </div>
-            <div class="px-4">
-                <Button v-if="can('tags.create')" label="Add Tag" as="a" :href="route('tags.create')"
-                    icon="pi pi-plus" icon-pos="left" />
-            </div> -->
-
-            <div class="antialiased font-sans">
-                <div class="container mx-auto px-4 sm:px-8">
-                    <div class="py-8">
-                        <div>
-                            <h2 class="text-2xl font-semibold leading-tight dark:text-gray-200">Tags</h2>
+                <DataTable ref="dt" v-model:selection="selectedTags" :value="tags" dataKey="id"
+                    :showGridlines="true"
+                    :stripedRows="true"
+                    :lazy="true" :paginator="true" :rows="10" :totalRecords="totalRecords"
+                    :filters="filters"
+                    @page="onPage"
+                    @sort="onSort"
+                    paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+                    :rowsPerPageOptions="[5, 10, 25]"
+                    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} tags"
+                    class="container mx-auto">
+                    <template #header>
+                        <div class="flex flex-wrap gap-2 items-center justify-between">
+                            <h4 class="m-0">Manage Tags</h4>
+                            <span class="p-input-icon-left">
+                                <i class="pi pi-search mr-2" />
+                                <InputText v-model="filters['global'].value" placeholder="Search..."  @input="loadLazyData" />
+                            </span>
                         </div>
-                        <div class="my-2 flex sm:flex-row flex-col">
-                            <div class="flex flex-row mb-1 sm:mb-0">
-                                <div class="relative">
-                                    <select v-model="perPage"
-                                        class="appearance-none h-full rounded-l border block appearance-none w-full bg-white border-gray-400 text-gray-700 py-2 px-4 pr-8 leading-tight focus:outline-none focus:bg-white focus:border-gray-500 dark:bg-zinc-800 dark:border-zinc-800 dark:text-gray-200">
-                                        <option :value="5">5</option>
-                                        <option :value="10">10</option>
-                                        <option :value="20">20</option>
-                                    </select>
-                                    <div
-                                        class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                                        <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg"
-                                            viewBox="0 0 20 20">
-                                            <path
-                                                d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
-                                        </svg>
-                                    </div>
-                                </div>
-                                <div class="relative">
-                                    <select v-model="form.permission"
-                                        class="appearance-none h-full rounded-r border-t sm:rounded-r-none sm:border-r-0 border-r border-b block appearance-none w-full bg-white border-gray-400 text-gray-700 py-2 px-4 pr-8 leading-tight focus:outline-none focus:border-l focus:border-r focus:bg-white focus:border-gray-500 dark:bg-zinc-800 dark:border-zinc-800 dark:text-gray-200">
-                                        <option :value="null">All</option>
-                                        <option v-for="permission in permissions" :key="permission.id"
-                                            :value="permission.name">{{ permission.name }}</option>
-                                    </select>
-                                    <div
-                                        class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                                        <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg"
-                                            viewBox="0 0 20 20">
-                                            <path
-                                                d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
-                                        </svg>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="block relative">
-                                <span class="h-full absolute inset-y-0 left-0 flex items-center pl-2">
-                                    <svg viewBox="0 0 24 24" class="h-4 w-4 fill-current text-gray-500">
-                                        <path
-                                            d="M10 4a6 6 0 100 12 6 6 0 000-12zm-8 6a8 8 0 1114.32 4.906l5.387 5.387a1 1 0 01-1.414 1.414l-5.387-5.387A8 8 0 012 10z">
-                                        </path>
-                                    </svg>
-                                </span>
-                                <input v-model="form.search" placeholder="Search"
-                                    class="appearance-none rounded-r rounded-l sm:rounded-l-none border border-gray-400 border-b block pl-8 pr-6 py-2 w-full bg-white text-sm placeholder-gray-400 text-gray-700 focus:bg-white focus:placeholder-gray-600 focus:text-gray-700 focus:outline-none dark:bg-zinc-800 dark:border-zinc-800 dark:text-gray-200" />
-                            </div>
-                            <div class="flex justify-end px-3">
-                                <button v-if="can('tags.create')" @click="router.get(route('tags.create'))"
-                                    type="button"
-                                    class="rounded border block appearance-none bg-green-400 border-green-400 text-white py-2 px-4 pr-8 leading-tight focus:outline-none focus:bg-green focus:border-green-500">
-                                    + Add Tag
-                                </button>
-                            </div>
-                        </div>
+                    </template>
 
-                        <div class="-mx-4 sm:-mx-8 px-4 sm:px-8 py-4 overflow-x-auto">
-                            <div class="inline-block min-w-full shadow rounded-lg overflow-hidden">
-                                <table class="min-w-full leading-normal">
-                                    <thead>
-                                        <tr>
-                                            <th
-                                                class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider dark:bg-zinc-900 dark:border-zinc-900 dark:text-gray-50">
-                                                ID
-                                            </th>
-                                            <th
-                                                class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider dark:bg-zinc-900 dark:border-zinc-900 dark:text-gray-50">
-                                                Name
-                                            </th>
-                                            <th
-                                                class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider dark:bg-zinc-900 dark:border-zinc-900 dark:text-gray-50">
-                                                Used by
-                                            </th>
-                                            <th
-                                                class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider dark:bg-zinc-900 dark:border-zinc-900 dark:text-gray-50">
-                                                Action
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr v-for="tag in tags.data">
-                                            <td
-                                                class="px-5 py-5 border-b border-gray-200 bg-white text-sm dark:bg-zinc-800 dark:border-zinc-800 dark:text-white  ">
-                                                <div class="flex items-center">
-                                                    <div class="flex-shrink-0 w-10 h-10">
-                                                        {{ tag.id }}
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td
-                                                class="px-5 py-5 border-b border-gray-200 bg-white text-sm dark:bg-zinc-800 dark:border-zinc-800 ">
-                                                <p class="text-gray-900 whitespace-no-wrap dark:text-white">
-                                                    {{ tag.name }}
-                                                </p>
-                                            </td>
-                                            <td
-                                                class="px-5 py-5 border-b border-gray-200 bg-white text-sm max-w-s dark:bg-zinc-800 dark:border-zinc-800 dark:text-white  ">
-                                                <div class="flex flex-wrap gap-1">
-                                                    <p class="text-gray-900 whitespace-no-wrap dark:text-white" v-if="Object.keys(tag.articles.articles).length > 0">
-                                                        {{ Object.keys(tag.articles.articles).length }}
-                                                    </p>
-                                                    <p class="text-gray-900 whitespace-no-wrap dark:text-white" v-else>
-                                                        -
-                                                    </p>
-                                                </div>
-                                            </td>
-
-                                            <td
-                                                class="px-5 py-5 border-b border-gray-200 bg-white text-sm whitespace-nowrap dark:bg-zinc-800 dark:border-zinc-800 dark:text-white dark:border-gray-900 ">
-                                                <Link v-if="can('tags.edit')"
-                                                    :href="route('tags.edit', tag.id)" type="button"
-                                                    class="mr-3 text-sm bg-blue-500 hover:bg-blue-700 text-white py-1 px-2 rounded focus:outline-none focus:shadow-outline">
-                                                Edit</Link>
-                                                <button v-if="can('tags.delete')" @click="deleteTag(tag.id)"
-                                                    type="button"
-                                                    class="text-sm bg-red-500 hover:bg-red-700 text-white py-1 px-2 rounded focus:outline-none focus:shadow-outline">Delete</button>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                                <div
-                                    class="px-5 py-5 bg-white border-t flex flex-col xs:flex-row items-center xs:justify-between  dark:bg-zinc-800 dark:border-zinc-800 dark:text-white dark:border-gray-900         ">
-                                    <span class="text-xs xs:text-sm text-gray-900 dark:text-white">
-                                        Showing
-                                        {{ (tags.current_page - 1) * tags.per_page + 1 }}
-                                        to
-                                        {{
-                                            tags.current_page * tags.per_page > tags.total
-                                                ? tags.total
-                                                : tags.current_page * tags.per_page
-                                        }}
-                                        of {{ tags.total }} entries
-                                    </span>
-                                    <div class="inline-flex mt-2 xs:mt-0 flex">
-                                        <button @click="router.get(tags.prev_page_url)"
-                                            :disabled="!tags.prev_page_url"
-                                            class="text-sm bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-l">
-                                            Prev
-                                        </button>
-
-                                        <button @click="router.get(tags.next_page_url)"
-                                            :disabled="!tags.next_page_url"
-                                            class="text-sm bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-r">
-                                            Next
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                    <Column selectionMode="multiple" style="width: 3rem" :exportable="false"></Column>
+                    <Column field="id" header="ID" sortable style="min-width: 6rem"></Column>
+                    <Column field="name" header="Name" sortable style="min-width: 12rem"></Column>
+                    <Column field="articles" header="Used By" sortable style="min-width: 10rem">
+                        <template #body="slotProps">
+                            <Tag :value="slotProps.data.articles" severity="info" />
+                        </template>
+                    </Column>
+                    <Column :exportable="false" style="min-width: 12rem">
+                        <template #body="slotProps">
+                            <Button icon="pi pi-pencil" outlined rounded class="mr-2" as="a"
+                                :href="route('tags.edit', slotProps.data)" />
+                            <Button icon="pi pi-trash" outlined rounded severity="danger"
+                                @click="confirmDeleteTag(slotProps.data)" />
+                        </template>
+                    </Column>
+                    <template #empty>data not found</template>
+                </DataTable>
             </div>
         </div>
-
     </AppLayout>
 </template>

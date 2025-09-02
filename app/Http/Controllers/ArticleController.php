@@ -16,25 +16,11 @@ class ArticleController extends Controller
 
     public function index(Request $request)
     {
-        $perPage = $request->input('per_page', 10);
-        $search = $request->input('search');
-        $status = $request->input('status');
         $articles = Article::with('user', 'tags', 'categories')
             ->where('user_id', auth()->id())
-            ->when($search, function ($query, $search) {
-                $query->where(function ($q) use ($search) {
-                    $q->where('titile', 'like', "%$search%")
-                        ->orWhere('slug', 'like', "%$search%");
-                });
-            })->when($status, function ($query, $status) {
-                $query->whereHas('status', function ($q) use ($status) {
-                    $q->where('status', '=', $status);
-                });
-            })
             ->orderBy('created_at', 'desc')
-            ->paginate($perPage)
-            ->withQueryString()
-            ->through(function ($article) {
+            ->get()
+            ->map(function ($article) {
                 return [
                     'id' => $article->id,
                     'title' => $article->title,
@@ -51,9 +37,6 @@ class ArticleController extends Controller
             });
         return Inertia::render('Articles/Index', [
             'articles' => $articles,
-            'search' => $search,
-            'filters' => $request->only('input', 'tag'),
-
         ]);
     }
 
@@ -157,6 +140,7 @@ class ArticleController extends Controller
 
 
         if (!empty($validated['category_id'])) {
+            $article->categories()->detach();
             $article->categories()->sync($validated['category_id']);
         }
 
@@ -174,7 +158,7 @@ class ArticleController extends Controller
     {
         Article::destroy($id);
 
-        return to_route("articles.index")->with("message", "Success Delete Article");
+        return back()->with("message", "Success Delete Article");
     }
 
 
@@ -191,4 +175,14 @@ class ArticleController extends Controller
         ]);
     }
 
+    public function bulkDestroy(Request $request)
+    {
+        $ids = $request->input('ids', []);
+        // dd($ids);
+        if (!empty($ids)) {
+            Article::whereIn('id', $ids)->delete();
+        }
+
+        return redirect()->back(303)->with('success', 'Selected articles deleted successfully');
+    }
 }

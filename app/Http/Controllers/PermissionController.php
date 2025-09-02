@@ -15,25 +15,11 @@ class PermissionController extends Controller
      */
     public function index(Request $request)
     {
-        $perPage = $request->input('per_page', 10);
-        $search = $request->input('search');
-        $role = $request->input('role');
         $permissions = Permission::with('roles')
-            ->when($search, function ($query, $search) {
-                $query->where(function ($q) use ($search) {
-                    $q->where('name', 'like', "%$search%");
-                });
-            })->when($role, function ($query, $role) {
-                $query->whereHas('roles', function ($q) use ($role) {
-                    $q->where('name', '=', $role);
-                });
-            })
-            ->paginate($perPage)
-            ->withQueryString();
+            ->get();
         return Inertia::render("Permissions/Index", [
             "roles" => Role::all(),
             "permissions" => $permissions,
-            'filters' => $request->only(['search', 'role']),
         ]);
     }
 
@@ -114,5 +100,15 @@ class PermissionController extends Controller
         $permission = Permission::findOrFail($id);
         Permission::destroy($id);
         return to_route("permissions.index")->with("message", "Success Delete Permission");
+    }
+        public function bulkDestroy(Request $request)
+    {
+        $ids = $request->input('ids', []);
+        // dd($ids);
+        if (!empty($ids)) {
+            Permission::whereIn('id', $ids)->delete();
+        }
+
+        return redirect()->back(303)->with('success', 'Selected users deleted successfully');
     }
 }
