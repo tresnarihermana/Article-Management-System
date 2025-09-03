@@ -12,8 +12,8 @@ const props = defineProps<{
 </script>
 
 <template>
-    <div class="relative mt-10">
-        <div class="mx-auto max-w-[1200px] mb-[4rem]">
+    <div class="relative mt-20">
+        <div class="mx-auto max-w-[80rem] mb-[4rem]">
             <h2 class="text-4xl font-semibold tracking-tight text-gray-900 dark:text-gray-200 sm:text-5xl">
                 Best Of The Week
             </h2>
@@ -23,12 +23,12 @@ const props = defineProps<{
         </div>
 
         <Swiper :modules="[Navigation, Pagination, Autoplay]" :slides-per-view="1" :space-between="20" pagination
-            autoplay class="max-w-[1200px] mx-auto rounded-3xl">
+            autoplay class="max-w-[80rem] mx-auto rounded-3xl max-lg:rounded-none">
             <SwiperSlide v-for="(article, i) in articles" :key="i">
                 <a :href="route('article.show', article.slug)">
                     <div
-                        class="relative block rounded-3xl bg-white text-white shadow-secondary-1 dark:bg-surface-dark group overflow-hidden max-h-[540px]">
-                        <img class="rounded-3xl group-hover:scale-[110%] ease-in-out duration-500 w-full object-cover"
+                        class="relative block rounded-3xl max-lg:rounded-none bg-white text-white shadow-secondary-1 dark:bg-surface-dark group overflow-hidden max-h-[540px]">
+                        <img class="group-hover:scale-[110%] ease-in-out duration-500 w-full object-cover"
                             :src="article.cover ? `/storage/${article.cover}` : 'https://picsum.photos/id/1018/1920/1080'"
                             alt="thumbnail" />
                         <Tag as="a" severity="contrast" :value="article.category" class="absolute top-0"></Tag>
@@ -51,12 +51,12 @@ const props = defineProps<{
                                     <span class="flex items-center text-[12px] !text-gray-400 font-mono gap-4"
                                         :style="{ color: article.liked ? 'red' : 'gray' }">
                                         <span class="flex items-center">
-                                            <i class="pi pi-comment mr-1"></i> {{ article.comment_count ?? 0 }}
+                                            <i class="pi pi-comment mr-1"></i> {{ article.comments.length ?? 0 }}
                                         </span>
                                         <span class="flex items-center">
                                             <i
                                                 :class="article.liked ? 'pi pi-heart-fill mr-1' : 'pi pi-heart mr-1'"></i>
-                                            {{ article.like_count ?? 0 }}
+                                            {{ article.likes.length ?? 0 }}
                                         </span>
                                     </span>
                                 </div>
