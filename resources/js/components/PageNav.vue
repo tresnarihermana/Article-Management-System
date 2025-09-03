@@ -5,9 +5,10 @@
       aria-label="Global">
       <div class="flex lg:flex-1">
         <a href="/" class="-m-1.5 p-1.5">
-          <span class="sr-only">Article Management System</span>
+          <span class="sr-only">Daily LiME News</span>
           <div class="text-4xl font-bold ">
-            AMS<span class="text-green-700 dark:text-green-500">.</span>
+            <!-- Brand Desktop -->
+            L<span class="text-green-700 dark:text-green-500">i</span>ME<span class="text-green-700 dark:text-green-500">.</span>
           </div>
 
         </a>
@@ -130,9 +131,10 @@
         class="fixed inset-y-0 right-0 z-50 w-full overflow-y-auto bg-white p-6 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10 dark:bg-neutral-950">
         <div class="flex items-center justify-between">
           <a href="#" class="-m-1.5 p-1.5">
-            <span class="sr-only">Article Management System</span>
+            <span class="sr-only">Daily LiME News</span>
             <div class="text-4xl font-bold dark:text-gray-200">
-              AMS<span class="text-green-700 dark:text-green-500">.</span>
+              <!-- Brand Mobile -->
+             L<span class="text-green-700 dark:text-green-500">i</span>ME<span class="text-green-700 dark:text-green-500">.</span>
             </div>
           </a>
           <button type="button" class="-m-2.5 rounded-md p-2.5 text-gray-700" @click="mobileMenuOpen = false">
