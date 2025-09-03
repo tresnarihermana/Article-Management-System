@@ -72,7 +72,7 @@ if (flash) {
                 }">
                     <SwiperSlide v-for="(stat, i) in props.stats" :key="i">
                         <div
-                            class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow h-full">
+                            class="bg-white dark:bg-transparent rounded-xl shadow-sm border border-gray-200 dark:border-zinc-800 p-6 hover:shadow-md transition-shadow h-full">
                             <div class="flex items-center justify-between">
                                 <div>
                                     <p class="text-sm font-medium text-gray-600 dark:text-gray-400">
@@ -95,7 +95,7 @@ if (flash) {
                                         </span>
                                     </div>
                                 </div>
-                                <div class="w-12 h-12 rounded-lg flex items-center justify-center" :class="stat.color">
+                                <div class="w-12 h-12 rounded-lg flex items-center justify-center dark:text-gray-200 dark:bg-transparent dark:bg-zinc-800" :class="stat.color">
                                     <i :class="['pi', stat.icon, 'text-xl']"></i>
                                 </div>
                             </div>
