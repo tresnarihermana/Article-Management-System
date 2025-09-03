@@ -76,7 +76,7 @@ if (session) {
                             Forgot password?
                         </TextLink>
                     </div>
-                    <Password id="password" type="password" required :tabindex="2" autocomplete="current-password"
+                    <Password id="password" type="password" required :tabindex="2" :autofocus="true" autocomplete="current-password"
                         v-model="form.password" placeholder="Password" inputClass="w-full" class="w-full" :feedback="false" toggleMask />
                     <InputError :message="form.errors.password" />
                 </div>
