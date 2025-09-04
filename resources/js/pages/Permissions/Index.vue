@@ -11,6 +11,8 @@ import Tag from "primevue/tag";
 import { router } from "@inertiajs/vue3";
 import AppLayout from "@/layouts/AppLayout.vue";
 import Swal from "sweetalert2";
+import PermissionModal from "@/components/Dashboard/PermissionModal.vue";
+import { can } from "@/lib/can";
 
 const props = defineProps<{
     permissions: any[],
@@ -167,9 +169,10 @@ const confirmDeleteSelected = () => {
             <div class="card">
                 <Toolbar class="mb-6">
                     <template #start>
-                        <Button label="New" icon="pi pi-plus" class="mr-2" as="a" :href="route('permissions.create')" />
+                        <PermissionModal :permission="null" :roles="roles" @created="loadLazyData" />
                         <Button label="Delete" icon="pi pi-trash" severity="danger" outlined
-                            @click="confirmDeleteSelected" :disabled="!selectedPermissions || !selectedPermissions.length" />
+                            @click="confirmDeleteSelected"
+                            :disabled="!selectedPermissions || !selectedPermissions.length" />
                     </template>
                     <template #end>
                         <Button label="Export" icon="pi pi-upload" severity="secondary" @click="dt.exportCSV()" />
@@ -177,12 +180,8 @@ const confirmDeleteSelected = () => {
                 </Toolbar>
 
                 <DataTable ref="dt" v-model:selection="selectedPermissions" :value="permissions" dataKey="id"
-                    :showGridlines="true"
-                    :stripedRows="true"
-                    :lazy="true" :paginator="true" :rows="10" :totalRecords="totalRecords"
-                    :filters="filters"
-                    @page="onPage"
-                    @sort="onSort"
+                    :showGridlines="true" :stripedRows="true" :lazy="true" :paginator="true" :rows="10"
+                    :totalRecords="totalRecords" :filters="filters" @page="onPage" @sort="onSort"
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                     :rowsPerPageOptions="[5, 10, 25]"
                     currentPageReportTemplate="Showing {first} to {last} of {totalRecords} permissions"
@@ -192,7 +191,8 @@ const confirmDeleteSelected = () => {
                             <h4 class="m-0">Manage Permissions</h4>
                             <span class="p-input-icon-left">
                                 <i class="pi pi-search mr-2" />
-                                <InputText v-model="filters['global'].value" placeholder="Search..."  @input="loadLazyData" />
+                                <InputText v-model="filters['global'].value" placeholder="Search..."
+                                    @input="loadLazyData" />
                             </span>
                         </div>
                     </template>
@@ -203,16 +203,19 @@ const confirmDeleteSelected = () => {
                     <Column field="roles" header="Roles" style="min-width: 14rem">
                         <template #body="slotProps">
                             <div class="flex flex-wrap gap-1">
-                                <Tag v-for="role in slotProps.data.roles" :key="role.id" :value="role.name" severity="info" />
+                                <Tag v-for="role in slotProps.data.roles" :key="role.id" :value="role.name"
+                                    severity="info" />
                             </div>
                         </template>
                     </Column>
                     <Column :exportable="false" style="min-width: 12rem">
                         <template #body="slotProps">
-                            <Button icon="pi pi-pencil" outlined rounded class="mr-2" as="a"
-                                :href="route('permissions.edit', slotProps.data)" />
-                            <Button icon="pi pi-trash" outlined rounded severity="danger"
-                                @click="confirmDeletePermission(slotProps.data)" />
+                            <div class="flex gap-2">
+                                <PermissionModal v-if="can('roles.edit')" :isEdit="true" :permission="slotProps.data"
+                                    :roles="props.roles" @edited="loadLazyData" v-tooltip.bottom="`Edit Permission`" />
+                                <Button icon="pi pi-trash" outlined rounded severity="danger"
+                                    @click="confirmDeletePermission(slotProps.data)" />
+                            </div>
                         </template>
                     </Column>
                     <template #empty>data not found</template>
