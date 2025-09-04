@@ -13,7 +13,7 @@ import InputText from 'primevue/inputtext';
 import Tag from 'primevue/tag';
 import { FilterMatchMode } from '@primevue/core/api';
 import { can } from '@/lib/can';
-
+import RoleModal from '@/components/Dashboard/RoleModal.vue';
 const page = usePage();
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -99,7 +99,7 @@ const confirmDeleteRole = (role: any) => {
     Swal.fire({
         icon: 'warning',
         title: 'Hapus Role ini?',
-        text: role.name,
+        text: `Anda yakin ingin menghapus role '${role.name}'?`,
         showCancelButton: true,
         confirmButtonText: 'Ya, hapus',
         cancelButtonText: 'Batal',
@@ -172,34 +172,31 @@ const confirmDeleteSelected = () => {
 </script>
 
 <template>
+
     <Head title="Roles" />
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="card">
             <Toolbar class="mb-6">
                 <template #start>
-                    <Button v-if="can('roles.create')" label="New" icon="pi pi-plus" class="mr-2" as="a" :href="route('roles.create')" />
-                    <Button label="Delete" icon="pi pi-trash" severity="danger" outlined
-                        @click="confirmDeleteSelected" :disabled="!selectedRoles || !selectedRoles.length" />
+                    <RoleModal v-if="can('roles.create')" :role="null" :permissions="props.permissions" @created="loadLazyData" />
+                    <Button label="Delete" icon="pi pi-trash" severity="danger" outlined @click="confirmDeleteSelected"
+                        :disabled="!selectedRoles || !selectedRoles.length" />
                 </template>
             </Toolbar>
 
-            <DataTable ref="dt" v-model:selection="selectedRoles" :value="roles" dataKey="id"
-                :showGridlines="true"
-                :stripedRows="true"
-                :lazy="true" :paginator="true" :rows="10" :totalRecords="totalRecords"
-                :filters="filters"
-                @page="onPage"
-                @sort="onSort"
+            <DataTable ref="dt" v-model:selection="selectedRoles" :value="roles" dataKey="id" :showGridlines="true"
+                :stripedRows="true" :lazy="true" :paginator="true" :rows="10" :totalRecords="totalRecords"
+                :filters="filters" @page="onPage" @sort="onSort"
                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                 :rowsPerPageOptions="[5, 10, 25]"
-                currentPageReportTemplate="Showing {first} to {last} of {totalRecords} roles"
-                class="container mx-auto">
+                currentPageReportTemplate="Showing {first} to {last} of {totalRecords} roles" class="container mx-auto">
                 <template #header>
                     <div class="flex flex-wrap gap-2 items-center justify-between">
                         <h4 class="m-0">Manage Roles</h4>
                         <span class="p-input-icon-left">
                             <i class="pi pi-search mr-2" />
-                            <InputText v-model="filters['global'].value" placeholder="Search..."  @input="loadLazyData" />
+                            <InputText v-model="filters['global'].value" placeholder="Search..."
+                                @input="loadLazyData" />
                         </span>
                     </div>
                 </template>
@@ -210,17 +207,21 @@ const confirmDeleteSelected = () => {
                 <Column field="permissions" header="Permissions" style="min-width: 14rem">
                     <template #body="slotProps">
                         <div class="flex flex-wrap gap-1">
-                            <Tag v-for="(permission, index) in slotProps.data.permissions.slice(0, 5)" :key="permission.id" :value="permission.name" severity="info" />
-                            <Tag v-if="slotProps.data.permissions.length > 5" :value="'+' + (slotProps.data.permissions.length - 5) + ' more'" severity="secondary" />
+                            <Tag v-for="(permission, index) in slotProps.data.permissions.slice(0, 5)"
+                                :key="permission.id" :value="permission.name" severity="info" />
+                            <Tag v-if="slotProps.data.permissions.length > 5"
+                                :value="'+' + (slotProps.data.permissions.length - 5) + ' more'" severity="secondary" />
                         </div>
                     </template>
                 </Column>
                 <Column :exportable="false" style="min-width: 12rem">
                     <template #body="slotProps">
-                        <Button v-if="can('roles.edit')" icon="pi pi-pencil" outlined rounded class="mr-2" as="a"
-                            :href="route('roles.edit', slotProps.data)" />
-                        <Button v-if="can('roles.delete')" icon="pi pi-trash" outlined rounded severity="danger"
-                            @click="confirmDeleteRole(slotProps.data)" />
+                        <div class="flex gap-2">
+                            <RoleModal v-if="can('roles.edit')" :isEdit="true" :role="slotProps.data"
+                                :permissions="props.permissions" @edited="loadLazyData" v-tooltip.bottom="`Edit Role`" />
+                            <Button v-if="can('roles.delete')" icon="pi pi-trash" outlined rounded severity="danger"
+                                @click="confirmDeleteRole(slotProps.data)" v-tooltip.bottom="`Delete Role`" />
+                        </div>
                     </template>
                 </Column>
                 <template #empty>data not found</template>
