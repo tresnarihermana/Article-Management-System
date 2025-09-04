@@ -14,9 +14,16 @@ import Swal from "sweetalert2";
 import { useInitials } from "@/composables/useInitials";
 import Select from "primevue/select";
 import { can } from "@/lib/can";
+import UserModal from "@/components/Dashboard/UserModal.vue";
+import { type BreadcrumbItem } from '@/types';
 
 const { getInitials } = useInitials();
-
+const breadcrumbs: BreadcrumbItem[] = [
+    {
+        title: 'Users',
+        href: route('users.index'),
+    },
+];
 const props = defineProps<{
     users: any[],
     roles: any[],
@@ -188,20 +195,36 @@ function toggleStatus(id) {
         }
     })
 }
+const loading = ref(false);
+const refresh = () => {
+    router.visit(route('users.index'), {
+  only: ['users'],
+  preserveScroll: true,
+})
+
+    loading.value = true;
+    setTimeout(() => {
+        loading.value = false;
+    }, 500);
+}
+const handleEdit = () => {
+    loadLazyData();
+    router.reload({ only: ['users'] }); 
+}
 </script>
 
 <template>
-    <AppLayout>
+    <AppLayout :breadcrumbs="breadcrumbs">
         <div>
             <div class="card">
-                <Toolbar class="mb-6">
+                <Toolbar class="mb-6 ">
                     <template #start>
-                        <Button label="New" icon="pi pi-plus" class="mr-2" as="a" :href="route('users.create')" v-if="can('users.create')" />
+                        <UserModal :roles="roles" class="mr-2" @created="loadLazyData" :isEdit/>
                         <Button label="Delete" icon="pi pi-trash" severity="danger" outlined v-if="can('users.delete')"
                             @click="confirmDeleteSelected" :disabled="!selectedUsers || !selectedUsers.length" />
                     </template>
                     <template #end>
-                        <Button label="Export" icon="pi pi-upload" severity="secondary" @click="dt.exportCSV()" />
+                        <Button label="Export" zicon="pi pi-upload" severity="secondary" @click="dt.exportCSV()" />
                     </template>
                 </Toolbar>
 
@@ -214,12 +237,18 @@ function toggleStatus(id) {
                     class="container mx-auto">
                     <template #header>
                         <div class="flex flex-wrap gap-2 items-center justify-between">
-                            <h4 class="m-0">Manage Users</h4>
-                            <span class="p-input-icon-left">
-                                <i class="pi pi-search mr-2" />
-                                <InputText v-model="filters['global'].value" placeholder="Search..."
-                                    @input="loadLazyData" />
-                            </span>
+                            <div class="flex items-center gap-3">
+                                <h4 class="m-0">Manage Users</h4>
+                                <Button icon="pi pi-sync" rounded @click="refresh" :loading="loading"
+                                    v-tooltip.right="'Refresh Data'" class="!bg-transparent !border-0 !text-gray-800" />
+                            </div>
+                            <div>
+                                <span class="p-input-icon-left">
+                                    <i class="pi pi-search mr-2" />
+                                    <InputText v-model="filters['global'].value" placeholder="Search..."
+                                        @input="loadLazyData" />
+                                </span>
+                            </div>
                         </div>
                     </template>
 
@@ -262,17 +291,20 @@ function toggleStatus(id) {
                         </template>
                     </Column>
 
-                    <Column :exportable="false" style="min-width: 12rem" v-if="can('users.edit') || can('users.delete')">
+                    <Column :exportable="false" style="min-width: 12rem"
+                      >
                         <template #body="slotProps">
-                            <Button icon="pi pi-pencil" outlined rounded class="mr-2" as="a"
-                                v-tooltip.bottom="`Edit '${slotProps.data.name}'`"
-                                :href="route('users.edit', slotProps.data)" />
-                            <Button icon="pi pi-trash" outlined rounded severity="danger"
-                                v-tooltip.bottom="`Delete '${slotProps.data.name}'`"
-                                @click="confirmDeleteUser(slotProps.data)" />
+                            <div class="flex">
+                                <UserModal :user="slotProps.data" :roles="roles"
+                                    v-tooltip.bottom="`Edit User`"  @edited="handleEdit" 
+                                    />
+                                <Button icon="pi pi-trash" outlined rounded severity="danger"
+                                    v-tooltip.bottom="`Delete User`"
+                                    @click="confirmDeleteUser(slotProps.data)" />
+                            </div>
                         </template>
                     </Column>
-                    <template #empty>data not found</template>
+                <template #empty>data not found</template>
                 </DataTable>
             </div>
         </div>
