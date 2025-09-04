@@ -230,7 +230,8 @@ class UserController extends Controller
 
 
         $user->syncRoles($request->roles);
-        return to_route("users.index")->with("message", "Success Create User");
+        return back()->with("message", "ini jalan cihuy");
+
     }
 
     /**
