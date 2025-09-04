@@ -21,6 +21,8 @@ createInertiaApp({
     resolve: (name) => resolvePageComponent(`./pages/${name}.vue`, import.meta.glob<DefineComponent>('./pages/**/*.vue')),
     setup({ el, App, props, plugin }) {
         const app = createApp({ render: () => h(App, props) })
+        app.component("apexchart", VueApexCharts);
+        app.directive('tooltip', Tooltip);
         app.use(plugin)
             .use(ZiggyVue)
             .use(ToastService)
@@ -35,8 +37,6 @@ createInertiaApp({
                 }
             })
             .mount(el)
-        app.component("apexchart", VueApexCharts);
-        app.directive('tooltip', Tooltip);
     },
     progress: {
         color: '#4B5563',
