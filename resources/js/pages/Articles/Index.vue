@@ -220,6 +220,7 @@ const getSeverity = (articles) => {
                             @click="confirmDeleteSelected" :disabled="!selectedArticles || !selectedArticles.length" />
                     </template>
                     <template #end>
+                        <Button label="Restore" icon="pi pi-history" severity="success" as='a' :href="route('articles.recycle-bin')" class="mr-2"/>
                         <Button label="Export" icon="pi pi-upload" severity="secondary" @click="dt.exportCSV()" />
                     </template>
                 </Toolbar>
