@@ -32,14 +32,14 @@ class CategoryController extends Controller
                 ];
             });
 
-        return Inertia::render('Categories/Index', [
+        return Inertia::render('Categories/CategoriesDataTables', [
             'categories' => $categories,
         ]);
     }
 
     public function create()
     {
-        return Inertia::render('Categories/Create');
+        return Inertia::render('Categories/CategoriesCreate');
     }
 
     public function store(Request $request)
@@ -62,7 +62,7 @@ class CategoryController extends Controller
     {
         $category = Category::with('tags')->findOrFail($id);
 
-        return Inertia::render('Categories/Edit', [
+        return Inertia::render('Categories/CategoriesEdit', [
             'category' => $category,
         ]);
     }
