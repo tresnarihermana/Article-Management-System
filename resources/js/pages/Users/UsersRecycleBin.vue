@@ -14,13 +14,19 @@ import Swal from "sweetalert2";
 import { useInitials } from "@/composables/useInitials";
 import Select from "primevue/select";
 import { can } from "@/lib/can";
-import UserModal from "@/components/Dashboard/UserModal.vue";
 import { type BreadcrumbItem } from '@/types';
+import SplitButton from "primevue/splitbutton";
+import Label from "@/components/ui/label/Label.vue";
+import { Split } from "lucide-vue-next";
 
 const { getInitials } = useInitials();
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Users',
+        href: route('users.index'),
+    },
+    {
+        title: 'Recycle Bin',
         href: route('users.index'),
     },
 ];
@@ -105,14 +111,14 @@ const confirmDeleteUser = (usr: any) => {
     Swal.fire({
         icon: 'warning',
         title: 'Hapus User ini?',
-        text: usr.name,
+        html: 'Anda yakin ingin Hapus Permanen User dengan nama <q><b>'+usr.name+'</b>?</q>',
         showCancelButton: true,
         confirmButtonText: 'Ya, hapus',
         cancelButtonText: 'Batal',
         confirmButtonColor: '#d33'
     }).then((result) => {
         if (result.isConfirmed) {
-            router.delete(route('users.destroy', usr.id), {
+            router.delete(route('users.forceDelete', usr.id), {
                 preserveState: true,
                 onSuccess: () => {
                     users.value = users.value.filter(val => val.id !== usr.id);
@@ -148,7 +154,7 @@ const confirmDeleteSelected = () => {
     }).then((result) => {
         if (result.isConfirmed) {
             const ids = selectedUsers.value.map((u: any) => u.id);
-            router.delete(route('users.bulk-destroy', ids), {
+            router.delete(route('users.bulk.forceDelete', ids), {
                 data: { ids },
                 preserveState: true,
                 onSuccess: () => {
@@ -175,29 +181,9 @@ const confirmDeleteSelected = () => {
         }
     });
 };
-const statusOptions = ref([
-    { label: 'Active', value: true, severity: 'success' },
-    { label: 'Inactive', value: false, severity: 'warn' },
-]);
-
-function toggleStatus(id) {
-    router.put(route('users.toggleStatus', id), {}, {
-        onSuccess: () => {
-            users.value = users.value.map(u => {
-                if (u.id === id) {
-                    return { ...u, is_active: !u.is_active };
-                }
-                return u;
-            });
-        },
-        onError: (errors) => {
-            console.error(errors)
-        }
-    })
-}
 const loading = ref(false);
 const refresh = () => {
-    router.visit(route('users.index'), {
+    router.visit(route('users.recycleBin'), {
   only: ['users'],
   preserveScroll: true,
 })
@@ -211,6 +197,91 @@ const handleEdit = () => {
     loadLazyData();
     router.reload({ only: ['users'] }); 
 }
+
+// Restore user
+const confirmRestoreUser = (usr:any) => {
+    Swal.fire({
+        title: 'Kembalikan User ini?',
+        html: 'anda yakin ingin mengembalikan user dengan nama <br> <q><b>'+ usr.name +'</b></q>',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, Kembalikan', 
+    }).then((result) => {
+        if(result.isConfirmed){
+            router.post(route('users.restore' , usr.id),{}, {
+                preserveScroll: true,
+                onSuccess: () => {
+                  users.value = users.value.filter(val => val.id !== usr.id);
+                  Swal.fire({
+                    title: 'Restored',
+                    html: 'user dengan nama <b><q>'+usr.name+'</q></b> berhasil dikembalikan',
+                    icon: 'success',
+                    timer: 1000,
+                    timerProgressBar: true,
+                  })
+                },
+                onError: () => {
+                  Swal.fire({
+                    title: 'Failed!',
+                    html: 'Operasi gagal dilaksanan'
+                    ,icon: 'error',
+                  })
+                }
+            })
+        }
+    })
+}
+// bulk Restore
+const confirmRestoreSelected = () => {
+    Swal.fire({
+        icon: 'question',
+        title: 'Kembalikan Users terpilih?',
+        html: `${selectedUsers.value.length} Users yang dipilih akan dikembalikan`,
+        showCancelButton: true,
+        confirmButtonText: 'Ya, kembalikan',
+        cancelButtonText: 'Batal',
+        confirmButtonColor: '#10b981'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const ids = selectedUsers.value.map((u: any) => u.id);
+            router.post(route('users.bulk.restore', ids), {ids}, {
+                preserveState: true,
+                onSuccess: () => {
+                    users.value = users.value.filter(
+                        (val) => !ids.includes(val.id)
+                    );
+                    selectedUsers.value = null;
+                    Swal.fire({
+                        title: 'Restored!',
+                        text: 'Selected users have been restored.',
+                        icon: 'success',
+                        timer: 1000,
+                        timerProgressBar: true,
+                    });
+                },
+                onError: () => {
+                    Swal.fire({
+                        title: 'Failed!',
+                        text: 'Something went wrong. The users were not restored.',
+                        icon: 'error',
+                    });
+                }
+            });
+        }
+    });
+};
+const SplitItems = [
+    {
+        label: 'Restore Selected',
+        icon: 'pi pi-refresh',
+        command: confirmRestoreSelected
+    },
+    {
+        label: 'Delete Selected',
+        icon: 'pi pi-trash',
+        command: confirmDeleteSelected
+    }
+];
 </script>
 
 <template>
@@ -219,9 +290,9 @@ const handleEdit = () => {
             <div class="card">
                 <Toolbar class="mb-6 ">
                     <template #start>
-                        <UserModal :roles="roles" class="mr-2" @created="loadLazyData" :isEdit/>
-                        <Button label="Delete" icon="pi pi-trash" severity="danger" outlined v-if="can('users.delete')"
-                            @click="confirmDeleteSelected" :disabled="!selectedUsers || !selectedUsers.length" />
+                        <SplitButton label="Restore" icon="pi pi-history" severity="success" outlined
+                            :model="SplitItems" @click="confirmRestoreSelected"
+                            v-if="can('users.edit')" :disabled="!selectedUsers || !selectedUsers.length" />
                     </template>
                     <template #end>
                         <Button label="Export" zicon="pi pi-upload" severity="secondary" @click="dt.exportCSV()" />
@@ -275,11 +346,7 @@ const handleEdit = () => {
                     <Column field="is_active" header="Status" style="min-width: 10rem" filterField="is_active" sortable
                         filterMatchMode="equals">
                         <template #body="slotProps">
-                            <Tag :value="slotProps.data.is_active ? 'Active' : 'Inactive'"
-                                :severity="slotProps.data.is_active ? 'success' : 'warn'"
-                                :class="can('users.togglestatus') ? 'cursor-pointer' : 'cursor-not-allowed'"
-                                v-tooltip.bottom="can('users.togglestatus') ? 'aktif/nonaktifkan akun' : null"
-                                @click="can('users.togglestatus') ? toggleStatus(slotProps.data.id) : null" />
+                            <Tag value="Deleted" severity="danger" />
                         </template>
                         <template #filter="{ filterModel }">
                             <Select v-model="filterModel.value" :options="statusOptions" placeholder="Select One"
@@ -295,9 +362,9 @@ const handleEdit = () => {
                       >
                         <template #body="slotProps">
                             <div class="flex">
-                                <UserModal :user="slotProps.data" :roles="roles"
-                                    v-tooltip.bottom="`Edit User`"  @edited="handleEdit" 
-                                    />
+                                <Button icon="pi pi-history" outlined rounded severity="success" class="mr-2"
+                                    v-tooltip.bottom="`Restore User`"
+                                    @click="confirmRestoreUser(slotProps.data)" />
                                 <Button icon="pi pi-trash" outlined rounded severity="danger"
                                     v-tooltip.bottom="`Delete User`"
                                     @click="confirmDeleteUser(slotProps.data)" />
