@@ -35,8 +35,9 @@ class ArticleController extends Controller
                     'cover' => $article->cover,
                 ];
             });
-        return Inertia::render('Articles/Index', [
+        return Inertia::render('Articles/ArticlesDataTables', [
             'articles' => $articles,
+            'deletedCount' => Article::onlyTrashed()->where('user_id', auth()->id())->count(),
         ]);
     }
 
@@ -48,7 +49,7 @@ class ArticleController extends Controller
         $categories = Category::all();
         $tags = Tag::all();
         // dd($categories);
-        return Inertia::render("Articles/Create", [
+        return Inertia::render("Articles/ArticlesCreate", [
             'categories' => $categories,
             'tags' => $tags
         ]);
@@ -98,7 +99,7 @@ class ArticleController extends Controller
             ->where('slug', $slug)
             ->firstOrFail();
 
-        return Inertia::render("Articles/Show", [
+        return Inertia::render("Articles/ArticlesShow", [
             "article" => $article,
         ]);
     }
@@ -107,7 +108,7 @@ class ArticleController extends Controller
     public function edit(string $id)
     {
         $article = Article::with('user', 'categories', 'tags')->findOrFail($id);
-        return Inertia::render("Articles/Edit", [
+        return Inertia::render("Articles/ArticlesEdit", [
             "article" => $article,
             "categories" => Category::all(),
             "tags" => Tag::all(),
@@ -209,7 +210,7 @@ class ArticleController extends Controller
                     'cover' => $article->cover,
                 ];
             });
-        return Inertia::render('Articles/recycleBin', [
+        return Inertia::render('Articles/ArticlesRecycleBin', [
             'articles' => $articles
         ]);
     }
