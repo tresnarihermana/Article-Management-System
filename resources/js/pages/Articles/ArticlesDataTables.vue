@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
 import { FilterMatchMode } from "@primevue/core/api";
 import { useToast } from "primevue/usetoast";
 import DataTable from "primevue/datatable";
@@ -12,14 +12,19 @@ import { router } from "@inertiajs/vue3";
 import AppLayout from "@/layouts/AppLayout.vue";
 import Swal from "sweetalert2";
 import Popover from 'primevue/popover';
-import SplitButton from "primevue/splitbutton";
-import TieredMenu from 'primevue/tieredmenu';
-
+import type { BreadcrumbItem } from '@/types';
+const breadcrumbs : BreadcrumbItem[] = [
+    {
+        title: 'Articles',
+        href: route('articles.index')
+    }
+]
 const props = defineProps<{
     articles: any[],
     tags: any[],
     categories: any[],
     search?: string
+    ,deletedCount?: number
 }>();
 
 const toast = useToast();
@@ -106,51 +111,18 @@ const loadLazyData = () => {
 
 loadLazyData();
 
-const confirmRestoreArticle = (art:any) => {
-    Swal.fire({
-        title: 'Kembalikan Article ini?',
-        html: 'anda yakin ingin mengembalikan article berjudul <br> <q><b>'+ art.title +'</b></q>',
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonText: 'Ya, Kembalikan', 
-    }).then((result) => {
-        if(result.isConfirmed){
-            router.post(route('articles.restore' , art.id),{}, {
-                preserveScroll: true,
-                onSuccess: () => {
-                  articles.value = articles.value.filter(val => val.id !== art.id);
-                  Swal.fire({
-                    title: 'Restored',
-                    html: 'article berjudul <b><q>'+art.title+'</q></b> berhasil dikembalikan',
-                    icon: 'success',
-                    timer: 1000,
-                    timerProgressBar: true,
-                  })
-                },
-                onError: () => {
-                  Swal.fire({
-                    title: 'Failed!',
-                    html: 'Operasi gagal dilaksanan'
-                    ,icon: 'error',
-                  })
-                }
-            })
-        }
-    })
-}
-
 const confirmDeleteArticle = (art: any) => {
     Swal.fire({
         icon: 'warning',
         title: 'Hapus Article ini?',
-        text: art.title,
+        html: 'Anda yakin ingin hapus article dengan judul </br><q><b>'+art.title+'</b></q>?',
         showCancelButton: true,
         confirmButtonText: 'Ya, hapus',
         cancelButtonText: 'Batal',
         confirmButtonColor: '#d33'
     }).then((result) => {
         if (result.isConfirmed) {
-            router.delete(route('articles.forceDelete', art.id), {
+            router.delete(route('articles.destroy', art.id), {
                 preserveState: true,
                 onSuccess: () => {
                     articles.value = articles.value.filter(val => val.id !== art.id);
@@ -178,7 +150,7 @@ const confirmDeleteSelected = () => {
     Swal.fire({
         icon: 'warning',
         title: 'Hapus Articles terpilih?',
-        html: `${selectedArticles.value.length} Artikel yang dipilih akan dihapus permanen`,
+        html: `${selectedArticles.value.length} Artikel yang dipilih akan dipindahkan ke recycle bin`,
         showCancelButton: true,
         confirmButtonText: 'Ya, hapus',
         cancelButtonText: 'Batal',
@@ -186,7 +158,7 @@ const confirmDeleteSelected = () => {
     }).then((result) => {
         if (result.isConfirmed) {
             const ids = selectedArticles.value.map((a: any) => a.id);
-            router.delete(route('articles.bulk.forceDelete', ids), {
+            router.delete(route('articles.bulk-destroy', ids), {
                 data: { ids },
                 preserveState: true,
                 onSuccess: () => {
@@ -213,45 +185,6 @@ const confirmDeleteSelected = () => {
         }
     });
 };
-const confirmRestoreSelected = () => {
-    Swal.fire({
-        icon: 'question',
-        title: 'Kembalikan Articles terpilih?',
-        html: `${selectedArticles.value.length} Artikel yang dipilih akan dikembalikan`,
-        showCancelButton: true,
-        confirmButtonText: 'Ya, kembalikan',
-        cancelButtonText: 'Batal',
-        confirmButtonColor: '#10b981'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            const ids = selectedArticles.value.map((a: any) => a.id);
-            router.post(route('articles.bulk.restore', ids), {ids}, {
-                preserveState: true,
-                onSuccess: () => {
-                    articles.value = articles.value.filter(
-                        (val) => !ids.includes(val.id)
-                    );
-                    selectedArticles.value = null;
-                    Swal.fire({
-                        title: 'Restored!',
-                        text: 'Selected articles have been restored.',
-                        icon: 'success',
-                        timer: 1000,
-                        timerProgressBar: true,
-                    });
-                },
-                onError: () => {
-                    Swal.fire({
-                        title: 'Failed!',
-                        text: 'Something went wrong. The articles were not restored.',
-                        icon: 'error',
-                    });
-                }
-            });
-        }
-    });
-};
-
 const popoverRefs = ref({});
 
 function showPopover(event, articleId) {
@@ -282,37 +215,43 @@ const getSeverity = (articles) => {
             return 'secondary';
     }
 }
+const loading = ref(false);
+const refresh = () => {
+    router.visit(route('articles.index'), {
+        only: ['articles'],
+        preserveScroll: true,
+    });
 
-const menu = ref();
-const items = [
-    {
-        label: 'Bulk Delete',
-        icon: 'pi pi-trash',
-        command: () => {
-            confirmDeleteSelected()
-        }
-    },
-    {
-        label: 'Bulk Restore',
-        icon: 'pi pi-history',
-        command: () => {
-            confirmRestoreSelected()
-        }
-    }
-]
-const toggle= (event) => {
-    menu.value.toggle(event);
+    loading.value = true;
+    setTimeout(() => {
+        loading.value = false;
+    }, 500);
 }
+const handleRecycle = () => {
+    router.visit(route('articles.recycleBin'), {
+        only: ['articles'],
+        preserveScroll: true,
+    });
+}
+onMounted(() => {
+router.reload({ only: ['deletedCount', 'articles'] });
+loadLazyData();
+})
 </script>
 
 <template>
-    <AppLayout>
+    <AppLayout :breadcrumbs="breadcrumbs">
         <div>
             <div class="card">
                 <Toolbar class="mb-6">
                     <template #start>
-                        <Button label="Action" icon="pi pi-ellipsis-v" iconPos="right" @click="toggle" :disabled="!selectedArticles || !selectedArticles.length"></Button>
-                        <TieredMenu ref="menu" id="overlay_tmenu" :model="items" popup/>
+                        <Button label="New" icon="pi pi-plus" class="mr-2" as="a" :href="route('articles.create')" />
+                        <Button label="Delete" icon="pi pi-trash" severity="danger" outlined
+                            @click="confirmDeleteSelected" :disabled="!selectedArticles || !selectedArticles.length" />
+                    </template>
+                    <template #end>
+                        <Button label="Restore" v-if="deletedCount > 0" icon="pi pi-history" @click="handleRecycle" severity="contrast" :badge="deletedCount" class="mr-2"/>
+                        <Button label="Export" icon="pi pi-upload" severity="secondary" @click="dt.exportCSV()" />
                     </template>
                 </Toolbar>
 
@@ -325,7 +264,11 @@ const toggle= (event) => {
                     class="container mx-auto">
                     <template #header>
                         <div class="flex flex-wrap gap-2 items-center justify-between">
-                            <h4 class="m-0">Manage Articles</h4>
+                            <div class="flex items-center gap-3">
+                                <h4 class="m-0">Manage Articles</h4>
+                                <Button icon="pi pi-sync" rounded @click="refresh" :loading="loading"
+                                    v-tooltip.right="'Refresh Data'" class="!bg-transparent !border-0 !text-gray-800" />
+                            </div>
                             <span class="p-input-icon-left">
                                 <i class="pi pi-search mr-2" />
                                 <InputText v-model="filters['global'].value" placeholder="Search..."
@@ -400,8 +343,10 @@ const toggle= (event) => {
                     </Column>
                     <Column :exportable="false" style="min-width: 12rem">
                         <template #body="slotProps">
-                            <Button icon="pi pi-history" outlined rounded severity="success" class="mr-2"
-                                @click="confirmRestoreArticle(slotProps.data)" />
+                            <Button icon="pi pi-eye" outlined rounded class="mr-2" as="a" severity="info"
+                                :href="route('articles.show', slotProps.data.slug)" />
+                            <Button icon="pi pi-pencil" outlined rounded class="mr-2" as="a"
+                                :href="route('articles.edit', slotProps.data)" />
                             <Button icon="pi pi-trash" outlined rounded severity="danger"
                                 @click="confirmDeleteArticle(slotProps.data)" />
                         </template>
