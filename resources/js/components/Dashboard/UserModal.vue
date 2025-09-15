@@ -10,7 +10,8 @@ import Checkbox from 'primevue/checkbox';
 import Dialog from 'primevue/dialog';
 import Message from 'primevue/message';
 import Swal from 'sweetalert2';
-
+import { getInitials } from '@/composables/useInitials';
+import Avatar from 'primevue/avatar';
 const props = defineProps({
     roles: {
         type: Array,
@@ -102,6 +103,7 @@ function validatePassword() {
 watch(() => form.password, validatePassword)
 </script>
 
+
 <template>
     <div>
         <Button
@@ -127,6 +129,17 @@ watch(() => form.password, validatePassword)
             :breakpoints="{ '960px': '90vw', '640px': '100vw' }"
             dismissableMask
         >
+                    <template #header>
+                        <div class="flex flex-col">
+                <div class="inline-flex items-center justify-center gap-2">
+                    <Avatar :image="props.user?.avatar ? `storage/${props.user.avatar}` : 'https://ui-avatars.com/api/?name=' + getInitials(props.user.username) + '&background=random'" shape="circle" />
+                    <span class="font-bold whitespace-nowrap">{{ props.user?.name }}</span>
+                </div>
+                <div class="mt-1">
+                      <span class="text-sm text-gray-500"> Update This User Profile</span>
+                </div>
+                </div>
+            </template>
             <form @submit.prevent="submit" class="flex flex-col gap-4">
                 <div class="grid gap-2">
                     <label for="name">Fullname</label>
