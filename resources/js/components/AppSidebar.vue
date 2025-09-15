@@ -8,56 +8,75 @@ import { Link } from '@inertiajs/vue3';
 import { BookOpen, Folder, LayoutGrid, Users, UserRoundCog, ShieldCheck, NotebookPen, Newspaper, FolderIcon, Tags } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 import { can } from '@/lib/can';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 const unfilteredMainNavItems: NavItem[] = [
     {
         title: 'Dashboard',
         href: '/dashboard',
         icon: LayoutGrid,
-
     },
+        // manage users
     {
-        title: 'Users',
+        title: 'Manage Users',
         href: '/manage/users',
         icon: Users,
-        permission: 'users.view',
-
+        _open: true,
+        children: [
+            {
+                title: 'User List',
+                href: '/manage/users',
+                icon: Users,
+            },
+            {
+                title: 'Roles',
+                href: '/manage/roles',
+                icon: UserRoundCog,
+                permission: 'roles.view',
+            },
+            {
+                title: 'Permissions',
+                href: '/manage/permissions',
+                icon: ShieldCheck,
+                permission: 'permissions.view',
+            },
+        ],
     },
+    // akhir manage users
     {
-        title: 'Roles',
-        href: '/manage/roles',
-        icon: UserRoundCog,
-    },
-    {
-        title: 'Permissions',
-        href: '/manage/permissions',
-        icon: ShieldCheck,
-        permission: 'permissions.view',
-    },
-    {
-        title: 'Articles',
-        href: '/manage/articles',
+        title: 'Manage Articles',
         icon: NotebookPen,
-        permission : 'article.view',
+        permission: 'article.view',
+        href: '/manage/articles',
+        _open: true,
+        children: [
+            {
+                title: 'My Articles',
+                href: '/manage/articles',
+                icon: NotebookPen,
+            },
+            {
+                title: 'Categories',
+                href: '/manage/categories',
+                icon: FolderIcon,
+                permission: 'category.view',
+            },
+            {
+                title: 'Tags',
+                href: '/manage/tags',
+                icon: Tags,
+                permission: 'tags.view',
+            },
+            {
+                title: 'Approve Articles',
+                href: '/manage/approve',
+                icon: Newspaper,
+                permission: 'approve-article.view',
+            },
+        ],
     },
-    {
-        title: 'Categories',
-        href: '/manage/categories',
-        icon: FolderIcon,
-        permission : 'category.view',
-    },
-    {
-        title: 'Tags',
-        href: '/manage/tags',
-        icon: Tags,
-        permission : 'tags.view',
-    },
-    {
-        title: 'Approve Article',
-        href: '/manage/approve',
-        icon: Newspaper,
-        permission : 'approve-article.view',
-    },
+
+
+
 ];
 
 const mainNavItems = computed(() =>

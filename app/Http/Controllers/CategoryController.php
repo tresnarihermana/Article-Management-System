@@ -12,7 +12,7 @@ class CategoryController extends Controller
 {
     public function index(Request $request)
     {
-        $categories = Category::with('articles')
+        $categories = Category::with(['articles', 'tags'])
             ->orderBy('id', 'desc')
             ->get()
             ->map(function ($category) {
@@ -24,75 +24,81 @@ class CategoryController extends Controller
                     'description' => $category->description,
                     'articles' => $category->articles->count(),
                     'slug' => $category->slug,
+                    'tags' => $category->tags->map(fn($tag) => [
+                        'id' => $tag->id,
+                        'name' => $tag->name,
+                        'slug' => $tag->slug,
+                    ]),
                 ];
             });
-        return Inertia::render('Categories/Index', [
-            'categories' => $categories,
 
+        return Inertia::render('Categories/CategoriesDataTables', [
+            'categories' => $categories,
         ]);
     }
 
     public function create()
     {
-        // Show the form for creating a new resource.
-        return Inertia::render('Categories/Create', []);
+        return Inertia::render('Categories/CategoriesCreate');
     }
 
     public function store(Request $request)
     {
-        // Store a newly created resource in storage.
         $request->validate([
-            'name' => 'required|string|unique:' . Category::class,
+            'name' => 'required|string|unique:categories,name',
             'description' => 'required|string|max:255'
         ]);
-        $category = Category::create([
+
+        Category::create([
             'name' => $request->name,
             'slug' => Str::slug($request->name),
             'description' => $request->description,
         ]);
-        return to_route('categories.index')->with('message', 'category berhasil dibuat');
-    }
 
-    public function show($id)
-    {
-        // Display the specified resource.
+        return to_route('categories.index')->with('message', 'Category berhasil dibuat');
     }
 
     public function edit($id)
     {
-        $category = Category::findorFail($id);
-        return Inertia::render('Categories/Edit', [
-            'category' => $category
+        $category = Category::with('tags')->findOrFail($id);
+
+        return Inertia::render('Categories/CategoriesEdit', [
+            'category' => $category,
         ]);
     }
 
     public function update(Request $request, $id)
     {
         $request->validate([
-            'name' => 'required|string|unique:' . Category::class,
-            'description' => 'required|string|max:255'
+            'name' => 'required|string|unique:categories,name,' . $id,
+            'description' => 'required|string|max:255',
         ]);
+
         $category = Category::findOrFail($id);
-        $category->update($request->only(['name', 'description']));
-        $category->slug = Str::slug($request->name);
-        $category->save();
-        return to_route('categories.index')->with('message', 'Category berhasil di Ubah');
+        $category->update([
+            'name' => $request->name,
+            'description' => $request->description,
+            'slug' => Str::slug($request->name),
+        ]);
+
+        return to_route('categories.index')->with('message', 'Category berhasil diubah');
     }
 
     public function destroy($id)
     {
-        // Remove the specified resource from storage.
         Category::destroy($id);
-        return to_route('categories.index')->with('message', 'category berhasil di hapus');
+
+        return to_route('categories.index')->with('message', 'Category berhasil dihapus');
     }
+
     public function bulkDestroy(Request $request)
     {
         $ids = $request->input('ids', []);
-        // dd($ids);
+
         if (!empty($ids)) {
             Category::whereIn('id', $ids)->delete();
         }
 
-        return redirect()->back(303)->with('success', 'Selected users deleted successfully');
+        return redirect()->back(303)->with('success', 'Selected categories deleted successfully');
     }
 }

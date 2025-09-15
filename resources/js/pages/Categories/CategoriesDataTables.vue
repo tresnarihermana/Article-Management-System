@@ -12,6 +12,16 @@ import { router } from "@inertiajs/vue3";
 import AppLayout from "@/layouts/AppLayout.vue";
 import Swal from "sweetalert2";
 import { can } from "@/lib/can";
+import CategoryTagModal from "@/components/Dashboard/CategoryModal.vue";
+import TagModal from "@/components/Dashboard/TagModal.vue";
+import TagBankModal from "@/components/Dashboard/TagBankModal.vue";
+
+const breadcrumbs : BreadcrumbItem[] = [
+    {
+        title: 'Category',
+        href: route('categories.index')
+    }
+]
 
 const props = defineProps<{
     categories: any[],
@@ -23,6 +33,7 @@ const categories = ref(props.categories);
 const selectedCategories = ref();
 const lazyLoading = ref(false);
 const totalRecords = ref(props.categories.length);
+const expandedRows = ref<any[]>([]);
 const lazyParams = ref({
     first: 0,
     rows: 10,
@@ -157,28 +168,45 @@ const confirmDeleteSelected = () => {
         }
     });
 };
+function handleDelete(id) {
+    Swal.fire({
+        title: 'Delete this Tag?',
+        text: 'Tag yang dipilih akan dihapus permanen',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, hapus',
+        cancelButtonText: 'Batal',
+        confirmButtonColor: '#d33'
+        
+    }).then((result) => {
+        if(result.isConfirmed) {
+            router.delete(route('tags.destroy', id))
+        }
+    })
+}
 </script>
 
 <template>
-    <AppLayout>
+    <AppLayout :breadcrumbs="breadcrumbs">
         <div>
             <div class="card">
                 <Toolbar class="mb-6">
                     <template #start>
-                        <Button v-if="can('categories.create')" label="New" icon="pi pi-plus" class="mr-2" as="a" :href="route('categories.create')" />
-                        <Button label="Delete" icon="pi pi-trash" severity="danger" outlined @click="confirmDeleteSelected" :disabled="!selectedCategories || !selectedCategories.length" />
+                        <CategoryTagModal :category="null" label="New" icon="pi pi-plus" class="mr-2"
+                            @created="loadLazyData" />
+                        <TagBankModal/>
+                        <Button label="Delete" icon="pi pi-trash" severity="danger" outlined
+                            @click="confirmDeleteSelected"
+                            :disabled="!selectedCategories || !selectedCategories.length" />
                     </template>
                     <template #end>
                         <Button label="Export" icon="pi pi-upload" severity="secondary" @click="dt.exportCSV()" />
                     </template>
                 </Toolbar>
 
-                <DataTable ref="dt" v-model:selection="selectedCategories" :value="categories" dataKey="id"
-                    :showGridlines="true"
-                    :stripedRows="true"
-                    :lazy="true" :paginator="true" :rows="10" :totalRecords="totalRecords"
-                    :filters="filters"
-                    @page="onPage"
+                <DataTable ref="dt" v-model:selection="selectedCategories" v-model:expandedRows="expandedRows"
+                    :value="categories" dataKey="id" :showGridlines="true" :stripedRows="true" :lazy="true"
+                    :paginator="true" :rows="10" :totalRecords="totalRecords" :filters="filters" @page="onPage"
                     @sort="onSort"
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                     :rowsPerPageOptions="[5, 10, 25]"
@@ -189,12 +217,14 @@ const confirmDeleteSelected = () => {
                             <h4 class="m-0">Manage Categories</h4>
                             <span class="p-input-icon-left">
                                 <i class="pi pi-search mr-2" />
-                                <InputText v-model="filters['global'].value" placeholder="Search..." @input="loadLazyData" />
+                                <InputText v-model="filters['global'].value" placeholder="Search..."
+                                    @input="loadLazyData" />
                             </span>
                         </div>
                     </template>
 
                     <Column selectionMode="multiple" style="width: 3rem" :exportable="false"></Column>
+                    <Column expander style="width: 3rem" />
                     <Column field="id" header="ID" sortable style="min-width: 6rem"></Column>
                     <Column field="name" header="Name" sortable style="min-width: 12rem"></Column>
                     <Column field="description" header="Description" style="min-width: 14rem"></Column>
@@ -205,10 +235,42 @@ const confirmDeleteSelected = () => {
                     </Column>
                     <Column :exportable="false" style="min-width: 12rem">
                         <template #body="slotProps">
-                            <Button v-if="can('categories.edit')" icon="pi pi-pencil" outlined rounded class="mr-2" as="a" :href="route('categories.edit', slotProps.data)" />
-                            <Button v-if="can('categories.delete')" icon="pi pi-trash" outlined rounded severity="danger" @click="confirmDeleteCategory(slotProps.data)" />
+                            <div class="flex items-center gap-2">
+                                <CategoryTagModal v-if="can('categories.edit')" :category="slotProps.data"
+                                    @edited="loadLazyData" />
+                                <Button v-if="can('categories.delete')" icon="pi pi-trash" outlined rounded
+                                    severity="danger" @click="confirmDeleteCategory(slotProps.data)" />
+                            </div>
                         </template>
                     </Column>
+
+                    <template #expansion="slotProps">
+                        <div class="p-4 border-t">
+                            <h5 class="mb-3">Tags for {{ slotProps.data.name }}</h5>
+                            <DataTable :value="slotProps.data.tags" dataKey="id" :showGridlines="true"
+                                :stripedRows="true" class="w-full">
+                                <Column field="id" header="ID" style="width: 4rem" />
+                                <Column field="name" header="Name" style="min-width: 10rem" />
+                                <Column field="slug" header="Slug" style="min-width: 10rem" />
+                                <Column :exportable="false" header="Actions" style="min-width: 12rem">
+                                    <template #body="tagProps">
+                                        <div class="flex gap-2">
+                                            <TagModal :tag="tagProps.data" :category_id="slotProps.data.id"
+                                                @edited="loadLazyData" />
+                                            <Button icon="pi pi-trash"  outlined rounded severity="danger"
+                                                @click="handleDelete(tagProps.data.id)" />
+                                        </div>
+                                    </template>
+                                </Column>
+                            </DataTable>
+
+                            <div class="mt-3">
+                                <TagModal :tag="null" :category_id="slotProps.data.id" @created="loadLazyData" />
+                            </div>
+                        </div>
+                    </template>
+
+
                     <template #empty>data not found</template>
                 </DataTable>
             </div>

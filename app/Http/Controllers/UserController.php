@@ -22,8 +22,23 @@ class UserController extends Controller
         $users = User::with('roles')
             ->orderby('id', 'desc')
             ->get();
+                $roleQuery = Role::query();
+        $auth = auth()->user(); // ini buat kalau user bukan super admin, opsi admin dan super admin ga bakalan ada
+        if (!$auth->hasRole('Super Admin')) {
+            $roleQuery->whereNot('name', 'Super Admin')->WhereNot('name', 'admin');
+        }
+        return Inertia::render("Users/UsersDataTables", [
+            "users" => $users,
+            "roles" => $roleQuery->get(),
+            "deletedCount" => User::onlyTrashed()->count(),
+        ]);
+    }
 
-        return Inertia::render("Users/Index", [
+    public function recycleBin()
+    {
+        $users = User::onlyTrashed()->with('roles')->get();
+
+        return Inertia::render("Users/UsersRecycleBin", [
             "users" => $users,
             "roles" => Role::all(),
         ]);
@@ -40,7 +55,7 @@ class UserController extends Controller
             $roleQuery->whereNot('name', 'Super Admin')->WhereNot('name', 'admin');
         }
 
-        return Inertia::render("Users/Create", [
+        return Inertia::render("Users/UsersCreate", [
             "roles" => $roleQuery->get(),
         ]);
     }
@@ -51,6 +66,13 @@ class UserController extends Controller
     public function store(Request $request)
     {
         // dd($request->all());
+
+        if(!auth()->user()->hasRole('SuperAdmin')){
+            abort(403, 'User except Super Admin can not make another Super Admin');
+        }
+        if(!auth()->user()->hasRole('Admin')){
+            abort(403, 'User except Super Admin can not make another Admin');
+        }
 
         $request->validate([
             'name' => 'required|string|max:255',
@@ -102,7 +124,7 @@ class UserController extends Controller
     public function show(string $id)
     {
         $user = User::findOrFail($id);
-        return Inertia::render("Users/Show", [
+        return Inertia::render("Users/UsersShow", [
             "user" => [
                 'id' => $user->id,
                 'avatar' => $user->avatar,
@@ -135,7 +157,7 @@ class UserController extends Controller
         if (!$auth->hasRole('Super Admin')) {
             $roleQuery->whereNot('name', 'Super Admin')->WhereNot('name', 'admin');
         }
-        return Inertia::render("Users/Edit", [
+        return Inertia::render("Users/UsersEdit", [
             "user" => [
                 'id' => $user->id,
                 'name' => $user->name,
@@ -146,9 +168,6 @@ class UserController extends Controller
             "roles" => $roleQuery->get(),
             "userRoles" => $user->roles->pluck("name")->all(),
         ]);
-        // return Inertia::render("Users/Edit", [
-        //     "user" => User::find($id),
-        // ]);
     }
 
     /**
@@ -230,7 +249,7 @@ class UserController extends Controller
 
 
         $user->syncRoles($request->roles);
-        return to_route("users.index")->with("message", "Success Create User");
+        return back()->with("message", "ini jalan cihuy");
     }
 
     /**
@@ -242,9 +261,17 @@ class UserController extends Controller
         if ($user->hasRole('admin') && !auth()->user()->hasRole('Super Admin')) {
             abort(403, 'You are not allowed to delete another Admin.');
         };
-        if ($user->hasRole('Super Admin') && !auth()->user()->hasRole('Super Admin')) {
-            abort(403, 'You are not allowed to delete Super Admin.');
+        if ($user->hasRole('Super Admin')) {
+            if (!auth()->user()->hasRole('Super Admin')) {
+                abort(403, 'You are not allowed to delete Super Admin.');
+            }
+
+            if (auth()->user()->id === $user->id) {
+                abort(403, 'Access Forbidden, you cannot delete yourself as Super Admin.');
+            }
         };
+
+
         User::destroy($id);
         return to_route("users.index")->with("message", "Success Delete User");
     }
@@ -281,5 +308,73 @@ class UserController extends Controller
         }
 
         return redirect()->back(303)->with('success', 'Selected users deleted successfully');
+    }
+    public function restore($id)
+    {
+        $user = User::withTrashed()->findOrFail($id);
+        if ($user->hasRole('admin') && !auth()->user()->hasRole('Super Admin')) {
+            abort(403, 'You are not allowed to restore another Admin.');
+        };
+        if ($user->hasRole('Super Admin') && !auth()->user()->hasRole('Super Admin')) {
+            abort(403, 'You are not allowed to restore Super Admin.');
+        };
+        $user->restore();
+        return to_route("users.recycleBin")->with("message", "Success Restore User");
+    }
+    public function bulkRestore(Request $request)
+    {
+        $ids = $request->input('ids', []);
+        $user = User::withTrashed()->findorFail($ids);
+        // dd($ids);
+        $users = User::withTrashed()->whereIn('id', $ids)->get();
+
+        foreach ($users as $user) {
+            if ($user->hasRole('admin') && !auth()->user()->hasRole('Super Admin')) {
+                abort(403, 'You are not allowed to restore another Admin.');
+            }
+
+            if ($user->hasRole('Super Admin') && !auth()->user()->hasRole('Super Admin')) {
+                abort(403, 'You are not allowed to restore Super Admin.');
+            }
+        }
+        if (!empty($ids)) {
+            User::withTrashed()->whereIn('id', $ids)->restore();
+        }
+
+        return redirect()->back(303)->with('success', 'Selected users restored successfully');
+    }
+    public function forceDelete($id)
+    {
+        $user = User::withTrashed()->findOrFail($id);
+        if ($user->hasRole('admin') && !auth()->user()->hasRole('Super Admin')) {
+            abort(403, 'You are not allowed to delete another Admin.');
+        };
+        if ($user->hasRole('Super Admin') && !auth()->user()->hasRole('Super Admin')) {
+            abort(403, 'You are not allowed to delete Super Admin.');
+        };
+        $user->forceDelete();
+        return to_route("users.recycleBin")->with("message", "Success Delete Permanently User");
+    }
+    public function bulkForceDelete(Request $request)
+    {
+        $ids = $request->input('ids', []);
+        $user = User::withTrashed()->findorFail($ids);
+        // dd($ids);
+        $users = User::withTrashed()->whereIn('id', $ids)->get();
+
+        foreach ($users as $user) {
+            if ($user->hasRole('admin') && !auth()->user()->hasRole('Super Admin')) {
+                abort(403, 'You are not allowed to delete another Admin.');
+            }
+
+            if ($user->hasRole('Super Admin') && !auth()->user()->hasRole('Super Admin')) {
+                abort(403, 'You are not allowed to delete Super Admin.');
+            }
+        }
+        if (!empty($ids)) {
+            User::withTrashed()->whereIn('id', $ids)->forceDelete();
+        }
+
+        return redirect()->back(303)->with('success', 'Selected users permanently deleted successfully');
     }
 }

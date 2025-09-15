@@ -38,7 +38,7 @@ const loadMore = () => {
             <div class="mx-auto mt-16 grid max-w-2xl grid-cols-1 gap-x-8 gap-y-16 
                lg:mx-0 lg:mt-20 lg:max-w-none lg:grid-cols-6">
                 <article v-for="article in visibleArticles" :key="article.id"
-                    class="flex flex-col items-start justify-between lg:col-span-2 relative">
+                    class="flex flex-col items-start justify-between lg:col-span-2 relative group">
                     <a :href="route('article.show', article.slug)">
                         <div
                             class="absolute ml-3 mt-2 rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600 hover:bg-gray-200 z-10">
@@ -46,9 +46,16 @@ const loadMore = () => {
                                 {{ article.categories[0].name }}
                             </a>
                         </div>
+                        <div
+                            class="absolute right-0 mt-2 mr-3 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100/60 text-xs font-medium text-gray-600 hover:bg-gray-200 z-10 opacity-0 group-hover:opacity-100 ease-in-out duration-300">
+                            <a :href="route('category.show', article.categories[0].slug)">
+                                <span class="pi pi-arrow-up-right"></span>
+                            </a>
+                        </div>
+
 
                         <img :src="article.cover ? `/storage/${article.cover}` : 'https://picsum.photos/id/1018/1920/1080'"
-                            alt="" class="rounded-2xl hover:brightness-90" />
+                            alt="" class="rounded-2xl  group-hover:brightness-90" />
 
                         <div class="mt-5 flex items-center gap-x-2 text-sm text-gray-500 dark:text-gray-400 w-full">
                             <time :datetime="article.created_at">{{
@@ -74,7 +81,7 @@ const loadMore = () => {
                             <h3
                                 class="text-lg font-semibold leading-6 text-gray-900 dark:text-gray-200 group-hover:text-gray-600">
                                 <span class="absolute inset-0"></span>
-                                {{ article.title }}
+                                {{ article.title.length > 70 ? article.title.slice(0, 70) + '...' : article.title }}
                             </h3>
                             <p class="mt-5 line-clamp-2 text-sm leading-6 text-gray-600 dark:text-gray-300"
                                 v-html="article.excerpt"></p>
@@ -86,8 +93,8 @@ const loadMore = () => {
                                     <span aria-hidden="true"
                                         class="absolute inset-0 h-10 w-10 rounded-full ring-1 ring-inset ring-gray-900/10"></span>
                                     <img alt="" class="h-10 w-10 rounded-full object-cover" :src="article.user.avatar
-                                            ? `/storage/${article.user.avatar}`
-                                            : `https://ui-avatars.com/api/?name=${article.user.username}`
+                                        ? `/storage/${article.user.avatar}`
+                                        : `https://ui-avatars.com/api/?name=${article.user.username}`
                                         " />
                                 </span>
                             </div>

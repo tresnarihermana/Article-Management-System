@@ -21,7 +21,7 @@ const { categories, articles } = usePage().props;
 
   <PageLayout>
     <HeroSection />
-    <SlidableCategories :categories="categories" class="max-w-[1200px]" />
+    <SlidableCategories :categories="categories" class="max-w-[80rem]" />
     <ArticleCarousel :articles="articles" v-if="articles.length > 0" />
     <LatestBlog :articles="articles" />
     <LatestInsight />

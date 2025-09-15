@@ -35,8 +35,9 @@ class ArticleController extends Controller
                     'cover' => $article->cover,
                 ];
             });
-        return Inertia::render('Articles/Index', [
+        return Inertia::render('Articles/ArticlesDataTables', [
             'articles' => $articles,
+            'deletedCount' => Article::onlyTrashed()->where('user_id', auth()->id())->count(),
         ]);
     }
 
@@ -48,7 +49,7 @@ class ArticleController extends Controller
         $categories = Category::all();
         $tags = Tag::all();
         // dd($categories);
-        return Inertia::render("Articles/Create", [
+        return Inertia::render("Articles/ArticlesCreate", [
             'categories' => $categories,
             'tags' => $tags
         ]);
@@ -98,7 +99,7 @@ class ArticleController extends Controller
             ->where('slug', $slug)
             ->firstOrFail();
 
-        return Inertia::render("Articles/Show", [
+        return Inertia::render("Articles/ArticlesShow", [
             "article" => $article,
         ]);
     }
@@ -107,7 +108,7 @@ class ArticleController extends Controller
     public function edit(string $id)
     {
         $article = Article::with('user', 'categories', 'tags')->findOrFail($id);
-        return Inertia::render("Articles/Edit", [
+        return Inertia::render("Articles/ArticlesEdit", [
             "article" => $article,
             "categories" => Category::all(),
             "tags" => Tag::all(),
@@ -156,6 +157,7 @@ class ArticleController extends Controller
 
     public function destroy(string $id)
     {
+
         Article::destroy($id);
 
         return back()->with("message", "Success Delete Article");
@@ -184,5 +186,62 @@ class ArticleController extends Controller
         }
 
         return redirect()->back(303)->with('success', 'Selected articles deleted successfully');
+    }
+
+    public function recycle()
+    {
+        $articles = Article::with('user', 'tags', 'categories')
+            ->where('user_id', auth()->id())
+            ->orderBy('created_at', 'desc')
+            ->onlyTrashed()
+            ->get()
+            ->map(function ($article) {
+                return [
+                    'id' => $article->id,
+                    'title' => $article->title,
+                    'user' => $article->user,
+                    'tags' => $article->tags,
+                    'categories' => $article->categories,
+                    'created_at' => $article->created_at->format('Y-m-d H:i:s'),
+                    'updated_at' => $article->updated_at->format('Y-m-d H:i:s'),
+                    'status' => $article->status,
+                    'slug' => $article->slug,
+                    'rejected_message' => $article->rejected_message,
+                    'cover' => $article->cover,
+                ];
+            });
+        return Inertia::render('Articles/ArticlesRecycleBin', [
+            'articles' => $articles
+        ]);
+    }
+    public function forceDelete($id)
+    {
+        $article = Article::withTrashed()->findOrFail($id);
+        $article->forceDelete();
+        return back()->with('message', 'Data permanently deleted');
+    }
+    public function restore($id)
+    {
+        $article = Article::withTrashed()->findOrFail($id);
+        $article->restore();
+        return back()->with('message', 'Data Successfully restored');
+    }
+    public function BulkRestore(Request $request)
+    {
+        $ids = $request->input('ids', []);
+        if (!empty($ids)) {
+            Article::withTrashed()->whereIn('id', $ids)->restore();
+        }
+
+        return redirect()->back(303)->with('success', 'Selected articles restored successfully');
+    }
+    public function BulkForceDelete(Request $request)
+    {
+        $ids = $request->input('ids', []);
+        if (!empty($ids)) {
+            Article::withTrashed()->whereIn('id', $ids)->forceDelete();
+        }
+
+        return redirect()->back(303)->with('success', 'Selected articles permanently deleted');
     }
 }

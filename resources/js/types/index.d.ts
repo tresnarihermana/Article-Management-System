@@ -17,6 +17,7 @@ export interface NavItem {
     permission?:string;
     isActive?: boolean;
     children?: NavItem[];
+    _open?: boolean;
 }
 
 export type AppPageProps<T extends Record<string, unknown> = Record<string, unknown>> = T & {

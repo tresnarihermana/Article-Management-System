@@ -2,6 +2,7 @@
 import Breadcrumbs from '@/components/Breadcrumbs.vue';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import type { BreadcrumbItemType } from '@/types';
+import ThemeMode from '@/components/ThemeMode.vue';
 
 withDefaults(
     defineProps<{
@@ -22,6 +23,7 @@ withDefaults(
             <template v-if="breadcrumbs && breadcrumbs.length > 0">
                 <Breadcrumbs :breadcrumbs="breadcrumbs" />
             </template>
+            <ThemeMode class="absolute right-4" />
         </div>
     </header>
 </template>

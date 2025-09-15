@@ -219,8 +219,10 @@ Route::middleware(['auth', 'web', 'verified'])->group(function () {
         ->middleware("permission:categories.show");
 
     // Article Tags
+    Route::get('/manage/categories/tags/create', [TagController::class, 'create'])->name('tags.create')
+        ->middleware("permission:tags.create");
     Route::resource("manage/tags", TagController::class)
-        ->only(['create', 'store'])
+        ->only(['store'])
         ->middleware("permission:tags.create");
     Route::resource("manage/tags", TagController::class)
         ->only(['edit', 'update'])
