@@ -15,7 +15,7 @@ class ManageArticleController extends Controller
 
     public function index(Request $request)
     {
-        $perPage = $request->input('per_page', 10);
+   
         $search = $request->input('search');
         $status = $request->input('status');
         $articles = Article::with('user', 'tags', 'categories')
@@ -30,9 +30,8 @@ class ManageArticleController extends Controller
                 });
             })
             ->orderBy('created_at', 'desc')
-            ->paginate($perPage)
-            ->withQueryString()
-            ->through(function ($article) {
+            ->get()
+            ->map(function ($article) {
                 return [
                     'id' => $article->id,
                     'title' => $article->title,
@@ -47,10 +46,10 @@ class ManageArticleController extends Controller
                     'rejected_message' => $article->rejected_message,
                 ];
             });
-        return Inertia::render('Articles/Manage/Index', [
+        return Inertia::render('Articles/Manage/ManageArticlesDataTables', [
             'articles' => $articles,
             'search' => $search,
-            'filters' => $request->only(['per_page', 'status', 'search'])
+            'filters' => $request->only(['status', 'search'])
 
 
         ]);
