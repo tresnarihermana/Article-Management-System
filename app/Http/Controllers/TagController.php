@@ -7,6 +7,7 @@ use Inertia\Inertia;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Models\Category;
 
 class TagController extends Controller
 {
@@ -26,55 +27,73 @@ class TagController extends Controller
                     'articles' => $tag->articles->count()
                 ];
             });
-        return Inertia::render('Tags/Index', [
+        return Inertia::render('Tags/TagsDataTables', [
             'tags' => $tags,
         ]);
     }
 
-    public function create()
+    public function create($id)
     {
-        return Inertia::render('Tags/Create', []);
+        $category = Category::findOrFail($id);
+        return Inertia::render('Tags/TagsCreate', [
+            'category' => $category
+        ]);
     }
 
-    public function store(Request $request)
-    {
-        $request->validate([
-            'name' => 'required|string|unique:' . Tag::class,
-        ]);
-        Tag::create([
-            'name' => $request->name,
-            'slug' => Str::slug($request->name),
-        ]);
-        return to_route('tags.index')->with('message', 'Tambah Tag Berhasil');
-    }
+public function store(Request $request)
+{  
+    // dd($request->all());
+    $request->validate([
+        'name' => 'required|string|unique:tags,name',
+        'category_id' => 'required',       
+    ]);
+
+    $tag = Tag::create([
+        'name' => $request->name,
+        'slug' => Str::slug($request->name),
+    ]);
+
+    $tag->categories()->sync($request->category_id); 
+
+   return back()->with('message', 'Tambah Tag Berhasil');
+}
+
+
 
     public function edit($id)
     {
         // Show a form to edit an existing tag
         $tag = Tag::findOrFail($id);
-        return Inertia::render('Tags/Edit', [
+        return Inertia::render('Tags/TagsEdit', [
             'tag' => $tag,
         ]);
     }
 
-    public function update(Request $request, $id)
-    {
-        // Validate and update an existing tag
-        $tag = Tag::findOrFail($id);
-        $request->validate([
-            'name' => 'required|string|unique:' . Tag::class,
-        ]);
-        $tag->update($request->only(['name']));
-        $tag->slug = Str::slug($request->name);
-        $tag->save();
-        return to_route('tags.index')->with('message', 'tag berhasil di edit');
-    }
+public function update(Request $request, $id)
+{
+    $tag = Tag::findOrFail($id);
+
+    $request->validate([
+        'name' => 'required|string|unique:tags,name,' . $id,
+        'category_id' => 'required',
+        'category_id.*' => 'exists:categories,id',
+    ]);
+
+    $tag->update([
+        'name' => $request->name,
+        'slug' => Str::slug($request->name),
+    ]);
+    $tag->categories()->sync($request->category_id);
+
+    return back()->with('message', 'Tag berhasil di edit');
+}
+
 
     public function destroy($id)
     {
         // Delete an existing tag
         Tag::destroy($id);
-        return to_route('tags.index')->with('message', 'Tag berhasil dihapus');
+        return back()->with('message', 'Tag berhasil dihapus');
     }
     public function bulkDestroy(Request $request)
     {
