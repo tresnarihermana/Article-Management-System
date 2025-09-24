@@ -17,6 +17,6 @@ const { article, recent, initialLiked, initialCount, comments, commentsPaginatio
     
     <PageLayout>
         <ArticleContent :article="article" :recent="recent" />
-        <CommentSection :article="article" :recent="recent" :initial-liked="initialLiked" :initial-count="initialCount" :comments="comments" :comments-pagination="commentsPagination"/>
+
     </PageLayout>
 </template>
