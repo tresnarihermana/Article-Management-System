@@ -31,9 +31,9 @@ Route::get('/', [MainPageController::class, 'index'], function () {})->name('hom
 
 
 Route::get('dashboard', [DashboardController::class, 'index'], function () {
-    return Inertia::render('Dashboard')->with('message', 'Selamat datang');
+    return Inertia::render('Dashboard/Dashboard')->with('message', 'Selamat datang');
 })->middleware(['auth', 'verified'])->name('dashboard');
-Auth::routes(['verify' => true]);
+// Auth::routes(['verify' => true]);
 Route::get('/auth/google', function () {
     return Socialite::driver('google')->redirect();
 })->name('google.redirect');
@@ -57,11 +57,13 @@ Route::get('/auth/google/callback', function () {
 Route::post('profile/avatar', [ProfileController::class, 'updateAvatar'])->name('profile.avatar.update');
 Route::post('profile/cover', [ProfileController::class, 'updateCover'])->name('profile.cover.update');
 
+
+
 // Main Page
 Route::middleware(['auth', 'web', 'verified'])->group(function () {
+    // routes/web.php
 
-
-    Route::get('/article/read/{slug}', [MainPageController::class, 'show'])
+    Route::get('/article/{id}/{slug}', [MainPageController::class, 'show'])
         ->name('article.show');
 
     Route::get('/articles', [MainPageController::class, 'articles'])
@@ -89,10 +91,41 @@ Route::middleware(['auth', 'web', 'verified'])->group(function () {
         ->name('comments.delete');
 });
 
+Route::get('/manage/articles/recycle', [ArticleController::class, 'recycle'])
+    ->name('articles.recycleBin')
+    ->middleware("permission:articles.create|articles.edit|articles.delete|articles.view");
+
+Route::delete('/manage/articles/{id}/forceDelete', [ArticleController::class, 'forceDelete'])
+    ->name('articles.forceDelete')->withTrashed();
+
+Route::post('/manage/articles/{id}/restore', [ArticleController::class, 'restore'])
+    ->name('articles.restore')->withTrashed();
+
+Route::delete('/manage/articles/recycle/bulk-forceDelete/{ids}', [ArticleController::class, 'BulkForceDelete'])
+    ->name('articles.bulk.forceDelete')->withTrashed();
+
+Route::post('/manage/articles/recycle/bulk-restore', [ArticleController::class, 'bulkRestore'])
+    ->name('articles.bulk.restore')->withTrashed();
+
 // Roles and Permissions mulai disini
 // users
 Route::middleware(['auth', 'web', 'verified'])->group(function () {
 
+    Route::get('/manage/users/recycle', [UserController::class, 'recycleBin'])
+        ->name('users.recycleBin')
+        ->middleware("permission:users.create|users.edit|users.delete|users.view");
+
+    Route::delete('/manage/users/{id}/forceDelete', [UserController::class, 'forceDelete'])
+        ->name('users.forceDelete')->withTrashed();
+        
+    Route::post('/manage/users/{id}/restore', [UserController::class, 'restore'])
+        ->name('users.restore')->withTrashed();
+
+    Route::delete('/manage/users/recycle/bulk-forceDelete/{ids}', [UserController::class, 'BulkForceDelete'])
+        ->name('users.bulk.forceDelete')->withTrashed();
+        
+    Route::post('/manage/users/recycle/bulk-restore', [UserController::class, 'bulkRestore'])
+        ->name('users.bulk.restore')->withTrashed();
 
     Route::resource("/manage/users", UserController::class)
         ->only(['create', 'store'])
@@ -179,6 +212,8 @@ Route::middleware(['auth', 'web', 'verified'])->group(function () {
         ->only(['show'])
         ->middleware("permission:articles.show");
 
+
+
     // Manage Article
     Route::resource("manage/approve", ManageArticleController::class)
         ->only(['edit', 'update'])
@@ -256,5 +291,23 @@ Route::delete("manage/tags/bulk-destroy/{ids}", [TagController::class, 'bulkDest
 Route::get('/bar', function () {
     return Inertia::render('CategoriesStatsPieChart'); // TODO hello
 });
+
+// coba coba
+
+Route::get('400', fn () => abort(400)); // Bad Request
+Route::get('401', fn () => abort(401)); // Unauthorized
+Route::get('403', fn () => abort(403)); // Forbidden
+Route::get('404', fn () => abort(404)); // Not Found
+Route::get('405', fn () => abort(405)); // Method Not Allowed
+Route::get('408', fn () => abort(408)); // Request Timeout
+Route::get('409', fn () => abort(409)); // Conflict
+Route::get('419', fn () => abort(419)); // Page Expired (Laravel CSRF)
+Route::get('429', fn () => abort(429)); // Too Many Requests
+
+// 5xx
+Route::get('500', fn () => abort(500)); // Internal Server Error
+Route::get('502', fn () => abort(502)); // Bad Gateway
+Route::get('503', fn () => abort(503)); // Service Unavailable
+Route::get('504', fn () => abort(504)); // Gateway Timeout
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';
