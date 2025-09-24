@@ -5,6 +5,7 @@ import 'swiper/css/navigation'
 import 'swiper/css/pagination'
 import { Navigation, Pagination, Autoplay } from 'swiper/modules'
 import dayjs from 'dayjs'
+import Tag from 'primevue/tag'
 
 const props = defineProps<{
     articles: Array<any>
@@ -25,7 +26,7 @@ const props = defineProps<{
         <Swiper :modules="[Navigation, Pagination, Autoplay]" :slides-per-view="1" :space-between="20" pagination
             autoplay class="max-w-[80rem] mx-auto rounded-3xl max-lg:rounded-none">
             <SwiperSlide v-for="(article, i) in articles" :key="i">
-                <a :href="route('article.show', article.slug)">
+                <a :href="route('article.show', { id: article.id, slug: article.slug })">
                     <div
                         class="relative block rounded-3xl max-lg:rounded-none bg-white text-white shadow-secondary-1 dark:bg-surface-dark group overflow-hidden max-h-[540px]">
                         <img class="group-hover:scale-[110%] ease-in-out duration-500 w-full object-cover"
@@ -37,8 +38,9 @@ const props = defineProps<{
                             <h5 class="mb-2 text-xl font-medium leading-tight">
                                 {{ article.title }}
                             </h5>
-                            <p class="mb-4 text-base" v-html="article.excerpt.length > 250 ? article.excerpt.slice(0, 250) + '...' : article.excerpt">
-                            </p>
+                            <div class="mb-4 text-base line-clamp-2" v-html="article.excerpt"></div>
+
+
                             <div class="text-base flex flex-row justify-between">
                                 <div class="flex flex-row items-center *:mr-2">
                                     <a :href="route('profile.show', article.user.username)" class="flex items-center">
