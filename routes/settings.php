@@ -23,8 +23,8 @@ Route::middleware(['web','auth'])->group(function () {
     Route::patch('/profile/cover', [ProfileController::class, 'updateCover'])->name('profile.cover');
 
     Route::get('settings/appearance', function () {
-        return Inertia::render('settings/Appearance');
+        return Inertia::render('Dashboard/settings/Appearance');
     })->name('appearance');
     // tambahan 
-    Auth::routes(['verify' => true]);
+    // Auth::routes(['verify' => true]);
 });
