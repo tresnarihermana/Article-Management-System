@@ -24,7 +24,7 @@ const { getInitials } = useInitials();
 
                 <div class="flex items-center text-gray-600 dark:text-gray-300 mb-4">
                     <img :src="article.user.avatar
-                        ? `/storage/${article.user.avatar}`
+                        ? article.user.avatar_url
                         : `https://ui-avatars.com/api/?name=${getInitials(article.user.username)}&background=random`"
                         alt="user avatar" class="w-8 h-8 rounded-full object-cover mr-2" />
                     <span>
@@ -75,7 +75,7 @@ const { getInitials } = useInitials();
         <div class="bg-white py-8 dark:bg-zinc-800">
             <div class="container mx-auto px-4 flex flex-col md:flex-row">
                 <div class="w-full md:w-3/4 px-4">
-                    <img :src="'/storage/' + article.cover" alt="cover" class="mb-8 rounded-2xl">
+                    <img :src="article.cover_url" alt="cover" class="mb-8 rounded-2xl">
                     <article class="[&_strong]:dark:text-gray-200 format dark:format-invert max-w-none dark:text-gray-200 lg:text-lg max-sm:text-sm" v-html="article.body">
 
                     </article>
@@ -84,8 +84,9 @@ const { getInitials } = useInitials();
                     <div class="bg-white dark:bg-zinc-800 rounded-lg shadow p-4 sticky top-20">
                         <h2 class="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4 md:text-lg">Recent Posts</h2>
                         <div v-for="article in recent" :key="article.id" class="mb-4">
-                            <a :href="route('article.show', article.slug)" class="block group">
-                                <img :src="`/storage/` + article.cover" alt="cover"
+                            <a :href="route('article.show', { id: article.id, slug: article.slug })
+" class="block group">
+                                <img :src="article.cover_url" alt="cover"
                                     class="w-full object-cover rounded-lg mb-2 group-hover:opacity-80 transition aspect-16/9" />
                                 <h3
                                     class="text-gray-700 dark:text-gray-200 font-medium group-hover:text-green-600 md:text-xs">
