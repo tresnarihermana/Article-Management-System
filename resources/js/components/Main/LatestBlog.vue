@@ -39,7 +39,8 @@ const loadMore = () => {
                lg:mx-0 lg:mt-20 lg:max-w-none lg:grid-cols-6">
                 <article v-for="article in visibleArticles" :key="article.id"
                     class="flex flex-col items-start justify-between lg:col-span-2 relative group">
-                    <a :href="route('article.show', article.slug)">
+                    <a :href="route('article.show', { id: article.id, slug: article.slug })
+">
                         <div
                             class="absolute ml-3 mt-2 rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600 hover:bg-gray-200 z-10">
                             <a :href="route('category.show', article.categories[0].slug)">
@@ -81,10 +82,10 @@ const loadMore = () => {
                             <h3
                                 class="text-lg font-semibold leading-6 text-gray-900 dark:text-gray-200 group-hover:text-gray-600">
                                 <span class="absolute inset-0"></span>
-                                {{ article.title.length > 70 ? article.title.slice(0, 70) + '...' : article.title }}
+                                {{ article.title}}
                             </h3>
-                            <p class="mt-5 line-clamp-2 text-sm leading-6 text-gray-600 dark:text-gray-300"
-                                v-html="article.excerpt"></p>
+                            <div class="mt-5 line-clamp-2 text-sm leading-6 text-gray-600 dark:text-gray-300"
+                                v-html="article.excerpt"></div>
                         </div>
 
                         <div class="relative mt-8 flex justify-start gap-x-2 ">
