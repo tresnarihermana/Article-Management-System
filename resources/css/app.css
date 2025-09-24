@@ -174,17 +174,11 @@
         background: var(--background);
         color: var(--foreground);
     }
-    
+    .p-datatable .p-datatable-header {
+  background: ;
+  color: var(--p-datatable-header-color);
+  border-color: var(--p-datatable-header-border-color);
 }
-@layer base {
-  .prose-invert strong {
-    color: #e5e7eb; /* gray-200 */
-  }
 
-  .prose-invert h1,
-  .prose-invert h2,
-  .prose-invert h3 {
-    color: #6b0707;
-  }
 }
 
