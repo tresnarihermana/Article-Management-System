@@ -69,7 +69,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'password',
         'remember_token',
     ];
-
+    protected $appends = ['avatar_url', 'cover_url'];
     /**
      * Get the attributes that should be cast.
      *
@@ -82,5 +82,13 @@ class User extends Authenticatable implements MustVerifyEmail
             'password' => 'hashed',
             'is_active' => 'boolean',
         ];
+    }
+    public function getAvatarUrlAttribute()
+    {
+        return asset('storage/' . $this->avatar);
+    }
+    public function getCoverUrlAttribute()
+    {
+        return asset('storage/' . $this->cover);
     }
 }
