@@ -46,7 +46,7 @@ class ManageArticleController extends Controller
                     'rejected_message' => $article->rejected_message,
                 ];
             });
-        return Inertia::render('Articles/Manage/ManageArticlesDataTables', [
+        return Inertia::render('Dashboard/Articles/Manage/ManageArticlesDataTables', [
             'articles' => $articles,
             'search' => $search,
             'filters' => $request->only(['status', 'search'])
@@ -63,7 +63,7 @@ class ManageArticleController extends Controller
         $categories = Category::all();
         $tags = Tag::all();
         // dd($categories);
-        return Inertia::render("Articles/Create", [
+        return Inertia::render("Dashboard/Articles/Create", [
             'categories' => $categories,
             'tags' => $tags
         ]);
@@ -113,7 +113,7 @@ class ManageArticleController extends Controller
             ->where('slug', $slug)
             ->firstOrFail();
 
-        return Inertia::render("Articles/Show", [
+        return Inertia::render("Dashboard/Articles/Show", [
             "article" => $article,
         ]);
     }
@@ -122,7 +122,7 @@ class ManageArticleController extends Controller
     public function edit(string $id)
     {
         $article = Article::with('user', 'categories', 'tags')->findOrFail($id);
-        return Inertia::render("Articles/Edit", [
+        return Inertia::render("Dashboard/Articles/Edit", [
             "article" => $article,
             "categories" => Category::all(),
             "tags" => Tag::all(),

@@ -45,22 +45,23 @@ class MainPageController extends Controller
 
 
         if (Auth::check()) {
-            return Inertia::render('Home', [
+            return Inertia::render('Main/Home', [
                 "popArticles" => $poparticle,
                 // "pinnedArticle" => $pinnedArticle,
                 "articles" => $articleData,
                 "categories" => Category::all(),
             ]);
         } else {
-            return Inertia::render('Welcome', [
+            return Inertia::render('Main/Welcome', [
                 "articles" => $poparticle,
 
 
             ]);
         }
     }
-    public function show(Request $request, $slug)
+    public function show(Request $request, $id, $slug)
     {
+        // Data Article
         $article = Article::with('tags', 'user', 'categories', 'likes')
             ->where('slug', $slug)
             ->firstOrFail();
@@ -69,14 +70,14 @@ class MainPageController extends Controller
         $liked = $user ? $article->likes()->where('user_id', $user->id)->exists() : false;
         $likesCount = $article->likes()->count();
 
-
+        // Data Comments
         $comments = $article->comments()
             ->with('user')
             ->latest()
             ->paginate(10);
 
 
-
+        // Map comments to array
         $commentsData = $comments->map(function ($comment) {
             return [
                 'id' => $comment->id,
@@ -91,6 +92,7 @@ class MainPageController extends Controller
             ];
         });
 
+        // data articlesdata?
         $articledata = [
             "title" => $article->title,
             "body" => $article->body,
@@ -106,11 +108,13 @@ class MainPageController extends Controller
             "status" => $article->status,
             "slug" => $article->slug,
             "cover" => $article->cover,
+            "cover_url" => $article->cover_url,
             "id" => $article->id,
             "views" => $article->views,
             "hits" => $article->hits,
         ];
 
+        // Data: Recent Articles
         $recentArticle = Article::query()
             ->where([
                 ['status', '=', 'published'],
@@ -120,7 +124,7 @@ class MainPageController extends Controller
             ->take(3)
             ->get();
 
-        // hits dan views
+        // Data: hits dan views
         $article->increment('hits');
         $sessionKey = 'viewed_article_' . $article->id;
         if (!$request->session()->has($sessionKey)) {
@@ -128,6 +132,7 @@ class MainPageController extends Controller
             $request->session()->put($sessionKey, true);
         }
 
+        // Return + Render
         return Inertia::render("Main/Read", [
             "article" => $articledata,
             "recent" => $recentArticle,
@@ -211,14 +216,10 @@ class MainPageController extends Controller
 
 
 
-        $articles = Article::query()
-            ->when($search, function ($query) use ($search) {
-                $query->where('title', 'like', '%' . $search . '%')
-                    ->orWhere('slug', 'like', '%' . $search . '%');
-            })
-            ->latest()
+        $articles = Article::search($search)
             ->paginate(18)
             ->withQueryString();
+
 
         return Inertia::render('Main/Search', [
             "articles" => $articles,
