@@ -86,7 +86,7 @@ class MainPageController extends Controller
                     'id' => $comment->user->id ?? null,
                     'name' => $comment->user->name ?? 'Unknown',
                     'username' => $comment->user->username ?? 'Unknown',
-                    'avatar' => $comment->user->avatar ?? null,
+                    'avatar' => $comment->user->avatar_url ?? null,
                 ],
                 'created_at' => $comment->created_at->format('Y-m-d H:i:s'),
             ];
@@ -105,6 +105,7 @@ class MainPageController extends Controller
             'created_at' => $article->created_at->format('Y-m-d H:i:s'),
             'updated_at' => $article->updated_at->format('Y-m-d H:i:s'),
             'published_at' => $article->published_at->format('d M Y'),
+            'read_time' => 999,
             "status" => $article->status,
             "slug" => $article->slug,
             "cover" => $article->cover,
@@ -114,6 +115,7 @@ class MainPageController extends Controller
             "hits" => $article->hits,
         ];
 
+        // dd($articledata);
         // Data: Recent Articles
         $recentArticle = Article::query()
             ->where([
@@ -217,6 +219,8 @@ class MainPageController extends Controller
 
 
         $articles = Article::search($search)
+            ->where('status', 'published')
+            ->latest()
             ->paginate(18)
             ->withQueryString();
 
