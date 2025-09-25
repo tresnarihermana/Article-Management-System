@@ -26,7 +26,8 @@ const slides = ref<Slide[]>(props.articles.map((article: Article) => ({
   title: article.title,
   description: article.excerpt || article.title,
   buttonText: "Read More",
-  buttonUrl: route('article.show', article.slug),
+  buttonUrl: route('article.show', { id: article.id, slug: article.slug })
+,
   image: `/storage/${article.cover}`
 })));
 
