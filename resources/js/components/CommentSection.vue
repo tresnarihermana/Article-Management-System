@@ -5,8 +5,15 @@ import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import Swal from 'sweetalert2'
 import { router } from "@inertiajs/vue3"
-import { QuillEditor } from '@vueup/vue-quill'
-import '@vueup/vue-quill/dist/vue-quill.snow.css'
+
+const editor = ref<any>(null)
+
+onMounted(async () => {
+    const { QuillEditor } = await import('@vueup/vue-quill')
+    await import('@vueup/vue-quill/dist/vue-quill.snow.css')
+    editor.value = QuillEditor
+})
+
 
 const props = defineProps({
     article: Object,
@@ -110,7 +117,7 @@ const handleDeleteComment = (id: number) => {
 </script>
 
 <template>
-    <section class="py-8 xl:py-16 2xl:pr-90 antialiased">
+    <section class="py-8 xl:py-16 2xl:pr-90 antialiased" id="comment-section">
         <div class="max-w-6xl mx-auto relative px-4">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-lg lg:text-2xl font-bold text-gray-900 dark:text-white">
@@ -120,8 +127,8 @@ const handleDeleteComment = (id: number) => {
                     :initial-count="article.likes_count" />
             </div>
 
-            <form @submit.prevent="submitComment" class="mb-6">
-                <QuillEditor v-model:content="comment" theme="snow"
+            <form @submit.prevent="submitComment" class="mb-6" v-if="editor">
+                <component :is="editor" v-model:content="comment" theme="snow"
                     :toolbar="['bold', 'italic', 'underline', 'link', 'strike', 'blockquote', 'code-block']"
                     contentType="html" style="height: 200px;" />
                 <button type="submit" v-if="$page.props.auth.user"
@@ -130,12 +137,13 @@ const handleDeleteComment = (id: number) => {
                 </button>
             </form>
 
+
             <article v-for="c in comments" :key="c.id" class="p-6 text-base bg-white rounded-lg dark:bg-zinc-800 mb-4">
                 <footer class="flex justify-between items-center mb-2">
                     <div class="flex items-center">
                         <p class="inline-flex items-center mr-3 text-sm text-gray-900 dark:text-white font-semibold">
                             <img class="mr-2 w-6 h-6 rounded-full"
-                                :src="c.user.avatar_url ?? `https://ui-avatars.com/api/?name=${encodeURIComponent(c.user.name)}`"
+                                :src="c.user.avatar ?? `https://ui-avatars.com/api/?name=${encodeURIComponent(c.user.name)}`"
                                 alt="User avatar"
                                 @error="$event.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(c.user.name || 'User')}`">
                             <a :href="route('profile.show', c.user.username)">{{ c.user.username }}</a>
@@ -175,7 +183,7 @@ const handleDeleteComment = (id: number) => {
                 </footer>
                 <p class="text-gray-500 dark:text-gray-400" v-html="c.content"></p>
             </article>
-            <nav aria-label="Page navigation example">
+            <nav aria-label="Comment Navigation">
                 <ul class="flex items-center -space-x-px h-10 text-base">
                     <li>
                         <button @click="loadPage(commentsPagination.current_page - 1)"
