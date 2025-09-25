@@ -1,5 +1,6 @@
 <template>
   <Button
+  v-tooltip.top="liked ? 'Unlike' : 'Like'"
     :icon="liked ? 'pi pi-heart-fill' : 'pi pi-heart'"
     :label="likesCount"
     rounded
