@@ -20,7 +20,8 @@
                 </p>
 
                 <div class="flex justify-around mb-6 gap-2">
-                    <button
+                    <!--  facebook  -->
+                    <button @click="shareTo('facebook')"
                         class="flex items-center justify-center w-12 h-12 rounded-full text-gray-500 hover:text-white hover:bg-[#1877f2] dark:text-gray-400 dark:hover:text-white transition-colors duration-200">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                             fill="currentColor">
@@ -29,32 +30,26 @@
                             </path>
                         </svg>
                     </button>
-
-                    <button
-                        class="flex items-center justify-center w-12 h-12 rounded-full text-gray-500 hover:text-white hover:bg-[#1d9bf0] dark:text-gray-400 dark:hover:text-white transition-colors duration-200">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-                            fill="currentColor">
+                    <!-- twitter (X) -->
+                    <button @click="shareTo('twitter')"
+                        class="flex items-center justify-center w-12 h-12 rounded-full text-gray-500 hover:text-black hover:bg-gray-200 dark:text-gray-400 dark:hover:text-black transition-colors duration-200">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
+                            class="bi bi-twitter-x" viewBox="0 0 16 16">
                             <path
-                                d="M19.633 7.997c.013.175.013.349.013.523 0 5.325-4.053 11.461-11.46 11.461-2.282 0-4.402-.661-6.186-1.809.324.037.636.05.973.05a8.07 8.07 0 0 0 5.001-1.721 4.036 4.036 0 0 1-3.767-2.793c.249.037.499.062.761.062.361 0 .724-.05 1.061-.137a4.027 4.027 0 0 1-3.23-3.953v-.05c.537.299 1.16.486 1.82.511a4.022 4.022 0 0 1-1.796-3.354c0-.748.199-1.434.548-2.032a11.457 11.457 0 0 0 8.306 4.215c-.062-.3-.1-.611-.1-.923a4.026 4.026 0 0 1 4.028-4.028c1.16 0 2.207.486 2.943 1.272a7.957 7.957 0 0 0 2.556-.973 4.02 4.02 0 0 1-1.771 2.22 8.073 8.073 0 0 0 2.319-.624 8.645 8.645 0 0 1-2.019 2.083z">
-                            </path>
+                                d="M12.6.75h2.454l-5.36 6.142L16 15.25h-4.937l-3.867-5.07-4.425 5.07H.316l5.733-6.57L0 .75h5.063l3.495 4.633L12.601.75Zm-.86 13.028h1.36L4.323 2.145H2.865z" />
                         </svg>
                     </button>
-
-                    <button
-                        class="flex items-center justify-center w-12 h-12 rounded-full text-gray-500 hover:text-white hover:bg-[#bc2a8d] dark:text-gray-400 dark:hover:text-white transition-colors duration-200">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-                            fill="currentColor">
+                    <!-- threads -->
+                    <button @click="shareTo('threads')"
+                        class="flex items-center justify-center w-12 h-12 rounded-full text-gray-500 hover:text-white hover:bg-black dark:text-gray-400 dark:hover:text-white transition-colors duration-200">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
+                            class="bi bi-threads" viewBox="0 0 16 16">
                             <path
-                                d="M11.999 7.377a4.623 4.623 0 1 0 0 9.248 4.623 4.623 0 0 0 0-9.248zm0 7.627a3.004 3.004 0 1 1 0-6.008 3.004 3.004 0 0 1 0 6.008z">
-                            </path>
-                            <circle cx="16.806" cy="7.207" r="1.078"></circle>
-                            <path
-                                d="M20.533 6.111A4.605 4.605 0 0 0 17.9 3.479a6.606 6.606 0 0 0-2.186-.42c-.963-.042-1.268-.054-3.71-.054s-2.755 0-3.71.054a6.554 6.554 0 0 0-2.184.42 4.6 4.6 0 0 0-2.633 2.632 6.585 6.585 0 0 0-.419 2.186c-.043.962-.056 1.267-.056 3.71 0 2.442 0 2.753.056 3.71.015.748.156 1.486.419 2.187a4.61 4.61 0 0 0 2.634 2.632 6.584 6.584 0 0 0 2.185.45c.963.042 1.268.055 3.71.055s2.755 0 3.71-.055a6.615 6.615 0 0 0 2.186-.419 4.613 4.613 0 0 0 2.633-2.633c.263-.7.404-1.438.419-2.186.043-.962.056-1.267.056-3.71s0-2.753-.056-3.71a6.581 6.581 0 0 0-.421-2.217zm-1.218 9.532a5.043 5.043 0 0 1-.311 1.688 2.987 2.987 0 0 1-1.712 1.711 4.985 4.985 0 0 1-1.67.311c-.95.044-1.218.055-3.654.055-2.438 0-2.687 0-3.655-.055a4.96 4.96 0 0 1-1.669-.311 2.985 2.985 0 0 1-1.719-1.711 5.08 5.08 0 0 1-.311-1.669c-.043-.95-.053-1.218-.053-3.654 0-2.437 0-2.686.053-3.655a5.038 5.038 0 0 1 .311-1.687c.305-.789.93-1.41 1.719-1.712a5.01 5.01 0 0 1 1.669-.311c.951-.043 1.218-.055 3.655-.055s2.687 0 3.654.055a4.96 4.96 0 0 1 1.67.311 2.991 2.991 0 0 1 1.712 1.712 5.08 5.08 0 0 1 .311 1.669c.043.951.054 1.218.054 3.655 0 2.436 0 2.698-.043 3.654h-.011z">
-                            </path>
+                                d="M6.321 6.016c-.27-.18-1.166-.802-1.166-.802.756-1.081 1.753-1.502 3.132-1.502.975 0 1.803.327 2.394.948s.928 1.509 1.005 2.644q.492.207.905.484c1.109.745 1.719 1.86 1.719 3.137 0 2.716-2.226 5.075-6.256 5.075C4.594 16 1 13.987 1 7.994 1 2.034 4.482 0 8.044 0 9.69 0 13.55.243 15 5.036l-1.36.353C12.516 1.974 10.163 1.43 8.006 1.43c-3.565 0-5.582 2.171-5.582 6.79 0 4.143 2.254 6.343 5.63 6.343 2.777 0 4.847-1.443 4.847-3.556 0-1.438-1.208-2.127-1.27-2.127-.236 1.234-.868 3.31-3.644 3.31-1.618 0-3.013-1.118-3.013-2.582 0-2.09 1.984-2.847 3.55-2.847.586 0 1.294.04 1.663.114 0-.637-.54-1.728-1.9-1.728-1.25 0-1.566.405-1.967.868ZM8.716 8.19c-2.04 0-2.304.87-2.304 1.416 0 .878 1.043 1.168 1.6 1.168 1.02 0 2.067-.282 2.232-2.423a6.2 6.2 0 0 0-1.528-.161" />
                         </svg>
                     </button>
-
-                    <button
+                    <!-- wa -->
+                    <button @click="shareTo('whatsapp')"
                         class="flex items-center justify-center w-12 h-12 rounded-full text-gray-500 hover:text-white hover:bg-[#25D366] dark:text-gray-400 dark:hover:text-white transition-colors duration-200">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                             fill="currentColor">
@@ -63,8 +58,8 @@
                             </path>
                         </svg>
                     </button>
-
-                    <button
+                    <!-- tele -->
+                    <button @click="shareTo('telegram')"
                         class="flex items-center justify-center w-12 h-12 rounded-full text-gray-500 hover:text-white hover:bg-[#229ED9] dark:text-gray-400 dark:hover:text-white transition-colors duration-200">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                             fill="currentColor">
@@ -88,18 +83,11 @@
                     </svg>
 
                     <input class="w-full bg-transparent outline-none text-sm text-gray-800 dark:text-gray-200"
-                        type="text" placeholder="Link"
-                        :value="route('article.show', { id: article.id, slug: article.slug })" readonly />
+                        type="text" placeholder="Link" v-model="ArticleUrl" :readonly />
+                    <Toast />
+                    <Button unstyled :icon="copyIcon" @click="show"
+                        class="dark:hover:bg-zinc-800 text-gray-400 hover:text-gray-400 text-sm py-2 px-2 rounded-lg hover:bg-gray-200 transition-colors duration-200 flex items-center" />
 
-                    <button
-                        class=" dark:hover:bg-zinc-800 text-gray-300 hover:text-gray-400 text-sm py-2 px-2 rounded-lg hover:bg-gray-200 transition-colors duration-200">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                            stroke="currentColor" class="size-6">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 0 0-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 0 1-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H9.75" />
-                        </svg>
-
-                    </button>
                 </div>
             </div>
         </Dialog>
@@ -109,9 +97,89 @@
 <script setup>
 import Button from "primevue/button";
 import Dialog from "primevue/dialog";
-import { ref } from "vue";
+import Toast from 'primevue/toast';
+import { computed, ref } from "vue";
+import { useToast } from 'primevue/usetoast';
+import { useClipboard } from "@vueuse/core";
+import { shallowRef } from 'vue'
+
+
+
 const props = defineProps({
     article: Object,
 });
 const visible = ref(false);
+
+
+const { text, isSupported, copy } = useClipboard()
+
+const ArticleUrl = computed(() => {
+    if (!props.article) return "";
+    if (typeof route === "function") {
+        return route("article.show", { id: props.article.id, slug: props.article.slug });
+    }
+   
+    return `/article/${props.article.id}/${props.article.slug}`;
+});
+
+const toast = useToast();
+const copyIcon = ref('pi pi-copy')
+const show = () => {
+    toast.add({ severity: 'secondary', summary: 'Copied', detail: 'Link Already Copied and ready to Share', life: 3000 });
+    copyIcon.value = 'pi pi-check'
+    copy(ArticleUrl)
+};
+
+// Share function
+const stripHtml = (html) => {
+    const tmp = document.createElement("DIV");
+    tmp.innerHTML = html;
+    return tmp.textContent || tmp.innerText || "";
+};
+
+const shareTo = (platform) => {
+    // Ensure title uses bolding for supported apps
+    const title = `${props.article.title}`;
+    // Clean HTML and get a short, readable description
+    const desc = stripHtml(props.article.excerpt || props.article.content).substring(0, 150);
+    const url = ArticleUrl;
+    let shareUrl = '';
+
+    // A clean, readable separator for the title and description
+    const separator = "\n—\n";
+    // An introductory phrase for chat apps
+    const introText = "🔥 Check out this article! 🔥\n\n";
+
+    switch (platform) {
+        case 'facebook':
+            // Facebook's sharer uses the OG tags from the URL, so we only pass the URL
+            shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
+            break;
+        case 'twitter':
+            // Twitter/X relies mostly on the title and URL
+            shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`;
+            break;
+        case 'whatsapp':
+            // Prettier WhatsApp text: Intro + Title (bold) + Separator + Description + URL
+            const whatsappText = introText + '*' + title + '*' + separator + desc + "\n\n" + url;
+            shareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(whatsappText)}`;
+            break;
+        case 'telegram':
+            // Prettier Telegram text: Title (bold) + Separator + Description
+            const telegramText = title + separator + desc;
+            shareUrl = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(telegramText)}`;
+            break;
+        case 'threads':
+            // Prettier Threads text: Title (bold) + Separator + Description
+            const threadsText = title + separator + desc;
+            shareUrl = `https://www.threads.net/intent/post?text=${encodeURIComponent(threadsText)}&url=${encodeURIComponent(url)}`;
+            break;
+        default:
+            return;
+    }
+
+    window.open(shareUrl, '_blank', 'width=600,height=400');
+};
+
+
 </script>
