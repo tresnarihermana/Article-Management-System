@@ -13,6 +13,7 @@ import AppLayout from "@/layouts/AppLayout.vue";
 import Swal from "sweetalert2";
 import Popover from 'primevue/popover';
 import type { BreadcrumbItem } from '@/types';
+import Read from "@/pages/Main/Read.vue";
 const breadcrumbs : BreadcrumbItem[] = [
     {
         title: 'Articles',
@@ -354,6 +355,7 @@ loadLazyData();
                       <template #empty>data not found</template>
                 </DataTable>
             </div>
+
         </div>
     </AppLayout>
 </template>

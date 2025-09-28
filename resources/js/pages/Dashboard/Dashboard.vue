@@ -112,15 +112,15 @@ if (flash) {
     </div>
     <div
         class="break-inside-avoid relative rounded-xl border border-sidebar-border/70 dark:border-sidebar-border min-h-[60vh] sm:min-h-[50vh] md:min-h-[40vh]">
-        <StatsSplineChart :articles="props.articles" />
+          <PlaceholderPattern/>
     </div>
     <div
         class="break-inside-avoid relative rounded-xl border border-sidebar-border/70 dark:border-sidebar-border min-h-[60vh] sm:min-h-[50vh] md:min-h-[40vh]">
-        <StatsSplineChart :articles="props.articles" />
+           <PlaceholderPattern/>
     </div>
     <div
         class="break-inside-avoid relative rounded-xl border border-sidebar-border/70 dark:border-sidebar-border min-h-[60vh] sm:min-h-[50vh] md:min-h-[40vh]">
-        <StatsSplineChart :articles="props.articles" />
+           <PlaceholderPattern/>
     </div>
 </div>
 

@@ -152,8 +152,9 @@ const sideArticles = computed(() => pinnedArticles.value.slice(1))
             <div class="grid grid-cols-1 sm:grid-cols-12 gap-5">
 
                 <div class="sm:col-span-5" v-if="mainArticle">
-                    <a :href="route('article.show', mainArticle.slug)">
-                        <div class="bg-cover text-center overflow-hidden" style="min-height: 300px"
+                    <a :href="route('article.show', { id: mainArticle.id, slug: mainArticle.slug })
+">
+                        <div class="bg-cover text-center overflow-hidden rounded-2xl" style="min-height: 300px"
                             :style="`background-image: url('/storage/${mainArticle.cover}')`"
                             :title="mainArticle.title"></div>
                     </a>
@@ -164,7 +165,7 @@ const sideArticles = computed(() => pinnedArticles.value.slice(1))
                                 class="text-xs text-indigo-600 uppercase font-medium hover:text-gray-900 transition duration-500 ease-in-out dark:text-green-600">
                                 {{ mainArticle.categories[0]?.name || 'Uncategorized' }}
                             </a>
-                            <a :href="route('article.show', mainArticle.slug)"
+                            <a :href="route('article.show', { id: mainArticle.id, slug: mainArticle.slug })"
                                 class="block text-gray-900 font-bold text-2xl mb-2 hover:text-indigo-600 transition duration-500 ease-in-out dark:text-white">
                                 {{ mainArticle.title }}
                             </a>
@@ -175,14 +176,16 @@ const sideArticles = computed(() => pinnedArticles.value.slice(1))
 
                 <div class="sm:col-span-7 grid grid-cols-2 lg:grid-cols-3 gap-5">
                     <div v-for="article in sideArticles" :key="article.id">
-                        <a :href="route('article.show', article.slug)">
+                        <a :href="route('article.show', { id: article.id, slug: article.slug })
+">
                             <div
-                                class="h-40 bg-cover text-center overflow-hidden"
+                                class="h-40 bg-cover text-center overflow-hidden rounded-2xl"
                                 :style="`background-image: url('/storage/${article.cover}')`"
                                 :title="article.title"
                             ></div>
                         </a>
-                        <a :href="route('article.show', article.slug)"
+                        <a :href="route('article.show', { id: article.id, slug: article.slug })
+"
                             class="text-gray-900 inline-block font-semibold text-md my-2 hover:text-indigo-600 transition duration-500 ease-in-out dark:text-white">
                             {{ article.title }}
                         </a>

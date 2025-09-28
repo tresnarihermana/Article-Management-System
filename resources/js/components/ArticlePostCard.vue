@@ -34,7 +34,8 @@ const props = defineProps({
         <article
           class="bg-white dark:bg-black/5 rounded-lg shadow-md overflow-hidden transition duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow-lg"
         >
-          <a :href="route('article.show', article.slug)">
+          <a :href="route('article.show', { id: article.id, slug: article.slug })
+">
             <img
               :src="article.cover
                     ? `/storage/${article.cover}`
@@ -65,7 +66,7 @@ const props = defineProps({
                 <div class="flex items-center">
                   <img
                     :src="article.user.avatar
-                          ? `/storage/${article.user.avatar}`
+                          ? article.user.avatar_url
                           : 'https://ui-avatars.com/api/?name=' +
                             getInitials(article.user.username) +
                             '&background=random'"

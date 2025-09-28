@@ -1,18 +1,5 @@
-<template>
-  <Button
-  v-tooltip.top="liked ? 'Unlike' : 'Like'"
-    :icon="liked ? 'pi pi-heart-fill' : 'pi pi-heart'"
-    :label="likesCount"
-    rounded
-    size="large"
-    class="p-button-text p-button-plain max-w-13 h-13 hover:!bg-gray-200 dark:hover:!bg-zinc-800"
-    :style="{ color: liked ? 'red' : 'gray' }"
-    @click="toggleLike"
-  />
-</template>
-
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import axios from 'axios'
 import Button from 'primevue/button'
 
@@ -25,6 +12,8 @@ const props = defineProps({
 const liked = ref(props.initialLiked)
 const likesCount = ref(props.initialCount)
 
+const likesCountLabel = computed(() => likesCount.value.toString())
+
 const toggleLike = async () => {
   try {
     const res = await axios.post(`/article/read/${props.postId}/like`)
@@ -36,3 +25,15 @@ const toggleLike = async () => {
 }
 </script>
 
+<template>
+  <Button
+    v-tooltip.top="liked ? 'Unlike' : 'Like'"
+    :icon="liked ? 'pi pi-heart-fill' : 'pi pi-heart'"
+    :label="likesCountLabel"
+    rounded
+    size="large"
+    class="p-button-text p-button-plain max-w-13 h-13 hover:!bg-gray-200 dark:hover:!bg-zinc-800"
+    :style="{ color: liked ? 'red' : 'gray' }"
+    @click="toggleLike"
+  />
+</template>

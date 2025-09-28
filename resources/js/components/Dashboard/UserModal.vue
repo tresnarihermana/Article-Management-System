@@ -106,49 +106,39 @@ watch(() => form.password, validatePassword)
 
 <template>
     <div>
-        <Button
-            v-if="!isEdit"
-            label="New"
-            icon="pi pi-plus"
-            @click="visible = true"
-        />
-        <Button
-            v-else
-            icon="pi pi-pencil"
-            outlined
-            rounded
-            class="mr-2"
-            @click="visible = true"
-        />
+        <Button v-if="!isEdit" label="New" icon="pi pi-plus" @click="visible = true" />
+        <Button v-else icon="pi pi-pencil" outlined rounded class="mr-2" @click="visible = true" />
 
-        <Dialog
-            v-model:visible="visible"
-            modal
-            :header="isEdit ? 'Edit User' : 'Create New User'"
-            :style="{ width: '40rem' }"
-            :breakpoints="{ '960px': '90vw', '640px': '100vw' }"
-            dismissableMask
-        >
-                    <template #header>
-                        <div class="flex flex-col">
-                <div class="inline-flex items-center justify-center gap-2">
-                    <Avatar :image="props.user?.avatar_url ?? 'https://ui-avatars.com/api/?name=' + getInitials(props.user.username) + '&background=random'" shape="circle" />
-                    <span class="font-bold whitespace-nowrap">{{ props.user?.name }}</span>
+        <Dialog v-model:visible="visible" modal :header="isEdit ? 'Edit User' : 'Create New User'"
+            :style="{ width: '40rem' }" :breakpoints="{ '960px': '90vw', '640px': '100vw' }" dismissableMask>
+            <template #header>
+                <div class="flex flex-col" v-if="isEdit">
+                    <div class="inline-flex items-center justify-center gap-2">
+                        <Avatar :image="props.user
+                            ? (props.user.avatar_url ?? 'https://ui-avatars.com/api/?name=' + getInitials(props.user.username) + '&background=random')
+                            : 'https://ui-avatars.com/api/?name=U&background=random'" shape="circle" />
+
+                        <span class="font-bold whitespace-nowrap">{{ props.user?.name }}</span>
+                    </div>
+                    <div class="mt-1">
+                        <span class="text-sm text-gray-500"> Update This User Profile</span>
+                    </div>
                 </div>
-                <div class="mt-1">
-                      <span class="text-sm text-gray-500"> Update This User Profile</span>
-                </div>
+                <div class="flex flex-col" v-else>  
+                    <h1 class="text-xl font-bold">Create a New User</h1>
                 </div>
             </template>
             <form @submit.prevent="submit" class="flex flex-col gap-4">
                 <div class="grid gap-2">
                     <label for="name">Fullname</label>
-                    <InputText id="name" type="text" required autofocus v-model="form.name" placeholder="Enter fullname" />
+                    <InputText id="name" type="text" required autofocus v-model="form.name"
+                        placeholder="Enter fullname" />
                     <InputError :message="form.errors.name" />
                 </div>
                 <div class="grid gap-2">
                     <label for="username">Username</label>
-                    <InputText id="username" type="text" required v-model="form.username" placeholder="Enter username" />
+                    <InputText id="username" type="text" required v-model="form.username"
+                        placeholder="Enter username" />
                     <InputError :message="form.errors.username ?? usernameWarning" />
                 </div>
                 <div class="grid gap-2">
@@ -166,7 +156,8 @@ watch(() => form.password, validatePassword)
                 </div>
                 <div class="grid gap-2 w-full">
                     <label for="password">Password</label>
-                    <Password id="password" v-model="form.password" placeholder="Password" toggleMask inputClass="w-full" class="w-full">
+                    <Password id="password" v-model="form.password" placeholder="Password" toggleMask
+                        inputClass="w-full" class="w-full">
                         <template #footer>
                             <Divider />
                             <ul class="pl-2 my-0 leading-normal text-sm">
@@ -182,7 +173,9 @@ watch(() => form.password, validatePassword)
                 </div>
                 <div class="grid gap-2">
                     <label for="password_confirmation">Confirm password</label>
-                    <Password id="password_confirmation" v-model="form.password_confirmation" placeholder="Confirm password" toggleMask inputClass="w-full" class="w-full" :feedback="false" />
+                    <Password id="password_confirmation" v-model="form.password_confirmation"
+                        placeholder="Confirm password" toggleMask inputClass="w-full" class="w-full"
+                        :feedback="false" />
                     <InputError :message="form.errors.password_confirmation" />
                 </div>
                 <div class="grid gap-2">

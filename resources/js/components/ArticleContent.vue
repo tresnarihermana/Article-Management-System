@@ -105,7 +105,7 @@ const emit = defineEmits(['scrollTo'])
                     </div>
                 </div>
 
-                <div class="flex items-center gap-5 lg:gap-2">
+                <div class="flex items-center gap-5 lg:gap-2 w-full md:w-auto justify-between">
                     <LikeButton :post-id="article.id" :initial-liked="article.likedByUser"
                         :initial-count="article.likes_count" />
                     <Button v-tooltip.top="'Comment'" rounded icon="pi pi-comment" severity="secondary" size="large"
@@ -120,12 +120,12 @@ const emit = defineEmits(['scrollTo'])
             </div>
         </div>
 
-        <div class="bg-white pb-8 dark:bg-zinc-800">
+        <div class="bg-white pb-8 dark:bg-zinc-800 pt-10">
             <div class="container mx-auto px-4 flex flex-col md:flex-row">
                 <div class="w-full md:w-3/4 px-4">
                     <img :src="article.cover_url" alt="cover" class="mb-8 rounded-2xl ">
                     <article
-                        class="[&_strong]:dark:text-gray-200 format dark:format-invert max-w-none dark:text-gray-200 lg:text-lg max-sm:text-sm"
+                        class="text-gray-600 [&_strong]:dark:text-gray-100 format dark:format-invert max-w-none dark:text-gray-200 lg:text-lg max-sm:text-sm"
                         v-html="article.body">
                     
                     </article>
