@@ -35,7 +35,7 @@ class ArticleController extends Controller
                     'cover' => $article->cover,
                 ];
             });
-        return Inertia::render('Articles/ArticlesDataTables', [
+        return Inertia::render('Dashboard/Articles/ArticlesDataTables', [
             'articles' => $articles,
             'deletedCount' => Article::onlyTrashed()->where('user_id', auth()->id())->count(),
         ]);
@@ -49,7 +49,7 @@ class ArticleController extends Controller
         $categories = Category::all();
         $tags = Tag::all();
         // dd($categories);
-        return Inertia::render("Articles/ArticlesCreate", [
+        return Inertia::render("Dashboard/Articles/ArticlesCreate", [
             'categories' => $categories,
             'tags' => $tags
         ]);
@@ -99,7 +99,7 @@ class ArticleController extends Controller
             ->where('slug', $slug)
             ->firstOrFail();
 
-        return Inertia::render("Articles/ArticlesShow", [
+        return Inertia::render("Dashboard/Articles/ArticlesShow", [
             "article" => $article,
         ]);
     }
@@ -108,7 +108,7 @@ class ArticleController extends Controller
     public function edit(string $id)
     {
         $article = Article::with('user', 'categories', 'tags')->findOrFail($id);
-        return Inertia::render("Articles/ArticlesEdit", [
+        return Inertia::render("Dashboard/Articles/ArticlesEdit", [
             "article" => $article,
             "categories" => Category::all(),
             "tags" => Tag::all(),
@@ -210,7 +210,7 @@ class ArticleController extends Controller
                     'cover' => $article->cover,
                 ];
             });
-        return Inertia::render('Articles/ArticlesRecycleBin', [
+        return Inertia::render('Dashboard/Articles/ArticlesRecycleBin', [
             'articles' => $articles
         ]);
     }

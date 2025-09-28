@@ -87,7 +87,7 @@
           <SearchBar />
           <PopoverButton class="flex items-center gap-x-2 text-sm/6 font-semibold text-gray-900 dark:text-gray-300">
             <img
-              :src="$page.props.auth.user.avatar ? '/storage/' + $page.props.auth.user.avatar : 'https://ui-avatars.com/api/?name=' + $page.props.auth.user.username"
+              :src="$page.props.auth.user.avatar ? $page.props.auth.user.avatar : 'https://ui-avatars.com/api/?name=' + $page.props.auth.user.username"
               alt="Profile Photo" class="h-8 w-8 rounded-full object-cover" />
             {{ $page.props.auth.user.username }}
             <ChevronDownIcon class="size-5 flex-none text-gray-400" aria-hidden="true" />
@@ -146,7 +146,7 @@
           <div class="-my-6 divide-y divide-gray-500/10">
             <div class="space-y-2 py-6">
               <MobileSearchbar />
-              <a href="#"
+              <a :href="route('articles.list')"
                 class="-mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold text-gray-900 hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-green-700 ">Articles</a>
               <Disclosure as="div" class="-mx-3" v-slot="{ open }">
                 <DisclosureButton
@@ -177,7 +177,7 @@
                     <DisclosureButton
                       class="flex w-full items-center justify-between rounded-lg py-2 pr-3.5 pl-3 text-base/7 font-semibold text-gray-900 hover:bg-gray-50 dark:hover:bg-green-700">
                       <img
-                        :src="$page.props.auth.user.avatar ? '/storage/' + $page.props.auth.user.avatar : 'https://ui-avatars.com/api/?name=' + $page.props.auth.user.username"
+                        :src="$page.props.auth.user.avatar ? $page.props.auth.user.avatar : 'https://ui-avatars.com/api/?name=' + $page.props.auth.user.username"
                         alt="Profile Photo" class="h-8 w-8 rounded-full object-cover" />
                       <span class="text-sm font-semibold text-gray-900 dark:text-gray-200 px-2"> {{
                         $page.props.auth.user.username }}</span>
@@ -208,9 +208,8 @@
     </Dialog>
   </header>
 </template>
-
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue' // Add 'computed'
 import { router } from '@inertiajs/vue3'
 import {
   Dialog,
@@ -233,18 +232,31 @@ import ThemeMode from './ThemeMode.vue'
 import SearchBar from '@/components/SearchBar.vue';
 import MobileSearchbar from './MobileSearchbar.vue'
 
-const products = [
+// Define props to access the $page object
+const props = defineProps({
+  ziggy: {
+    type: Object,
+    default: () => ({}),
+  },
+  // Add other props if any
+});
+
+// A computed property for your product routes
+const products = computed(() => [
   { name: 'Technology', description: 'Dapatkan informasi terbaru perkembangan teknologi', href: route('category.show', 'teknologi'), icon: ComputerDesktopIcon },
   { name: 'News', description: 'Kumpulan berita terkini paling faktual', href: route('category.show', 'lifestyle'), icon: NewspaperIcon },
   { name: 'Life Style', description: 'Tips & tricks buat kamu yang mau improvisasi diri', href: route('category.show', 'lifestyle'), icon: SparklesIcon },
   { name: 'Hobby', description: 'Dari diving di lautan hingga sky diving dari langit semua ada disini', href: route('category.show', 'hobi'), icon: RocketLaunchIcon },
   { name: 'Review', description: 'Lihat pengalaman terseru mengenai game, software dan film!', href: route('category.show', 'review'), icon: ChatBubbleLeftRightIcon },
   { name: 'See More', description: 'Lihat lebih banyak Kategori seru lainnya!', href: '#', icon: SquaresPlusIcon },
-]
-const callsToAction = [
+]);
+
+// A computed property for your callsToAction routes
+const callsToAction = computed(() => [
   { name: 'Show All Articles', href: route('articles.list'), icon: ListBulletIcon },
   { name: 'Become Writer', href: '#', icon: PencilIcon },
-]
+]);
+
 const mobileMenuOpen = ref(false)
 const handleLogout = () => {
   router.post(route('logout'));

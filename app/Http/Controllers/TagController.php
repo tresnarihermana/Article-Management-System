@@ -27,7 +27,7 @@ class TagController extends Controller
                     'articles' => $tag->articles->count()
                 ];
             });
-        return Inertia::render('Tags/TagsDataTables', [
+        return Inertia::render('Dashboard/Tags/TagsDataTables', [
             'tags' => $tags,
         ]);
     }
@@ -35,7 +35,7 @@ class TagController extends Controller
     public function create($id)
     {
         $category = Category::findOrFail($id);
-        return Inertia::render('Tags/TagsCreate', [
+        return Inertia::render('Dashboard/Tags/TagsCreate', [
             'category' => $category
         ]);
     }
@@ -64,7 +64,7 @@ public function store(Request $request)
     {
         // Show a form to edit an existing tag
         $tag = Tag::findOrFail($id);
-        return Inertia::render('Tags/TagsEdit', [
+        return Inertia::render('Dashboard/Tags/TagsEdit', [
             'tag' => $tag,
         ]);
     }

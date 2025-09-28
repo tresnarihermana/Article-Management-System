@@ -274,7 +274,7 @@ const UploadUserCover = () => {
                         </div>
                         <img
           v-if="!previewUrl"
-          :src="`/storage/${user?.cover}`"
+          :src="user?.cover"
           class="mt-4 mx-auto max-h-40"
           alt="Cover Saat Ini"
         />
@@ -303,7 +303,7 @@ const UploadUserCover = () => {
                 </div>
                 <div class="mt-4">
                     <Avatar class="w-32 h-32 rounded-full object-cover profile-user-img" @click="openFileInput">
-                        <AvatarImage v-if="user.avatar || photoPreview" :src="photoPreview || '/storage/' + user.avatar"
+                        <AvatarImage v-if="user.avatar || photoPreview" :src="photoPreview ||  user.avatar"
                             alt="Foto Profil" class="w-32 h-32 rounded-full object-cover profile-user-img"
                             @click="openFileInput" />
                         <AvatarFallback class="rounded-lg text-black dark:text-white">

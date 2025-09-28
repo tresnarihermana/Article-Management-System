@@ -17,7 +17,7 @@ class PermissionController extends Controller
     {
         $permissions = Permission::with('roles')
             ->get();
-        return Inertia::render("Permissions/PermissionsDataTables", [
+        return Inertia::render("Dashboard/Permissions/PermissionsDataTables", [
             "roles" => Role::all(),
             "permissions" => $permissions,
         ]);
@@ -28,7 +28,7 @@ class PermissionController extends Controller
      */
     public function create()
     {
-        return Inertia::render("Permissions/PermissionsCreate", [
+        return Inertia::render("Dashboard/Permissions/PermissionsCreate", [
             "permissions" => Permission::all(),
             "roles" => Role::all()
         ]);
@@ -66,7 +66,7 @@ class PermissionController extends Controller
     public function edit(string $id)
     {
         $permission = Permission::findOrFail($id);
-        return Inertia::render("Permissions/PermissionsEdit", [
+        return Inertia::render("Dashboard/Permissions/PermissionsEdit", [
             "permission" => $permission,
             "rolePermissions" => $permission->roles->pluck("name")->all(),
             "roles" => Role::all()

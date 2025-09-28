@@ -5,8 +5,15 @@ import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import Swal from 'sweetalert2'
 import { router } from "@inertiajs/vue3"
-import { QuillEditor } from '@vueup/vue-quill'
-import '@vueup/vue-quill/dist/vue-quill.snow.css'
+
+const editor = ref<any>(null)
+
+onMounted(async () => {
+    const { QuillEditor } = await import('@vueup/vue-quill')
+    await import('@vueup/vue-quill/dist/vue-quill.snow.css')
+    editor.value = QuillEditor
+})
+
 
 const props = defineProps({
     article: Object,
@@ -41,7 +48,8 @@ const submitComment = () => {
 }
 
 const loadPage = (page: number) => {
-    router.get(route('article.show', props.article.slug), { page }, {
+    router.get(route('article.show', { id: props.article.id, slug: props.article.slug })
+        , { page }, {
         preserveState: true,
         preserveScroll: true,
         onSuccess: (pageProps) => {
@@ -109,7 +117,7 @@ const handleDeleteComment = (id: number) => {
 </script>
 
 <template>
-    <section class="py-8 xl:py-16 2xl:pr-90 antialiased">
+    <section class="py-8 xl:py-16 2xl:pr-90 antialiased" id="comment-section">
         <div class="max-w-6xl mx-auto relative px-4">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-lg lg:text-2xl font-bold text-gray-900 dark:text-white">
@@ -119,9 +127,9 @@ const handleDeleteComment = (id: number) => {
                     :initial-count="article.likes_count" />
             </div>
 
-            <form @submit.prevent="submitComment" class="mb-6">
-                <QuillEditor v-model:content="comment" theme="snow"
-                    :toolbar="['bold','italic','underline','link','strike','blockquote','code-block']"
+            <form @submit.prevent="submitComment" class="mb-6" v-if="editor">
+                <component :is="editor" v-model:content="comment" theme="snow"
+                    :toolbar="['bold', 'italic', 'underline', 'link', 'strike', 'blockquote', 'code-block']"
                     contentType="html" style="height: 200px;" />
                 <button type="submit" v-if="$page.props.auth.user"
                     class="inline-flex items-center py-3 mt-2 px-4 text-xs font-medium text-center text-white bg-green-700 rounded-lg focus:ring-4 focus:ring-green-200 dark:focus:ring-green-900 hover:bg-green-800">
@@ -129,17 +137,20 @@ const handleDeleteComment = (id: number) => {
                 </button>
             </form>
 
+
             <article v-for="c in comments" :key="c.id" class="p-6 text-base bg-white rounded-lg dark:bg-zinc-800 mb-4">
                 <footer class="flex justify-between items-center mb-2">
                     <div class="flex items-center">
                         <p class="inline-flex items-center mr-3 text-sm text-gray-900 dark:text-white font-semibold">
-                            <img class="mr-2 w-6 h-6 rounded-full" :src="c.user.avatar ? `/storage/${c.user.avatar}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(c.user.name)}`"
+                            <img class="mr-2 w-6 h-6 rounded-full"
+                                :src="c.user.avatar ?? `https://ui-avatars.com/api/?name=${encodeURIComponent(c.user.name)}`"
                                 alt="User avatar"
                                 @error="$event.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(c.user.name || 'User')}`">
                             <a :href="route('profile.show', c.user.username)">{{ c.user.username }}</a>
                         </p>
                         <p class="text-sm text-gray-600 dark:text-gray-400">
-                            <time :datetime="c.created_at">{{ new Date(c.created_at).toLocaleDateString() }} ({{ formatDate(c.created_at) }})</time>
+                            <time :datetime="c.created_at">{{ new Date(c.created_at).toLocaleDateString() }} ({{
+                                formatDate(c.created_at) }})</time>
                         </p>
                     </div>
 
@@ -147,25 +158,32 @@ const handleDeleteComment = (id: number) => {
                         <button @click.stop="toggleDropdown(c.id)"
                             class="dropdown-btn inline-flex items-center p-2 text-sm font-medium text-gray-500 dark:text-gray-400 bg-white rounded-lg hover:bg-gray-100 dark:bg-zinc-900 dark:hover:bg-zinc-700"
                             type="button">
-                            <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 3">
-                                <path d="M2 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Zm6.041 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM14 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Z" />
+                            <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                                fill="currentColor" viewBox="0 0 16 3">
+                                <path
+                                    d="M2 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Zm6.041 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM14 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Z" />
                             </svg>
                         </button>
                         <div v-if="activeDropdown === c.id"
                             class="dropdown-menu absolute right-0 z-10 w-36 bg-white rounded divide-y divide-gray-100 shadow dark:bg-zinc-700 dark:divide-gray-600 mt-2">
                             <ul class="py-1 text-sm text-gray-700 dark:text-gray-200">
                                 <li><a href="#" v-if="$page.props.auth.user.id === c.user.id"
-                                        class="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-zinc-600 dark:hover:text-white">Edit</a></li>
-                                <li><a @click.prevent="handleDeleteComment(c.id)" v-if="$page.props.auth.user.id === c.user.id"
-                                        class="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-zinc-600 dark:hover:text-white">Remove</a></li>
-                                <li><a href="#" class="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-zinc-600 dark:hover:text-white">Report</a></li>
+                                        class="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-zinc-600 dark:hover:text-white">Edit</a>
+                                </li>
+                                <li><a @click.prevent="handleDeleteComment(c.id)"
+                                        v-if="$page.props.auth.user.id === c.user.id"
+                                        class="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-zinc-600 dark:hover:text-white">Remove</a>
+                                </li>
+                                <li><a href="#"
+                                        class="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-zinc-600 dark:hover:text-white">Report</a>
+                                </li>
                             </ul>
                         </div>
                     </div>
                 </footer>
                 <p class="text-gray-500 dark:text-gray-400" v-html="c.content"></p>
             </article>
-            <nav aria-label="Page navigation example">
+            <nav aria-label="Comment Navigation">
                 <ul class="flex items-center -space-x-px h-10 text-base">
                     <li>
                         <button @click="loadPage(commentsPagination.current_page - 1)"

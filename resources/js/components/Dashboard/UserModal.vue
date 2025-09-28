@@ -132,7 +132,7 @@ watch(() => form.password, validatePassword)
                     <template #header>
                         <div class="flex flex-col">
                 <div class="inline-flex items-center justify-center gap-2">
-                    <Avatar :image="props.user?.avatar ? `storage/${props.user.avatar}` : 'https://ui-avatars.com/api/?name=' + getInitials(props.user.username) + '&background=random'" shape="circle" />
+                    <Avatar :image="props.user?.avatar_url ?? 'https://ui-avatars.com/api/?name=' + getInitials(props.user.username) + '&background=random'" shape="circle" />
                     <span class="font-bold whitespace-nowrap">{{ props.user?.name }}</span>
                 </div>
                 <div class="mt-1">

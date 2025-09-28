@@ -11,9 +11,11 @@ import Aura from '@primeuix/themes/lara';
 import '@primeuix/themes/lara';
 import 'primeicons/primeicons.css';
 import ToastService from 'primevue/toastservice';
+import { autoAnimatePlugin } from '@formkit/auto-animate/vue'
 import VueApexCharts from "vue3-apexcharts";
-import Tooltip from 'primevue/tooltip';
 
+import Tooltip from 'primevue/tooltip';
+import autoAnimate from '@formkit/auto-animate';
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
 createInertiaApp({
@@ -23,9 +25,11 @@ createInertiaApp({
         const app = createApp({ render: () => h(App, props) })
         app.component("apexchart", VueApexCharts);
         app.directive('tooltip', Tooltip);
+        app.directive('auto-animate', autoAnimate);
         app.use(plugin)
             .use(ZiggyVue)
             .use(ToastService)
+            .use(autoAnimatePlugin)
             .use(VueApexCharts)
             .use(PrimeVue, {
                 theme: {

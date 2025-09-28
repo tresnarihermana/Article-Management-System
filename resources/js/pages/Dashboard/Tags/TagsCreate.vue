@@ -19,8 +19,12 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
+const props = defineProps({
+    category: Object
+})
 const form = useForm({
     name: '',
+    category_id: props.category?.id || ''
 })
 
 const submit = () => {

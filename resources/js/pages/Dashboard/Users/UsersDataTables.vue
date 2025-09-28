@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { FilterMatchMode } from "@primevue/core/api";
-import { useToast } from "primevue/usetoast";
 import DataTable from "primevue/datatable";
 import Column from "primevue/column";
 import Toolbar from "primevue/toolbar";
@@ -31,7 +30,6 @@ const props = defineProps<{
     deletedCount: number,
 }>();
 
-const toast = useToast();
 const dt = ref();
 const users = ref(props.users);
 const selectedUsers = ref();

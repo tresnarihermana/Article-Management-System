@@ -58,12 +58,14 @@ const visiblePages = computed(() => {
                 <div v-for="article in articles.data" :key="article.id"
                   class="flex-shrink max-w-full w-full sm:w-1/3 px-3 pb-3">
                   <div class="flex flex-row sm:block hover-img">
-                    <a :href="route('article.show', article.slug)">
+                    <a :href="route('article.show', { id: article.id, slug: article.slug })
+">
                       <img class="max-w-full w-full mx-auto" :src="`/storage/${article.cover}`" :alt="article.title" />
                     </a>
                     <div class="py-0 sm:py-3 pl-3 sm:pl-0">
                       <h3 class="text-lg font-bold leading-tight mb-2">
-                        <a :href="route('article.show', article.slug)">{{ article.title }}</a>
+                        <a :href="route('article.show', { id: article.id, slug: article.slug })
+">{{ article.title }}</a>
                       </h3>
                       <p class="hidden md:block text-gray-600 leading-tight mb-1 dark:text-gray-400"
                         v-html="article.excerpt.length < 120 ? article.excerpt : article.excerpt.slice(0, 120) + '...'">

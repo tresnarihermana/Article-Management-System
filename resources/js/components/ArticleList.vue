@@ -14,7 +14,32 @@ const props = defineProps<{
 }>();
 
 </script>
+<style>
+.mySwiper .swiper-button-next,
+.mySwiper .swiper-button-prev {
+  width: 44px;
+  height: 44px;
+  background: rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(8px);
+  border-radius: 50%;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+  color: white;
+}
 
+.mySwiper .swiper-button-next::after,
+.mySwiper .swiper-button-prev::after {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.mySwiper .swiper-button-next:hover,
+.mySwiper .swiper-button-prev:hover {
+  background: rgba(34, 197, 94, 0.9);
+  transform: scale(1.15);
+  box-shadow: 0 6px 14px rgba(34, 197, 94, 0.5);
+}
+</style>
 <template>
     <div class="py-6">
       <div class="xl:container mx-auto px-3 sm:px-4 xl:px-2">
@@ -31,7 +56,7 @@ const props = defineProps<{
                 See More >
               </a>
             </div>
-
+            
               <Swiper :slides-per-view="3" :space-between="24" :breakpoints="{
                 640: { slidesPerView: 1 },
                 768: { slidesPerView: 2 },
@@ -40,7 +65,8 @@ const props = defineProps<{
                 :modules="[Pagination, Navigation]" class="mySwiper">
                 <SwiperSlide v-for="article in category.articles" :key="article.id"
                   class="group transition duration-300">
-                  <a :href="route('article.show', article.slug)"
+                  <a :href="route('article.show', { id: article.id, slug: article.slug })
+"
                     class="block bg-white dark:bg-zinc-800 rounded-2xl shadow-md hover:shadow-xl overflow-hidden transition flex flex-col h-[360px]">
                     <img class="w-full h-40 object-cover rounded-t-2xl group-hover:scale-105 transition duration-500"
                       :src="`/storage/${article.cover}`" :alt="article.title" loading="lazy" />
@@ -96,29 +122,4 @@ const props = defineProps<{
 </template>
 
 
-<style>
-.mySwiper .swiper-button-next,
-.mySwiper .swiper-button-prev {
-  width: 44px;
-  height: 44px;
-  background: rgba(0, 0, 0, 0.25);
-  backdrop-filter: blur(8px);
-  border-radius: 50%;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  transition: all 0.3s ease;
-  color: white;
-}
 
-.mySwiper .swiper-button-next::after,
-.mySwiper .swiper-button-prev::after {
-  font-size: 16px;
-  font-weight: bold;
-}
-
-.mySwiper .swiper-button-next:hover,
-.mySwiper .swiper-button-prev:hover {
-  background: rgba(34, 197, 94, 0.9);
-  transform: scale(1.15);
-  box-shadow: 0 6px 14px rgba(34, 197, 94, 0.5);
-}
-</style>

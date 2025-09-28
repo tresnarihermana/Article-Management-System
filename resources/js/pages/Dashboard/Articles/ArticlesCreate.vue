@@ -8,9 +8,15 @@ import { QuillEditor } from '@vueup/vue-quill'
 import '@vueup/vue-quill/dist/vue-quill.snow.css';
 import Multiselect from 'vue-multiselect';
 import 'vue-multiselect/dist/vue-multiselect.min.css';
-import { route } from '../../../../vendor/tightenco/ziggy/src/js/index';
 import InputError from '@/components/InputError.vue';
 import BlotFormatter from 'quill-blot-formatter';
+import { route } from '../../../../../vendor/tightenco/ziggy/src/js/index';
+const Editor = ref(null)
+onMounted(async () => {
+  const { QuillEditor } = await import('@vueup/vue-quill')
+  Editor.value = QuillEditor
+  await import('quill/dist/quill.snow.css')
+})
 const modules = [
   {
     name: 'blotFormatter',
@@ -197,14 +203,14 @@ const UploadArticleCover = () => {
     <!-- Form for Article content -->
     <div class="p-4">
       <label class="block mb-1 text-sm font-medium text-gray-700">Konten Artikel</label>
-      <QuillEditor v-model:content="form.body" theme="snow" toolbar="full" contentType="html" :modules="modules"  style="height: 400px;" />
+      <component :is="Editor" v-if="Editor" v-model:content="form.body" theme="snow" toolbar="full" contentType="html" :modules="modules"  style="height: 400px;" />
       <InputError :message="form.errors.body" />
     </div>
 
     <!-- Excerpt -->
     <div class="p-4">
       <label class="block mb-1 text-sm font-medium text-gray-700">Excerpt (Ringkasan)</label>
-      <QuillEditor v-model:content="form.excerpt" theme="snow" toolbar="full" contentType="html"
+      <component :is="Editor" v-if="Editor" v-model:content="form.excerpt" theme="snow" toolbar="full" contentType="html"
         style="height: 200px;" />
       <InputError :message="form.errors.excerpt" />
     </div>

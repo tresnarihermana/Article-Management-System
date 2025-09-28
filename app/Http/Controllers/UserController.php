@@ -27,7 +27,7 @@ class UserController extends Controller
         if (!$auth->hasRole('Super Admin')) {
             $roleQuery->whereNot('name', 'Super Admin')->WhereNot('name', 'admin');
         }
-        return Inertia::render("Users/UsersDataTables", [
+        return Inertia::render("Dashboard/Users/UsersDataTables", [
             "users" => $users,
             "roles" => $roleQuery->get(),
             "deletedCount" => User::onlyTrashed()->count(),
@@ -38,7 +38,7 @@ class UserController extends Controller
     {
         $users = User::onlyTrashed()->with('roles')->get();
 
-        return Inertia::render("Users/UsersRecycleBin", [
+        return Inertia::render("Dashboard/Users/UsersRecycleBin", [
             "users" => $users,
             "roles" => Role::all(),
         ]);
@@ -55,7 +55,7 @@ class UserController extends Controller
             $roleQuery->whereNot('name', 'Super Admin')->WhereNot('name', 'admin');
         }
 
-        return Inertia::render("Users/UsersCreate", [
+        return Inertia::render("Dashboard/Users/UsersCreate", [
             "roles" => $roleQuery->get(),
         ]);
     }
@@ -124,7 +124,7 @@ class UserController extends Controller
     public function show(string $id)
     {
         $user = User::findOrFail($id);
-        return Inertia::render("Users/UsersShow", [
+        return Inertia::render("Dashboard/Users/UsersShow", [
             "user" => [
                 'id' => $user->id,
                 'avatar' => $user->avatar,
@@ -157,7 +157,7 @@ class UserController extends Controller
         if (!$auth->hasRole('Super Admin')) {
             $roleQuery->whereNot('name', 'Super Admin')->WhereNot('name', 'admin');
         }
-        return Inertia::render("Users/UsersEdit", [
+        return Inertia::render("Dashboard/Users/UsersEdit", [
             "user" => [
                 'id' => $user->id,
                 'name' => $user->name,

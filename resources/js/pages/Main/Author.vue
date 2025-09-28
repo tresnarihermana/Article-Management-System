@@ -17,13 +17,13 @@ const { getInitials } = useInitials()
       <img 
         v-if="author.cover" 
         class="w-full h-full object-cover"
-        :src="`/storage/${author.cover}`" 
+        :src="author.cover_url" 
         alt="Author cover"
       >
       <div v-else class="w-full h-full bg-gradient-to-r from-orange-500 to-red-600"></div>
       <img 
         class="absolute -bottom-8 left-4 w-42 h-42 rounded-full border-4 border-white dark:border-gray-800 object-cover" 
-        :src="author.avatar ? `/storage/${author.avatar}` : `https://ui-avatars.com/api/?name=${getInitials(author.username)}&background=random`"
+        :src="author.avatar_url ?? `https://ui-avatars.com/api/?name=${getInitials(author.username)}&background=random`"
         alt="Author avatar">
     </div>
 
@@ -74,7 +74,8 @@ const { getInitials } = useInitials()
           <span class="mb-1 block text-sm leading-6 text-green-500" v-if="article.categories[0]"> 
             <a :href="route('category.show', article.categories[0].slug)">{{ article.categories[0].name ?? 'Uncategorized' }}</a>
           </span>
-         <a :href="route('article.show', article.slug)">{{ article.title }}</a>
+         <a :href="route('article.show', { id: article.id, slug: article.slug })
+">{{ article.title }}</a>
         </h3>
 
         <div class="prose prose-slate prose-sm text-slate-600 flex-1"
@@ -91,7 +92,8 @@ const { getInitials } = useInitials()
           </svg>
         </a>
       </div>
-      <a :href="route('article.show', article.slug)">
+      <a :href="route('article.show', { id: article.id, slug: article.slug })
+">
         <img :src="article.cover ? `/storage/${article.cover}` : 'https://via.placeholder.com/400x200'"
              :alt="article.slug"
              class="mb-6 shadow-md rounded-lg bg-slate-50 w-full sm:w-[17rem] sm:mb-0 xl:mb-6 xl:w-full cursor-pointer"

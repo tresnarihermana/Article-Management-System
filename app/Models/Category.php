@@ -19,4 +19,9 @@ class Category extends Model
     {
         return $this->belongsToMany(Article::class, 'article_category');
     }
+
+    public function tags()
+    {
+        return $this->belongsToMany(Tag::class, 'category_tag')->withTimestamps();
+    }
 }

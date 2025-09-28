@@ -9,14 +9,27 @@ import Button from 'primevue/button';
 import { router } from '@inertiajs/vue3';
 import PageLayout from '@/layouts/PageLayout.vue';
 import CommentSection from '@/components/CommentSection.vue';
+import ClientOnly from '@/components/ClientOnly.vue';
 const page = usePage();
 const { article, recent, initialLiked, initialCount, comments, commentsPagination } = page.props;
+
+const section = ref<HTMLElement>();
+
+
+function scrolltoComment() {
+  const el = document.getElementById('comment-section')
+  el?.scrollIntoView({ behavior: 'smooth' })
+}
+
 </script>
 
 <template>
-    
+
     <PageLayout>
-        <ArticleContent :article="article" :recent="recent" />
-        <CommentSection :article="article" :recent="recent" :initial-liked="initialLiked" :initial-count="initialCount" :comments="comments" :comments-pagination="commentsPagination"/>
+        <ArticleContent :article="article" :recent="recent" @scrollTo="scrolltoComment()"  />
+        <ClientOnly>
+            <CommentSection :article="article" :recent="recent" :initial-liked="initialLiked"
+                :initial-count="initialCount" :comments="comments" :comments-pagination="commentsPagination" />
+        </ClientOnly>
     </PageLayout>
 </template>
