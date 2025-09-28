@@ -8,6 +8,8 @@ import PrimeVue from 'primevue/config';
 import prettier from "prettier";
 import Tag from 'primevue/tag';
 import Tooltip from 'primevue/tooltip';
+import ToastService from 'primevue/toastservice';
+
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 const appUrl = import.meta.env.VITE_APP_URL || 'http://localhost:8000';
@@ -39,6 +41,7 @@ createServer(
             ...page.props.ziggy,
             location: new URL(page.props.ziggy.location),
           })
+          .use(ToastService)
           .component('Tag', Tag)
           .directive('tooltip', Tooltip)
           .use(PrimeVue),
