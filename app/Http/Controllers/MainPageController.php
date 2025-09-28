@@ -26,7 +26,12 @@ class MainPageController extends Controller
             ->limit(12)
             ->get();
 
+
+
         $articleData = $articles->map(function ($article) {
+            $word_count = str_word_count($article->body);
+            $words_per_minute = 200; // Or adjust as needed
+            $read_time = ceil($word_count / $words_per_minute);
             return [
                 'id' => $article->id,
                 'title' => $article->title,
@@ -38,6 +43,7 @@ class MainPageController extends Controller
                 'user' => $article->user,
                 'tags' => $article->tags,
                 'categories' => $article->categories,
+                'read_time' => $read_time,
                 'comments' => $article->comments,
                 'likes' => $article->likes,
             ];
@@ -91,7 +97,9 @@ class MainPageController extends Controller
                 'created_at' => $comment->created_at->format('Y-m-d H:i:s'),
             ];
         });
-
+        $word_count = str_word_count($article->body);
+        $words_per_minute = 200; // Or adjust as needed
+        $read_time =  $words_per_minute = 200; // Or adjust as needed
         // data articlesdata?
         $articledata = [
             "title" => $article->title,
@@ -105,7 +113,7 @@ class MainPageController extends Controller
             'created_at' => $article->created_at->format('Y-m-d H:i:s'),
             'updated_at' => $article->updated_at->format('Y-m-d H:i:s'),
             'published_at' => $article->published_at->format('d M Y'),
-            'read_time' => 999,
+            'read_time' => $read_time,
             "status" => $article->status,
             "slug" => $article->slug,
             "cover" => $article->cover,
@@ -147,6 +155,13 @@ class MainPageController extends Controller
             ],
             'initialLiked' => $liked,
             'initialCount' => $article->likes()->count(),
+        ])->withViewData([
+            'meta' => [
+                'title' => $article->title,
+                'description' => substr(strip_tags($article->body), 0, 150),
+                'image' => $article->cover_url,
+                'url' => url('/articles/' . $article->id),
+            ]
         ]);
     }
 
@@ -236,6 +251,23 @@ class MainPageController extends Controller
             "filters" => [
                 "search" => $search
             ]
+        ]);
+    }
+
+    public function Typesense(Request $request)
+    {
+        $search = $request->input('q');
+        $start = microtime(true);
+
+        $articles = Article::search($search)
+            ->paginate(5);
+
+        $end = microtime(true);
+        $timeTaken = round(($end - $start) * 1000, 2); // ms
+        return response()->json([
+            'articles' => $articles,
+            'articlesTotal' => Article::count(),
+            'time_taken_ms' => $timeTaken,
         ]);
     }
     public function profile($username)
