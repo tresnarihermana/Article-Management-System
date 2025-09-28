@@ -63,7 +63,7 @@ const loadMore = () => {
                                 dayjs(article.created_at).format('MMMM DD')
                                 }}</time>
                             <span aria-hidden="true">•</span>
-                            <p>7 mins read</p>
+                            <p>{{ article.read_time }} mins read</p>
                             <span class="flex justify-end items-end flex-1 text-[12px] !text-gray-400 font-mono gap-4"
                                 :style="{ color: liked ? 'red' : 'gray' }">
                                 <span class="flex items-center">
@@ -106,7 +106,7 @@ const loadMore = () => {
                                         {{ article.user.username }}
                                     </a>
                                 </p>
-                                <p class="text-gray-600 dark:text-gray-300">Senior Product Manager</p>
+                                <p class="text-gray-600 dark:text-gray-300">Penulis DailyLimeNews</p>
                             </div>
                         </div>
                     </a>
