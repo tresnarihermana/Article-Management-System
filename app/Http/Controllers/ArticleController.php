@@ -6,6 +6,7 @@ use App\Models\Tag;
 use Inertia\Inertia;
 use App\Models\Article;
 use App\Models\Category;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
@@ -244,4 +245,14 @@ class ArticleController extends Controller
 
         return redirect()->back(303)->with('success', 'Selected articles permanently deleted');
     }
+
+    public function exportPdf($id)
+{
+    $article = Article::findOrFail($id);
+
+    $pdf = Pdf::loadView('articles.pdf', compact('article'))
+              ->setPaper('a4', 'portrait');
+
+    return $pdf->download($article->title . '.pdf');
+}
 }
