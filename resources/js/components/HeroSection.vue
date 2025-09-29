@@ -1,24 +1,18 @@
 <script setup lang="ts">
 import { ref, watch, onMounted, onUnmounted } from 'vue';
 
-// Props if you want to use categories or other data
 const props = defineProps({
     categories: Array,
 });
 
-// Modal and input state
 const isSearchModalOpen = ref(false);
 const searchInput = ref<HTMLInputElement | null>(null);
 const searchModal = ref<HTMLElement | null>(null);
 
-// Query state and results
 const query = ref('');
 const results = ref<any[]>([]);
 const loading = ref(false);
-// State for keyboard navigation
 const activeResultIndex = ref(-1);
-
-// Debounce timeout
 let timeout: number | null = null;
 
 // --- Modal Logic ---
@@ -120,10 +114,17 @@ onUnmounted(() => {
     document.removeEventListener('keydown', handleKeyDown);
     if (timeout) clearTimeout(timeout);
 });
+
+const handleSearchSubmit = (event: Event) => {
+    event.preventDefault();
+    if (query.value) {
+        window.location.href = `/search?q=${encodeURIComponent(query.value)}`;
+    }
+}
 </script>
 
 <template>
-    <section class="bg-white py-8 antialiased :py-16 HeroSection">
+    <section class="bg-white py-24 antialiased md:py-16 lg:py-8 HeroSection">
         <div class="mx-auto grid max-w-screen-xl px-4 pb-8 md:grid-cols-12 lg:gap-12 lg:pb-16 xl:gap-0">
             <div class="content-center justify-self-start md:col-span-7 md:text-start">
                 <h1
@@ -137,11 +138,11 @@ onUnmounted(() => {
                     topics.
                 </p>
 
-                <form class="flex max-w-lg relative" @submit.prevent>
+                <form class="flex max-w-lg relative" @submit.prevent="handleSearchSubmit">
                     <div class="relative w-full">
-                        <input type="search" id="search-input" ref="searchInput" v-model="query"
-                            class="block w-full rounded-l-xl border border-gray-300 bg-gray-50 p-4 pe-12 text-lg text-gray-900 shadow-md transition duration-200 ease-in-out hover:shadow-lg focus:border-green-500 focus:ring-green-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
-                            placeholder="Search for articles, topics, or creators..." required @focus="openSearchModal"
+                        <input type="search" id="search-input" ref="searchInput" v-model="query" autocomplete="off"
+                            class="block w-full rounded-l-xl border border-gray-300 bg-gray-50 p-4 pe-12 text-lg text-gray-900 shadow-md transition duration-200 ease-in-out hover:shadow-lg focus:border-green-500 focus:ring-green-500 dark:border-zinc-600 dark:bg-zinc-800 dark:text-white dark:placeholder-gray-400"
+                            placeholder="Search for articles..." required @focus="openSearchModal"
                             @blur="closeSearchModal" />
 
                         <div class="absolute inset-y-0 end-0 flex items-center pe-3 pointer-events-none">
@@ -153,7 +154,7 @@ onUnmounted(() => {
                         </div>
 
                         <div v-if="isSearchModalOpen" ref="searchModal"
-                            class="search-modal-container rounded-xl shadow-2xl overflow-hidden border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 absolute z-20 top-full mt-2 w-full"
+                            class="search-modal-container rounded-xl shadow-2xl overflow-hidden border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 absolute z-20 top-full mt-2 w-full"
                             tabindex="-1" @focusin="openSearchModal" @focusout="closeSearchModal">
                             <div class="p-4">
                                 <p v-if="query" class="text-gray-500 dark:text-gray-400 mb-2 font-semibold">Results for
