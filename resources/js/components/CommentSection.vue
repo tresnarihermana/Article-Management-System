@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import LikeButton from './LikeButton.vue'
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, shallowRef } from 'vue'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import Swal from 'sweetalert2'
 import { router } from "@inertiajs/vue3"
 
-const editor = ref<any>(null)
+const editor = shallowRef<any>(null)
 
 onMounted(async () => {
     const { QuillEditor } = await import('@vueup/vue-quill')
