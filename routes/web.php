@@ -92,6 +92,9 @@ Route::middleware(['auth', 'web', 'verified'])->group(function () {
 
     Route::delete('/articles/comment-delete/{id}', [CommentController::class, 'destroy'])
         ->name('comments.delete');
+
+    Route::get('/articles/{id}/export-pdf', [ArticleController::class, 'exportPdf'])
+        ->name('articles.export-pdf');
 });
 
 Route::get('/manage/articles/recycle', [ArticleController::class, 'recycle'])
@@ -120,13 +123,13 @@ Route::middleware(['auth', 'web', 'verified'])->group(function () {
 
     Route::delete('/manage/users/{id}/forceDelete', [UserController::class, 'forceDelete'])
         ->name('users.forceDelete')->withTrashed();
-        
+
     Route::post('/manage/users/{id}/restore', [UserController::class, 'restore'])
         ->name('users.restore')->withTrashed();
 
     Route::delete('/manage/users/recycle/bulk-forceDelete/{ids}', [UserController::class, 'BulkForceDelete'])
         ->name('users.bulk.forceDelete')->withTrashed();
-        
+
     Route::post('/manage/users/recycle/bulk-restore', [UserController::class, 'bulkRestore'])
         ->name('users.bulk.restore')->withTrashed();
 
@@ -297,20 +300,20 @@ Route::get('/bar', function () {
 
 // coba coba
 
-Route::get('400', fn () => abort(400)); // Bad Request
-Route::get('401', fn () => abort(401)); // Unauthorized
-Route::get('403', fn () => abort(403)); // Forbidden
-Route::get('404', fn () => abort(404)); // Not Found
-Route::get('405', fn () => abort(405)); // Method Not Allowed
-Route::get('408', fn () => abort(408)); // Request Timeout
-Route::get('409', fn () => abort(409)); // Conflict
-Route::get('419', fn () => abort(419)); // Page Expired (Laravel CSRF)
-Route::get('429', fn () => abort(429)); // Too Many Requests
+Route::get('400', fn() => abort(400)); // Bad Request
+Route::get('401', fn() => abort(401)); // Unauthorized
+Route::get('403', fn() => abort(403)); // Forbidden
+Route::get('404', fn() => abort(404)); // Not Found
+Route::get('405', fn() => abort(405)); // Method Not Allowed
+Route::get('408', fn() => abort(408)); // Request Timeout
+Route::get('409', fn() => abort(409)); // Conflict
+Route::get('419', fn() => abort(419)); // Page Expired (Laravel CSRF)
+Route::get('429', fn() => abort(429)); // Too Many Requests
 
 // 5xx
-Route::get('500', fn () => abort(500)); // Internal Server Error
-Route::get('502', fn () => abort(502)); // Bad Gateway
-Route::get('503', fn () => abort(503)); // Service Unavailable
-Route::get('504', fn () => abort(504)); // Gateway Timeout
+Route::get('500', fn() => abort(500)); // Internal Server Error
+Route::get('502', fn() => abort(502)); // Bad Gateway
+Route::get('503', fn() => abort(503)); // Service Unavailable
+Route::get('504', fn() => abort(504)); // Gateway Timeout
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';

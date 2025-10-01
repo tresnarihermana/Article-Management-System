@@ -98,8 +98,8 @@ class MainPageController extends Controller
             ];
         });
         $word_count = str_word_count($article->body);
-        $words_per_minute = 200; // Or adjust as needed
-        $read_time =  $words_per_minute = 200; // Or adjust as needed
+        $words_per_minute = 200;
+        $read_time =  ceil($word_count / $words_per_minute); 
         // data articlesdata?
         $articledata = [
             "title" => $article->title,

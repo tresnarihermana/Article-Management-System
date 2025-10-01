@@ -5,6 +5,9 @@ import Button from 'primevue/button';
 import LikeButton from './LikeButton.vue';
 import { ref } from 'vue';
 import ShareModal from './Main/ShareModal.vue';
+import Menu from 'primevue/menu';
+import Dialog from 'primevue/dialog';
+import Swal from 'sweetalert2';
 const props = defineProps({
     article: Object,
     categories: Array,
@@ -18,6 +21,48 @@ const goToProfile = () => {
     router.get(route('profile.show', props.article.user.username))
 }
 const emit = defineEmits(['scrollTo'])
+
+const menu = ref();
+const menuitems = ref([
+    {
+        label: 'Options',
+        items: [
+
+            {
+                label: 'Download as PDF',
+                icon: 'pi pi-download',
+                command: () => {
+                    window.location.href = route('articles.export-pdf', props.article.id);
+                }
+            }
+        ]
+    }
+]);
+
+const toggle = (event) => {
+    menu.value.toggle(event);
+};
+const report = ref(false);
+
+const reportReason = ref('')
+const reportMessage = ref('')
+
+const submitReport = () => {
+    if (!reportReason.value) return
+
+    router.post(route('articles.report', props.article.id), {
+        reason: reportReason.value,
+        message: reportMessage.value,
+    }, {
+        onSuccess: () => {
+            report.value = false
+            reportReason.value = ''
+            reportMessage.value = ''
+            Swal.fire('Berhasil', 'Laporan sudah dikirim', 'success')
+        }
+    })
+}
+
 </script>
 
 <template>
@@ -39,14 +84,15 @@ const emit = defineEmits(['scrollTo'])
                 <div class="flex items-center justify-between text-gray-600 dark:text-gray-400">
                     <div class="flex items-center gap-4">
                         <img :src="article.user.avatar ? article.user.avatar_url : `https://ui-avatars.com/api/?name=${getInitials(article.user.username)}&background=random`"
-                            @click="goToProfile" alt="user avatar" class="w-12 h-12 rounded-full object-cover border-2 border-green-500 cursor-pointer" />
+                            @click="goToProfile" alt="user avatar"
+                            class="w-12 h-12 rounded-full object-cover border-2 border-green-500 cursor-pointer" />
                         <div>
                             <a :href="route('profile.show', article.user.username)"
                                 class="text-lg font-bold hover:text-green-500 transition-colors duration-200">
                                 {{ article.user.name }}
                             </a>
                             <div class="text-sm text-gray-500 dark:text-gray-500">
-                                <p>{{ article.published_at}} &bull; {{ article.read_time }} min read</p>
+                                <p>{{ article.published_at }} &bull; {{ article.read_time }} min read</p>
                             </div>
                         </div>
                     </div>
@@ -105,29 +151,81 @@ const emit = defineEmits(['scrollTo'])
                     </div>
                 </div>
 
-                <div class="flex items-center gap-5 lg:gap-2">
+                <div class="flex items-center gap-5 lg:gap-2 w-full md:w-auto justify-between">
                     <LikeButton :post-id="article.id" :initial-liked="article.likedByUser"
                         :initial-count="article.likes_count" />
                     <Button v-tooltip.top="'Comment'" rounded icon="pi pi-comment" severity="secondary" size="large"
-                       @click="$emit('scrollTo')"
-                        class="p-button-text p-button-plain max-w-13 h-13 hover:!bg-gray-200 dark:hover:!bg-zinc-800" />           
-                    <ShareModal :article="article"/>
-                        <Button v-tooltip.top="'Report'" rounded icon="pi pi-flag" severity="secondary" size="large"
+                        @click="$emit('scrollTo')"
                         class="p-button-text p-button-plain max-w-13 h-13 hover:!bg-gray-200 dark:hover:!bg-zinc-800" />
-                    <Button v-tooltip.top="'More'" rounded icon="pi pi-ellipsis-v" severity="secondary" size="large"
+                    <ShareModal :article="article" />
+<Button 
+    @click="report = true" 
+    v-tooltip.top="'Report'" 
+    rounded 
+    icon="pi pi-flag" 
+    severity="secondary" 
+    size="large"
+    class="p-button-text p-button-plain max-w-13 h-13 hover:!bg-gray-200 dark:hover:!bg-zinc-800" 
+/>
+
+<Dialog 
+    v-model:visible="report" 
+    modal 
+    header="Laporkan Artikel" 
+    :style="{ width: '25rem' }"
+    :draggable="false"
+>
+    <div class="flex flex-col gap-4">
+        <label for="reason" class="font-semibold text-sm">Pilih Alasan</label>
+        <select v-model="reportReason" id="reason" class="border rounded p-2 w-full">
+            <option value="" disabled>Pilih alasan</option>
+            <option value="spam">Spam / Iklan</option>
+            <option value="hate">Kebencian / Ujaran Kebencian</option>
+            <option value="violence">Kekerasan / Konten Tidak Pantas</option>
+            <option value="other">Lainnya</option>
+        </select>
+
+        <textarea 
+            v-model="reportMessage" 
+            rows="4" 
+            placeholder="Tulis detail laporan (opsional)" 
+            class="border rounded p-2 w-full"
+        ></textarea>
+
+        <div class="flex justify-end gap-2">
+            <Button 
+                label="Batal" 
+                icon="pi pi-times" 
+                severity="secondary" 
+                @click="report = false" 
+            />
+            <Button 
+                label="Kirim Laporan" 
+                icon="pi pi-send" 
+                severity="danger" 
+                @click="submitReport" 
+                :disabled="!reportReason"
+            />
+        </div>
+    </div>
+</Dialog>
+
+                    <Button v-tooltip.top="'More'" @click="toggle" rounded icon="pi pi-ellipsis-v" severity="secondary"
+                        size="large"
                         class="p-button-text p-button-plain max-w-13 h-13 hover:!bg-gray-200 dark:hover:!bg-zinc-800" />
+                    <Menu :base-z-index="-2000" ref="menu" id="overlay_menu" :model="menuitems" :popup="true" />
                 </div>
             </div>
         </div>
 
-        <div class="bg-white pb-8 dark:bg-zinc-800">
+        <div class="bg-white pb-8 dark:bg-zinc-800 pt-10">
             <div class="container mx-auto px-4 flex flex-col md:flex-row">
                 <div class="w-full md:w-3/4 px-4">
                     <img :src="article.cover_url" alt="cover" class="mb-8 rounded-2xl ">
                     <article
-                        class="[&_strong]:dark:text-gray-200 format dark:format-invert max-w-none dark:text-gray-200 lg:text-lg max-sm:text-sm"
+                        class="text-gray-600 [&_strong]:dark:text-gray-100 format dark:format-invert max-w-none dark:text-gray-200 lg:text-lg max-sm:text-sm"
                         v-html="article.body">
-                    
+
                     </article>
                 </div>
                 <div class="w-full md:w-1/4 px-4 space-y-6">

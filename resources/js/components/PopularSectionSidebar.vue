@@ -12,7 +12,7 @@ const props = defineProps({
             <ul class="divide-y divide-gray-100 dark:divide-gray-700">
                 <li v-for="pop in popArticles.slice(0, 5)" :key="pop.id">
                     <a class="block px-6 py-4 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
-                        :href="route('article.show', pop.slug)">
+                        :href="route('article.show', { id: pop.id, slug: pop.slug })">
                         {{ pop.title.length > 40 ? pop.title.slice(0, 40) + '...' : pop.title }}
                     </a>
                 </li>

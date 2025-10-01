@@ -10,7 +10,7 @@
             <div class="my-4">
                 <div class="flex items-center justify-around mb-6 gap-2">
                     <img :src="article.user.avatar ? article.user.avatar_url : `https://ui-avatars.com/api/?name=${getInitials(article.user.username)}&background=random`"
-                        alt="" class="w-12 h-12 rounded-full object-cover border-2 border-green-500 cursor-pointer">
+                        alt="" class="w-12 h-12 rounded-full object-cover border-2 border-green-500">
                     <h1
                         class="text-md font-bold text-gray-800 dark:text-gray-100 mb-4 md:text-lg items-center justify-center">
                         {{ article.title }}</h1>
@@ -81,10 +81,10 @@
                             d="m12 4.929-.707.707 1.414 1.414.707-.707a3.007 3.007 0 0 1 4.243 0 3.005 3.005 0 0 1 0 4.243l-2.122 2.121c-1.133 1.133-3.109 1.133-4.242 0L10.586 12l-1.414 1.414.707.707c.943.944 2.199 1.465 3.535 1.465s2.592-.521 3.535-1.465L19.071 12a5.008 5.008 0 0 0 0-7.071 5.006 5.006 0 0 0-7.071 0z">
                         </path>
                     </svg>
-
                     <input class="w-full bg-transparent outline-none text-sm text-gray-800 dark:text-gray-200"
-                        type="text" placeholder="Link" v-model="ArticleUrl" :readonly />
+                        type="text" placeholder="Link" v-model="ArticleUrl" readonly />
                     <Toast />
+
                     <Button unstyled :icon="copyIcon" @click="show"
                         class="dark:hover:bg-zinc-800 text-gray-400 hover:text-gray-400 text-sm py-2 px-2 rounded-lg hover:bg-gray-200 transition-colors duration-200 flex items-center" />
 
@@ -101,7 +101,7 @@ import Toast from 'primevue/toast';
 import { computed, ref } from "vue";
 import { useToast } from 'primevue/usetoast';
 import { useClipboard } from "@vueuse/core";
-import { shallowRef } from 'vue'
+
 
 
 
@@ -118,7 +118,7 @@ const ArticleUrl = computed(() => {
     if (typeof route === "function") {
         return route("article.show", { id: props.article.id, slug: props.article.slug });
     }
-   
+
     return `/article/${props.article.id}/${props.article.slug}`;
 });
 
@@ -127,7 +127,7 @@ const copyIcon = ref('pi pi-copy')
 const show = () => {
     toast.add({ severity: 'secondary', summary: 'Copied', detail: 'Link Already Copied and ready to Share', life: 3000 });
     copyIcon.value = 'pi pi-check'
-    copy(ArticleUrl)
+    copy(ArticleUrl.value)
 };
 
 // Share function
@@ -142,7 +142,7 @@ const shareTo = (platform) => {
     const title = `${props.article.title}`;
     // Clean HTML and get a short, readable description
     const desc = stripHtml(props.article.excerpt || props.article.content).substring(0, 150);
-    const url = ArticleUrl;
+    const url = ArticleUrl.value;
     let shareUrl = '';
 
     // A clean, readable separator for the title and description
@@ -156,8 +156,8 @@ const shareTo = (platform) => {
             shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
             break;
         case 'twitter':
-            // Twitter/X relies mostly on the title and URL
-            shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`;
+            const twitterText = title + separator;
+            shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(twitterText)}&url=${encodeURIComponent(url)}`;
             break;
         case 'whatsapp':
             // Prettier WhatsApp text: Intro + Title (bold) + Separator + Description + URL
