@@ -123,4 +123,9 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+
+    // Data Mode buat pilih local atau api
+    'data_mode' => env('Data_MODE', 'local'),
+    'api_url' => env('API_URL', 'http://localhost:8001/api'),
+
 ];

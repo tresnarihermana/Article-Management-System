@@ -6,13 +6,24 @@ import 'swiper/css/pagination';
 import 'swiper/css/navigation';
 import Button from 'primevue/button';
 import { Inertia } from '@inertiajs/inertia';
-import { computed } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { WhenVisible } from '@inertiajs/vue3';
+import axios from 'axios';
 const props = defineProps<{
   categorized: Array<any>,
   ArticlesPagination: Object,
 }>();
 
+// const categorized = ref([]);
+
+// onMounted(async () => {
+//   const res = await axios.get('http://localhost:8001/api/categories')
+//     categorized.value = res.data.map(category => ({
+//     id: category.data,
+
+//   }))
+//   console.log(categorized.value)
+// })
 </script>
 <style>
 .mySwiper .swiper-button-next,
@@ -44,7 +55,6 @@ const props = defineProps<{
     <div class="py-6">
       <div class="xl:container mx-auto px-3 sm:px-4 xl:px-2">
         <div class="flex flex-wrap">
-  
           <div class="w-full lg:w-2/3 overflow-hidden py-10">
             <div v-for="category in categorized" :key="category.id" class="w-full py-6">
               <div class="justify-between flex">

@@ -75,8 +75,7 @@ Route::middleware(['auth', 'web', 'verified'])->group(function () {
     Route::get('/search', [MainPageController::class, 'search'])
         ->name('search.list');
 
-    Route::get('/api/articles', [MainPageController::class, 'Typesense'])
-        ->name('search.api');
+
 
     Route::get('/articles/category/{slug}', [MainPageController::class, 'category'])
         ->name('category.show');
@@ -297,6 +296,11 @@ Route::delete("manage/tags/bulk-destroy/{ids}", [TagController::class, 'bulkDest
 Route::get('/bar', function () {
     return Inertia::render('CategoriesStatsPieChart'); // TODO hello
 });
+
+Route::get('/about', function () {
+    return Inertia::render('Main/About');
+})->name('about.us');
+
 
 // coba coba
 

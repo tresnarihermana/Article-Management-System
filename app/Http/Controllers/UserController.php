@@ -67,12 +67,12 @@ class UserController extends Controller
     {
         // dd($request->all());
 
-        if(!auth()->user()->hasRole('SuperAdmin')){
-            abort(403, 'User except Super Admin can not make another Super Admin');
-        }
-        if(!auth()->user()->hasRole('Admin')){
-            abort(403, 'User except Super Admin can not make another Admin');
-        }
+        // if(!auth()->user()->hasRole('Super Admin')){
+        //     abort(403, 'User except Super Admin can not make another Super Admin');
+        // }
+        // if(!auth()->user()->hasRole('Admin')){
+        //     abort(403, 'User except Super Admin can not make another Admin');
+        // }
 
         $request->validate([
             'name' => 'required|string|max:255',

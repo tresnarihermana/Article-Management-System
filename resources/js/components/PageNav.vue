@@ -73,7 +73,8 @@
 
         <a href="#"
           class="text-sm/6 font-semibold text-gray-900 dark:text-gray-200 hover:text-green-600 dark:hover:text-green-500">Marketplace</a>
-        <a href="#"
+        <a :href="route('about.us')"
+          
           class="text-sm/6 font-semibold text-gray-900 dark:text-gray-200 hover:text-green-600 dark:hover:text-green-500">About
           us</a>
       </PopoverGroup>
@@ -164,8 +165,8 @@
               </Disclosure>
               <a href="#"
                 class="-mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold text-gray-900 hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-green-700">Marketplace</a>
-              <a href="#"
-                class="-mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold text-gray-900 hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-green-700">Company</a>
+              <a :href="route('about.us')"
+                class="-mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold text-gray-900 hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-green-700">About</a>
             </div>
             <div class="py-6">
               <a v-if="!$page.props.auth.user" :href="route('login')"

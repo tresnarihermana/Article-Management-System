@@ -171,7 +171,7 @@ const shareTo = (platform) => {
             break;
         case 'threads':
             // Prettier Threads text: Title (bold) + Separator + Description
-            const threadsText = title + separator + desc;
+            const threadsText = '"'+title+'"'  +  separator + desc + "\n\n" + url;
             shareUrl = `https://www.threads.net/intent/post?text=${encodeURIComponent(threadsText)}&url=${encodeURIComponent(url)}`;
             break;
         default:

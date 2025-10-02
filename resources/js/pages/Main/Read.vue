@@ -22,7 +22,7 @@ function scrolltoComment() {
 
     <PageLayout>
         <ArticleContent :article="article" :recent="recent" @scrollTo="scrolltoComment()"  />
-        <ClientOnly>
+        <ClientOnly v-if="comments">
             <CommentSection :article="article" :recent="recent" :initial-liked="initialLiked"
                 :initial-count="initialCount" :comments="comments" :comments-pagination="commentsPagination" />
         </ClientOnly>

@@ -9,6 +9,7 @@ use App\Models\Category;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 
 class MainPageController extends Controller
 {
@@ -99,7 +100,7 @@ class MainPageController extends Controller
         });
         $word_count = str_word_count($article->body);
         $words_per_minute = 200;
-        $read_time =  ceil($word_count / $words_per_minute); 
+        $read_time =  ceil($word_count / $words_per_minute);
         // data articlesdata?
         $articledata = [
             "title" => $article->title,
@@ -229,29 +230,42 @@ class MainPageController extends Controller
 
     public function search()
     {
+
+        // cek mode (bisa dari .env, config, atau query string)
+        $mode = config('app.data_mode', 'local'); // default local
         $search = request('search');
 
+        if ($mode === 'api') {
+            return Inertia::render('Main/Search', [
+                'data_mode' => 'api',
+                "filters" => [
+                    "search" => $search
+                ]
+            ]);
+        } else {
 
 
-        $articles = Article::search($search)
-            ->where('status', 'published')
-            ->latest()
-            ->paginate(18)
-            ->withQueryString();
+            $articles = Article::search($search)
+                ->where('status', 'published')
+                ->latest()
+                ->paginate(18)
+                ->withQueryString();
 
 
-        return Inertia::render('Main/Search', [
-            "articles" => $articles,
-            "ArticlesPagination" => [
-                "per_page" => $articles->perPage(),
-                "last_page" => $articles->lastPage(),
-                "current_page" => $articles->currentPage(),
-                "total" => $articles->total(),
-            ],
-            "filters" => [
-                "search" => $search
-            ]
-        ]);
+            return Inertia::render('Main/Search', [
+                "articles" => $articles,
+                "data_mode" => 'local',
+                "ArticlesPagination" => [
+                    "per_page" => $articles->perPage(),
+                    "last_page" => $articles->lastPage(),
+                    "current_page" => $articles->currentPage(),
+                    "total" => $articles->total(),
+                ],
+                "filters" => [
+                    "search" => $search
+                ]
+            ]);
+        }
     }
 
     public function Typesense(Request $request)
